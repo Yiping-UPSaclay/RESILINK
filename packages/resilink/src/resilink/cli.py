@@ -23,9 +23,19 @@ app = typer.Typer(no_args_is_help=True, help="RESILINK digital lab")
 ops_app = typer.Typer(no_args_is_help=True, help="Operation Registry (same ops as MCP / agents / UI)")
 kn_app = typer.Typer(no_args_is_help=True, help="Knowledge plane")
 etl_app = typer.Typer(no_args_is_help=True, help="Open-data connectors, raw snapshots, drift detection")
+plugins_app = typer.Typer(no_args_is_help=True, help="Registered system packs, slots and models (ADR-0008)")
 app.add_typer(ops_app, name="ops")
 app.add_typer(kn_app, name="knowledge")
 app.add_typer(etl_app, name="etl")
+app.add_typer(plugins_app, name="plugins")
+
+
+@plugins_app.command("list")
+def plugins_list() -> None:
+    """Show installed system packs, slots and models, their pinned code, and any plugin refused (with why)."""
+    from resilink.engine import get_registry
+
+    typer.echo(json.dumps(get_registry().describe(), indent=2, ensure_ascii=False))
 
 
 @etl_app.command("describe")

@@ -942,7 +942,8 @@ tables:                                            # optional system tables, fil
   elec_branch_params: { x_pu: pu, r_pu: pu, b_pu: pu, rate_mva: MVA }
   elec_generators:    { p_max_mw: MW, q_min_mvar: Mvar, q_max_mvar: Mvar, cost_eur_mwh: EUR/MWh }
   elec_loads:         { p_mw: MW, q_mvar: Mvar }
-repair_median_h: { assumption: A-REP-01 }          # values per class (grade C), moved from vocab.py
+repair_median_h: { sub_tx: …, sub_mv_lv: …, line_hv: … }   # hours per class, moved from vocab.py
+repair_assumption: A-REP-01                          # grade C
 dependency_rules: knowledge/dependency_rules.yaml
 actors: { rte: [elec_transmission], enedis: [elec_distribution] }
 synthetic: resilink.systems.elec:synthetic_assets  # fixture used by the conformance kit

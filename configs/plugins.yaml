@@ -1,0 +1,15 @@
+# Plugin policy (blueprint §6.13, ADR-0008 §10). Changing this file is a reviewed pull request (invariant I2).
+
+# SPDX licence identifiers accepted without review. The platform licence is Apache-2.0 (decided 2026-11-23);
+# a plugin under any other licence is refused until its licence has been reviewed and added here.
+licences_allowed:
+  - Apache-2.0
+  - MIT
+  - BSD-2-Clause
+  - BSD-3-Clause
+  - ISC
+
+# Entry-point names to ignore, e.g. a plugin withdrawn until a fix is merged.
+disabled: []
+
+# The maturity floor per territory kind is enforced at composition time (refactor step E5).
