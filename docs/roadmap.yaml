@@ -1,0 +1,90 @@
+# RESILINK roadmap: single source of truth for progress (blueprint §11, ADR-0008).
+# Read by tools/progress.py, which adds measured results (tests, contracts, demo runtime) and feeds the
+# progress dashboard. Item status is set here by hand at the end of each work session; acceptance criteria
+# are NEVER set by hand: their status comes from the tests they name.
+# Item status: done | in_progress | not_started | blocked | deferred
+
+updated: 2026-11-23
+
+phases:
+  - id: P0
+    name: Foundations
+    planned: { start: 2026-11-23, end: 2026-12-21 }
+    goal: Core skeleton, Operation Registry, MCP, AI gateway, evals, synthetic slice; extension architecture (ADR-0008)
+    items:
+      - { id: S0, name: "Sprint 0: core, ops, MCP, AI gateway, evals, synthetic demo, first connectors", status: done, done_on: 2026-11-23 }
+      - { id: ADR-0008, name: "Extension architecture accepted (revision 2)", status: done, done_on: 2026-11-23 }
+      - { id: TRACK, name: "Progress tracking: roadmap, acceptance tests, dashboard", status: done, done_on: 2026-11-23 }
+      - { id: E1, name: "plugin_api 0.1 and registries for systems, slots and models", status: not_started, criteria: [ADR-0008/AC9] }
+      - { id: E2, name: "System packs elec/gas/telecom/facilities; vocabulary out of the core", status: not_started, criteria: [ADR-0008/AC1] }
+      - { id: E3, name: "Seven slot definitions; built-in models ported", status: not_started, criteria: [ADR-0008/AC1] }
+      - { id: E4, name: "Event-driven episode kernel; RNG streams; revisable repair plans", status: not_started, criteria: [ADR-0008/AC2] }
+      - { id: E5, name: "Composition: config schema 2, ensembles, data-need check, defaults report, pinning", status: not_started, criteria: [ADR-0008/AC4, ADR-0008/AC5] }
+      - { id: E6, name: "Declared tables, weighted reducers, model-uncertainty breakdown, observations", status: not_started, criteria: [ADR-0008/AC4] }
+      - { id: E7, name: "Execution modes: in-process and persistent worker", status: not_started, criteria: [ADR-0008/AC6] }
+      - { id: E8, name: "Conformance kit, impact report, scaffolds, sandbox, function plugs", status: not_started, criteria: [ADR-0008/AC7] }
+      - { id: E9, name: "Example packages (ageing, water), discovery ops, eval task, docs", status: not_started, criteria: [ADR-0008/AC3, ADR-0008/AC8] }
+      - { id: LIC, name: "Licence: Apache-2.0 (LICENSE, NOTICE, package metadata)", status: done, done_on: 2026-11-23 }
+      - { id: C1, name: "First commit: Sprint 0 baseline with ADR-0008, blueprint v2.2, roadmap, licence", status: done, done_on: 2026-11-23 }
+      - { id: C2, name: "Push to GitHub (public repository); CI running on Linux and Windows", status: in_progress }
+      - { id: C3, name: "GitHub board: milestones per phase, an issue per item, linked pull requests", status: blocked, blocked_by: [D-GHTOOL] }
+
+  - id: P1
+    name: Data, network, knowledge
+    planned: { start: 2026-12-21, end: 2027-03-01 }
+    goal: First real release for Bouches-du-Rhône, Steward agent, knowledge plane v1
+    items:
+      - { id: P1a, name: "P0 sources, ID persistence, release bdr-2027.01.0", status: not_started }
+      - { id: P1b, name: "Steward agent (drift, mappings, entity resolution) + Review page", status: not_started }
+      - { id: P1c, name: "Topology, QA gates, PMTiles, canonical views 1-2", status: not_started, blocked_by: [D-DOCKER] }
+      - { id: P1d, name: "Knowledge plane v1, document corpus, BM25", status: not_started }
+      - { id: P1e, name: "Proving ground v1 (first observed event)", status: not_started }
+
+  - id: P2
+    name: Analytics and AI MVP (proof-of-concept gate)
+    planned: { start: 2027-03-01, end: 2027-05-31 }
+    goal: First scientific results on the real territory; Copilot end to end; first thesis model integrated
+    items:
+      - { id: P2a, name: "Dependencies v1, flood and wildfire hazards, cascade on real data", status: not_started }
+      - { id: P2b, name: "Monte Carlo risk, sensitivity, interventions", status: not_started }
+      - { id: P2c, name: "Copilot, Experimenter, Analyst, Reviewer, ViewSpecs, Curator priors", status: not_started, blocked_by: [D-APIKEY] }
+      - { id: P2d, name: "Integration assistant (plugins from students' code)", status: not_started, blocked_by: [D-APIKEY] }
+      - { id: P2e, name: "First thesis model integrated (L2)", status: not_started }
+
+  - id: P3
+    name: Service layer and autonomy
+    planned: { start: 2027-05-31, end: 2027-08-23 }
+    goal: FastAPI and MCP over HTTP with OAuth, job queue, event-driven agents
+    items:
+      - { id: P3a, name: "FastAPI/MCP HTTP + OAuth, RQ agent queue, event loops, vectors", status: not_started, blocked_by: [D24] }
+
+  - id: P4
+    name: Canvas and learned compute
+    planned: { start: 2027-08-23, end: 2027-12-13 }
+    goal: React canvas, surrogates, operation models, second territory, v1.0 and paper
+    items:
+      - { id: P4a, name: "React agentic canvas, surrogates, Builder, DC-OPF service plugins, CVaR-MILP, 2nd territory", status: not_started }
+
+acceptance:
+  - { id: ADR-0008/AC1, kind: goal, text: "Built-ins ported: 4 system packs, 7 slots, 7 models, episode kernel, sampler; vocab.py freed", test: tests/acceptance/test_adr0008.py::test_ac1_builtins_registered_and_vocab_freed }
+  - { id: ADR-0008/AC2, kind: guard, text: "Results stay consistent with Sprint 0 (3 Monte Carlo SE) and reruns are bit-identical", test: tests/acceptance/test_adr0008.py::test_ac2_guard_results_stay_consistent_with_sprint0 }
+  - { id: ADR-0008/AC3, kind: goal, text: "A new slot and a new system added from separate packages, with no core file changed", test: tests/acceptance/test_adr0008.py::test_ac3_new_slot_and_new_system_come_from_separate_packages }
+  - { id: ADR-0008/AC4, kind: goal, text: "Ensembles: two alternatives in one slot, with a model-uncertainty breakdown", test: tests/acceptance/test_adr0008.py::test_ac4_ensemble_reports_model_uncertainty }
+  - { id: ADR-0008/AC5, kind: goal, text: "Missing data fails before compute; defaulted couplings are reported", test: tests/acceptance/test_adr0008.py::test_ac5_missing_data_fails_early_and_defaults_are_reported }
+  - { id: ADR-0008/AC6, kind: goal, text: "A model in a persistent worker with its own environment is deterministic", test: tests/acceptance/test_adr0008.py::test_ac6_persistent_worker_is_deterministic }
+  - { id: ADR-0008/AC7, kind: goal, text: "Conformance kit accepts built-ins and rejects broken fixtures", test: tests/acceptance/test_adr0008.py::test_ac7_conformance_kit_accepts_builtins_and_rejects_broken_fixtures }
+  - { id: ADR-0008/AC8, kind: goal, text: "Agents can discover systems, slots and models; eval task exists", test: tests/acceptance/test_adr0008.py::test_ac8_discovery_ops_and_eval_task }
+  - { id: ADR-0008/AC9, kind: goal, text: "plugin_api 0.x exists and plugins are limited to it by an import contract", test: tests/acceptance/test_adr0008.py::test_ac9_plugin_api_and_import_contract }
+
+budgets:
+  demo_runtime_s: { baseline: 12.8, max: 14.7, note: "ADR-0008: within +15 % of Sprint 0 (1,200 samples)" }
+  demo_total_s: { max: 60, note: "P0 gate: resilink demo under 60 s" }
+
+decisions:   # status: open | decided (with `decision` and `decided_on`)
+  - { id: D-LICENCE, question: "Licence: Apache-2.0 or EUPL-1.2?", needed_for: "first commit (C1)", status: decided, decision: "Apache-2.0", decided_on: 2026-11-23 }
+  - { id: D-GITHUB, question: "GitHub repository URL", needed_for: "push and CI (C2)", status: decided, decision: "https://github.com/Yiping-UPSaclay/RESILINK (public; commits use the GitHub noreply address)", decided_on: 2026-11-23 }
+  - { id: D-GHTOOL, question: "Install the GitHub CLI (gh) and sign in, so the board, milestones and issues can be created", needed_for: "GitHub board (C3)", status: open }
+  - { id: D-DOCKER, question: "Install Docker Desktop (WSL 2)", needed_for: "map tiles (P1c)", status: open }
+  - { id: D-APIKEY, question: "Anthropic API key for live agents and evals", needed_for: "Copilot end to end, integration assistant (P2)", status: open }
+  - { id: D-METEO, question: "Météo-France API key", needed_for: "wildfire weather inputs (P2)", status: open }
+  - { id: D24, question: "May internal-tier data go to the Anthropic API, or only to an EU-resident endpoint (Vertex/Bedrock)?", needed_for: "P3 (P0–P2 use the Anthropic API on open-data-derived data)", status: open }

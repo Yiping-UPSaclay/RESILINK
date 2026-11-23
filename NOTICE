@@ -1,0 +1,8 @@
+RESILINK: a digital laboratory for risk and resilience analysis of interdependent infrastructures
+Copyright 2026 The RESILINK authors
+
+This software is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Data produced or processed by this software keep their own licences, separate from the code licence:
+most French open-data sources are under the Licence Ouverte / Etalab 2.0 (attribution required), and
+tables derived from OpenStreetMap are under the Open Database License (ODbL). See configs/sources.yaml.

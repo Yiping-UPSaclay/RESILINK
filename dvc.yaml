@@ -1,0 +1,13 @@
+# Deterministic pipeline stages (blueprint §5.6). `fetch` runs outside DVC (`resilink etl fetch` + `dvc add`),
+# so `dvc repro` never touches the network and rebuilds releases bit-for-bit.
+stages:
+  synthetic_release:
+    cmd: uv run python -c "from resilink.synthetic import ensure_synthetic_release; ensure_synthetic_release()"
+    deps:
+      - packages/resilink/src/resilink/synthetic
+    outs:
+      - data/releases/synthetic
+  # P1 (Bouches-du-Rhône):
+  # normalize:  foreach source -> data/staging/<source>
+  # build:      data/staging -> data/releases/bdr/<version>
+  # tiles:      release -> data/tiles/bdr-<version>__*.pmtiles

@@ -1,0 +1,119 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - opendata.enedis.fr
+      user-agent:
+      - resilink-lab/0.1 (research; open-data client)
+    method: GET
+    uri: https://opendata.enedis.fr/data-fair/api/v1/datasets/poste-electrique
+  response:
+    body:
+      string: !!binary |
+        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
+        AAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      cache-control:
+      - must-revalidate, private, max-age=0
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Mon, 16 Nov 2026 16:08:43 GMT
+      etag:
+      - W/"25ab-QcRfk/23H4Tt5XiHiYjCs0s1s1U"
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Encoding
+      x-cache-status:
+      - MISS
+      x-operation:
+      - '{"class":"read","id":"readDescription"}'
+      x-owner:
+      - '{"type":"organization","id":"CvVx6HqNR"}'
+      x-powered-by:
+      - Express
+      x-resource:
+      - '{"type":"datasets","id":"mz4i8bhjlm0k18i0af3aovtf","title":"Postes%20%C3%A9lectriques%20(postes%20HTA%2FBT)"}'
+    status:
+      code: 200
+      message: OK
+version: 1

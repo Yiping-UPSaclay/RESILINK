@@ -1,0 +1,14 @@
+# Synthetic end-to-end demo (Sprint 0 vertical slice).
+experiment: synthetic_flood_demo
+release: synthetic-2026.11.0
+hazard: {model: flood_footprints}
+fragility: {library: configs/fragility/v1.yaml}
+dependencies:
+  model: proximity_softmax@1.0.0
+  rules: knowledge/dependency_rules.yaml
+  lambda_scale: {prior: lognormal, median: 1.0, gsd: 1.5}   # A-DEP-03 epistemic spread
+  backup_scale: {prior: lognormal, median: 1.0, gsd: 1.4}   # A-TEL-01..03 epistemic spread
+cascade: {model: topological_temporal, horizon_h: 72}
+monte_carlo: {outer: 10, inner: 40, seed: 20270115, workers: 1}
+disruption_threshold_h: 4
+outputs: {keep_traces: 5, tier: internal}

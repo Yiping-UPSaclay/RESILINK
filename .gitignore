@@ -1,0 +1,33 @@
+# data & results (DVC-managed, never committed)
+/data/
+!/data/.gitkeep
+evals/reports/
+
+# environments & secrets
+.venv/
+.env
+*.env.local
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+build/
+dist/
+
+# private documents kept out of the public repository
+/RESILINK.docx
+
+# editors / OS
+.vscode/
+.idea/
+~$*.docx
+Thumbs.db
+.DS_Store
+
+# streamlit
+.streamlit/secrets.toml

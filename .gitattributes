@@ -1,0 +1,9 @@
+# LF everywhere: config and knowledge files are hashed into run IDs, so a CRLF checkout on Windows
+# would give a different run_id for the same experiment (invariant I3: reproducible across platforms).
+* text=auto eol=lf
+
+*.parquet binary
+*.duckdb binary
+*.docx binary
+*.png binary
+*.pmtiles binary

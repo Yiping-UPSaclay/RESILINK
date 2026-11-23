@@ -1,0 +1,52 @@
+[project]
+name = "resilink-workspace"
+version = "0.1.0"
+description = "RESILINK AI-native digital lab — uv workspace root (virtual)"
+license = "Apache-2.0"
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["packages/*", "apps/*"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "hypothesis>=6.100",
+    "import-linter>=2.1",
+    "ruff>=0.8",
+    "mypy>=1.13",
+    "pytest-recording>=0.13",
+    "dvc>=3.50",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "ai: requires a live Anthropic API credential (skipped otherwise)",
+    "network: requires internet access to public open-data portals",
+    "slow: longer-running tests",
+    "acceptance(id): links a test to an acceptance criterion in docs/roadmap.yaml (progress tracking)",
+]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+extend-exclude = ["data"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+ignore = ["E501", "RUF001", "RUF002", "RUF003"]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+warn_unused_ignores = true
+check_untyped_defs = true
+
+[tool.ruff.lint.isort]
+known-first-party = ["resilink", "resilink_ai", "resilink_mcp", "lib"]

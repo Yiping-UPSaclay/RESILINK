@@ -1,0 +1,51 @@
+[importlinter]
+root_packages =
+    resilink
+    resilink_ai
+include_external_packages = True
+
+[importlinter:contract:core-layers]
+name = Core layering (deterministic core, blueprint §2)
+type = layers
+layers =
+    cli
+    ops
+    views
+    experiments
+    risk
+    cascade
+    fragility | dependencies | hazards
+    network
+    synthetic | knowledge | etl
+    io
+    domain
+containers =
+    resilink
+
+[importlinter:contract:core-has-no-ui-web-queue-or-llm]
+name = Core never imports UI / web / queue / LLM frameworks (invariants I3, I7)
+type = forbidden
+source_modules =
+    resilink
+forbidden_modules =
+    streamlit
+    pydeck
+    altair
+    fastapi
+    starlette
+    rq
+    anthropic
+    mcp
+    claude_agent_sdk
+    resilink_ai
+
+[importlinter:contract:ai-layer-uses-ops-not-io-writers]
+name = AI layer goes through the Operation Registry, never writes releases/results directly (invariant I2)
+type = forbidden
+source_modules =
+    resilink_ai
+forbidden_modules =
+    resilink.io.release
+    resilink.io.results
+    resilink.io.geoparquet
+allow_indirect_imports = True

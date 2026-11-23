@@ -1,0 +1,6 @@
+id: bdr
+name: Bouches-du-Rhône
+selector: {admin_level: departement, departement: ["13"], departement_names: ["Bouches-du-Rhône"], cog_year: 2025}
+buffer_m: 30000
+crs_metric: "EPSG:2154"
+grid: {id: insee200m, crs: "EPSG:3035", size_m: 200}

@@ -1,0 +1,59 @@
+from __future__ import annotations
+
+import os
+import sys
+import tempfile
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+os.environ.setdefault("RESILINK_ROOT", str(ROOT))
+_DATA = Path(tempfile.mkdtemp(prefix="resilink-test-data-"))
+os.environ["RESILINK_DATA"] = str(_DATA)  # tests never touch ./data
+sys.path.insert(0, str(ROOT / "apps" / "streamlit"))  # `lib` package of the Streamlit app
+sys.path.insert(0, str(ROOT))  # `evals` package (uv run pytest does not add the rootdir like python -m pytest)
+
+SMALL_EXPERIMENT = {
+    "experiment": "test_small",
+    "release": "synthetic-2026.11.0",
+    "dependencies": {
+        "lambda_scale": {"prior": "lognormal", "median": 1.0, "gsd": 1.5},
+        "backup_scale": {"prior": "lognormal", "median": 1.0, "gsd": 1.4},
+    },
+    "monte_carlo": {"outer": 3, "inner": 8, "seed": 7, "workers": 1},
+    "outputs": {"keep_traces": 4, "tier": "internal"},
+}
+
+
+@pytest.fixture(scope="session")
+def data_dir() -> Path:
+    return _DATA
+
+
+@pytest.fixture(scope="session")
+def release(data_dir: Path):
+    from resilink.synthetic import ensure_synthetic_release
+
+    return ensure_synthetic_release()
+
+
+@pytest.fixture(scope="session")
+def net(release):
+    from resilink.network.compiled import compile_network
+
+    return compile_network(release)
+
+
+@pytest.fixture(scope="session")
+def small_cfg():
+    from resilink.domain.config import ExperimentConfig
+
+    return ExperimentConfig.model_validate(SMALL_EXPERIMENT)
+
+
+@pytest.fixture(scope="session")
+def small_run(small_cfg, release):
+    from resilink.experiments import run_experiment
+
+    return run_experiment(small_cfg)

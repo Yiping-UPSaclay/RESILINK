@@ -1,0 +1,36 @@
+# Lab ontology (curated). Classes, mechanisms, hazards and the evidence quantity vocabulary.
+version: "1.0.0"
+classes:
+  elec:
+    sub_tx: Transmission substation (RTE, 63-400 kV); source of supply for the distribution network.
+    sub_primary: Primary substation (poste source, HTB/HTA) feeding medium-voltage feeders.
+    sub_mv_lv: MV/LV distribution substation (poste HTA/BT) supplying low-voltage customers and telecom sites.
+    generator: Generation unit (e.g. gas-fired CCGT) injecting into the grid.
+    line_hv: High-voltage overhead line or underground link.
+    line_mv_aerial: Overhead medium-voltage (HTA) line section.
+    cable_mv: Underground medium-voltage (HTA) cable section.
+  gas:
+    lng_terminal: LNG terminal (supply source for the transmission grid).
+    junction: Pipeline junction node.
+    compressor: Compressor station (drive type electric or gas-turbine).
+    delivery_station: Delivery station feeding distribution networks or large consumers.
+    pipeline_tx: Gas transmission pipeline section.
+  telecom:
+    exchange: Core telecom site / exchange (source of service).
+    aggregation_logical: Aggregation / backhaul node (inferred, logical).
+    mobile_site: Mobile radio site (2G-5G) serving nearby population.
+    backhaul_logical: Logical backhaul link (inferred).
+mechanisms:
+  power_supply: The dependent needs electricity from the supporter.
+  fuel: The dependent needs gas fuel from the supporter.
+  scada: Remote control / monitoring dependency (affects restoration).
+  backhaul: Telecom transport dependency.
+hazards:
+  flood: {im_types: [depth_m]}
+  wildfire: {im_types: [burn_probability, fireline_intensity_kw_m]}
+evidence_quantities:
+  telecom.mobile_site.backup_h: Battery autonomy of mobile sites (hours).
+  telecom.exchange.backup_h: Autonomy of core telecom sites (hours).
+  elec.sub_mv_lv.flood_depth_threshold_m: Water depth at which MV/LV substations fail (m).
+  elec.sub_primary.flood_depth_threshold_m: Water depth at which primary substations fail (m).
+  gas.compressor.electric_drive_share: Share of compressor stations with electric drive.

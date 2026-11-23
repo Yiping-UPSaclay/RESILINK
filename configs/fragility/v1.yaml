@@ -1,0 +1,18 @@
+# Flood fragility library v1 — lognormal P(fail | depth) = Phi(ln(depth/median)/beta).
+# Grade C = engineering placeholder awaiting evidence (Evidence Curator -> accepted evidence -> PR).
+version: "1.0.0"
+repair_sigma: 0.5
+curves:
+  - {asset_class: sub_tx,           median: 1.5, beta: 0.4, assumption_id: A-FRAG-01, grade: C}
+  - {asset_class: sub_primary,      median: 1.0, beta: 0.4, assumption_id: A-FRAG-02, grade: C}
+  - {asset_class: sub_mv_lv,        median: 0.6, beta: 0.5, assumption_id: A-FRAG-03, grade: C}
+  - {asset_class: generator,        median: 1.5, beta: 0.4, assumption_id: A-FRAG-04, grade: C}
+  - {asset_class: junction,         median: 3.0, beta: 0.5, assumption_id: A-FRAG-05, grade: C}
+  - {asset_class: compressor,       median: 1.2, beta: 0.5, assumption_id: A-FRAG-06, grade: C}
+  - {asset_class: delivery_station, median: 1.0, beta: 0.5, assumption_id: A-FRAG-07, grade: C}
+  - {asset_class: lng_terminal,     median: 2.0, beta: 0.5, assumption_id: A-FRAG-08, grade: C}
+  - {asset_class: mobile_site,      median: 1.2, beta: 0.5, assumption_id: A-FRAG-09, grade: C}
+  - {asset_class: exchange,         median: 1.0, beta: 0.4, assumption_id: A-FRAG-10, grade: C}
+  - {asset_class: line_hv,          median: 3.0, beta: 0.6, assumption_id: A-FRAG-11, grade: C}
+  - {asset_class: line_mv_aerial,   median: 2.5, beta: 0.6, assumption_id: A-FRAG-12, grade: C}
+  - {asset_class: cable_mv,         median: 1.5, beta: 0.6, assumption_id: A-FRAG-13, grade: C}

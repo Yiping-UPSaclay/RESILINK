@@ -1,0 +1,88 @@
+# Assumption register (curated, git-approved). Code, configs and docs cite these IDs.
+# grade: A = evidence-backed & validated, B = evidence-backed, C = engineering placeholder.
+version: "1.0.0"
+assumptions:
+  - id: A-DEP-03
+    title: Proximity kernel for supplier assignment
+    statement: Each dependent draws one supplier among its k nearest compatible candidates with probability proportional to exp(-distance / lambda).
+    rationale: Open data has no feeder-to-site connection records; distance is the most transparent proxy.
+    grade: C
+    sensitivity: true
+    evidence_ids: []
+  - id: A-TEL-01
+    title: Mobile site battery autonomy
+    statement: Backup autonomy of mobile sites ~ gamma(mean 2 h, cv 0.5), scaled by the experiment's backup_scale prior.
+    rationale: Placeholder pending evidence extraction from ARCEP / operator / post-event reports (Evidence Curator).
+    grade: C
+    sensitivity: true
+    evidence_ids: []
+  - id: A-TEL-02
+    title: Exchange backup autonomy
+    statement: Core telecom exchanges have batteries plus generators, autonomy ~ gamma(mean 8 h, cv 0.3).
+    rationale: Placeholder.
+    grade: C
+    sensitivity: true
+    evidence_ids: []
+  - id: A-TEL-03
+    title: Aggregation equipment autonomy
+    statement: Aggregation / backhaul equipment autonomy ~ gamma(mean 4 h, cv 0.5).
+    rationale: Placeholder.
+    grade: C
+    sensitivity: true
+    evidence_ids: []
+  - id: A-GAS-01
+    title: Compressor electric drive
+    statement: A transmission compressor depends on grid power with probability 0.5 (electric vs gas-turbine drive unknown).
+    rationale: Drive type is not published in open data.
+    grade: C
+    sensitivity: true
+    evidence_ids: []
+  - id: A-GAS-02
+    title: LNG terminal power dependency
+    statement: LNG send-out depends on a primary substation; emergency generation ~1 h.
+    rationale: Placeholder.
+    grade: C
+    sensitivity: true
+    evidence_ids: []
+  - id: A-ELEC-01
+    title: Gas-fired generation fuel dependency
+    statement: A gas-fired generator trips 0.5 h after its delivery station becomes non-functional (line pack).
+    rationale: Placeholder.
+    grade: C
+    sensitivity: true
+    evidence_ids: []
+  - id: A-FRAG-01
+    title: Flood fragility library v1
+    statement: All flood fragility curves in configs/fragility/v1.yaml (A-FRAG-01..13) are grade-C engineering placeholders.
+    rationale: To be replaced by evidence-backed curves (damage functions literature, operator thresholds).
+    grade: C
+    sensitivity: true
+    evidence_ids: []
+  - id: A-REP-01
+    title: Repair times
+    statement: Repair durations ~ lognormal(median by asset class, sigma 0.5), independent across assets; no crew constraints.
+    rationale: Restoration scheduling is deferred to Phase 4.
+    grade: C
+    sensitivity: true
+    evidence_ids: []
+  - id: A-TOPO-01
+    title: Meshed-optimistic topology
+    statement: Any physical path to a functional source restores service instantly (switching assumed instant, ties closed).
+    rationale: Open data has no switch states; radial_nearest_source mode is planned as the pessimistic bound.
+    grade: C
+    sensitivity: true
+    evidence_ids: []
+  - id: A-RISK-01
+    title: EAL integration convention
+    statement: EAL = trapezoid over AEP between scenarios plus a flat tail AEP_min * L_rarest; no loss for events more frequent than the most frequent scenario.
+    rationale: Transparent and conservative on the tail; documented in resilink.risk.metrics.
+    grade: B
+    sensitivity: false
+    evidence_ids: []
+  - id: A-LOSS-01
+    title: Service loss metric
+    statement: Loss = people-hours without service per sector = sum over 200 m cells of population x outage hours (supply shares weighted).
+    rationale: Directly interpretable; monetisation (value of lost load) deferred.
+    grade: B
+    sensitivity: false
+    evidence_ids: []

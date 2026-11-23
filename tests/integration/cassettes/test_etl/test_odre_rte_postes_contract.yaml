@@ -1,0 +1,123 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - odre.opendatasoft.com
+      user-agent:
+      - resilink-lab/0.1 (research; open-data client)
+    method: GET
+    uri: https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/postes-electriques-rte
+  response:
+    body:
+      string: !!binary |
+        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
+        P3/+C1d1l/eTTgAA
+    headers:
+      access-control-allow-headers:
+      - Authorization, X-Requested-With, Origin, ODS-API-Analytics-App, ODS-API-Analytics-Embed-Type,
+        ODS-API-Analytics-Embed-Referrer, ODS-Widgets-Version, Accept
+      access-control-allow-methods:
+      - POST, GET, OPTIONS
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - ODS-Explore-API-Deprecation, Link, X-RateLimit-Remaining, X-RateLimit-Limit,
+        X-RateLimit-Reset, X-RateLimit-dataset-Remaining, X-RateLimit-dataset-Limit,
+        X-RateLimit-dataset-Reset
+      access-control-max-age:
+      - '1000'
+      cache-control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-language:
+      - en-us
+      content-security-policy:
+      - upgrade-insecure-requests;
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Mon, 16 Nov 2026 16:08:43 GMT
+      permissions-policy:
+      - midi=(),microphone=(),camera=(),magnetometer=(),gyroscope=(),fullscreen=(self),payment=()
+      referrer-policy:
+      - strict-origin-when-cross-origin
+      server:
+      - openresty
+      strict-transport-security:
+      - max-age=31536000;includeSubdomains
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Language, Cookie, Host
+      x-content-type-options:
+      - nosniff
+      x-ratelimit-limit:
+      - '10000000'
+      x-ratelimit-remaining:
+      - '9999990'
+      x-ratelimit-reset:
+      - '2026-11-17 00:00:00+00:00'
+      x-ua-compatible:
+      - IE=edge
+    status:
+      code: 200
+      message: OK
+version: 1

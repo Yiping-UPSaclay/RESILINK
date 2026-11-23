@@ -1,0 +1,68 @@
+{
+  "description": "Sprint 0 metrics of the SMALL_EXPERIMENT (tests/conftest.py), recorded before the ADR-0008 refactor. Acceptance criterion ADR-0008/AC2 requires post-refactor mean losses within 3 combined Monte Carlo standard errors of these values.",
+  "recorded": "2026-11-23",
+  "run_id": "run-4b4d2e2613276d67",
+  "elapsed_s": 2.33,
+  "metrics": {
+    "annual|all": {
+      "eal": 191490.628014
+    },
+    "annual|elec": {
+      "eal": 56441.512589
+    },
+    "annual|gas": {
+      "eal": 80080.242246
+    },
+    "annual|telecom": {
+      "eal": 54968.873178
+    },
+    "flood_rp1000|all": {
+      "mc_rel_se": 0.030469,
+      "mean_loss": 4821132.807756
+    },
+    "flood_rp1000|elec": {
+      "mc_rel_se": 0.037419,
+      "mean_loss": 1266526.737405
+    },
+    "flood_rp1000|gas": {
+      "mc_rel_se": 0.06187,
+      "mean_loss": 2183475.907369
+    },
+    "flood_rp1000|telecom": {
+      "mc_rel_se": 0.057983,
+      "mean_loss": 1371130.162981
+    },
+    "flood_rp100|all": {
+      "mc_rel_se": 0.055576,
+      "mean_loss": 3205257.077854
+    },
+    "flood_rp100|elec": {
+      "mc_rel_se": 0.037127,
+      "mean_loss": 935229.46974
+    },
+    "flood_rp100|gas": {
+      "mc_rel_se": 0.105498,
+      "mean_loss": 1363866.940356
+    },
+    "flood_rp100|telecom": {
+      "mc_rel_se": 0.048548,
+      "mean_loss": 906160.667758
+    },
+    "flood_rp10|all": {
+      "mc_rel_se": 0.312362,
+      "mean_loss": 140314.938168
+    },
+    "flood_rp10|elec": {
+      "mc_rel_se": 0.36136,
+      "mean_loss": 70705.706257
+    },
+    "flood_rp10|gas": {
+      "mc_rel_se": 1.0,
+      "mean_loss": 12438.026849
+    },
+    "flood_rp10|telecom": {
+      "mc_rel_se": 0.317129,
+      "mean_loss": 57171.205062
+    }
+  }
+}

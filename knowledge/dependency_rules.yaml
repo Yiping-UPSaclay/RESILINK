@@ -1,0 +1,85 @@
+# Cross-infrastructure dependency rules (curated knowledge, human-approved; blueprint §1.7, §5.2).
+# Each rule says WHICH class depends on WHICH supporting class and through WHICH mechanism; the
+# quantitative model (proximity_softmax@1.0.0) turns rules into probabilistic edges.
+# status: placeholder = engineering prior awaiting evidence; evidence_backed = linked to accepted evidence.
+version: "1.0.0"
+rules:
+  - id: R-TEL-01
+    dependent: telecom.mobile_site
+    supporter: elec.sub_mv_lv
+    mechanism: power_supply
+    dep_type: physical
+    group_mode: exclusive
+    k: 3
+    lambda_m: 300
+    max_distance_m: 2000
+    backup_h: {family: gamma, mean: 2.0, cv: 0.5}
+    assumption_ids: [A-TEL-01, A-DEP-03]
+    status: placeholder
+    rationale: Mobile sites are fed by the low-voltage network of a nearby MV/LV substation; battery backup of a few hours.
+  - id: R-TEL-02
+    dependent: telecom.exchange
+    supporter: elec.sub_mv_lv
+    mechanism: power_supply
+    dep_type: physical
+    group_mode: exclusive
+    k: 1
+    lambda_m: 300
+    max_distance_m: 2000
+    backup_h: {family: gamma, mean: 8.0, cv: 0.3}
+    assumption_ids: [A-TEL-02]
+    status: placeholder
+    rationale: Core telecom sites have batteries plus generator sets; longer autonomy.
+  - id: R-TEL-03
+    dependent: telecom.aggregation_logical
+    supporter: elec.sub_mv_lv
+    mechanism: power_supply
+    dep_type: physical
+    group_mode: exclusive
+    k: 2
+    lambda_m: 300
+    max_distance_m: 2500
+    backup_h: {family: gamma, mean: 4.0, cv: 0.5}
+    assumption_ids: [A-TEL-03]
+    status: placeholder
+    rationale: Aggregation / backhaul equipment needs local power; intermediate autonomy.
+  - id: R-GAS-01
+    dependent: gas.compressor
+    supporter: elec.sub_mv_lv
+    mechanism: power_supply
+    dep_type: physical
+    group_mode: independent
+    k: 1
+    lambda_m: 500
+    max_distance_m: 5000
+    p_exist: 0.5
+    backup_h: {family: fixed, value: 0.0}
+    assumption_ids: [A-GAS-01]
+    status: placeholder
+    rationale: Compressor drive may be electric or gas-turbine; open data does not say, hence p_exist = 0.5.
+  - id: R-GAS-02
+    dependent: gas.lng_terminal
+    supporter: elec.sub_primary
+    mechanism: power_supply
+    dep_type: physical
+    group_mode: exclusive
+    k: 1
+    lambda_m: 2000
+    max_distance_m: 10000
+    backup_h: {family: gamma, mean: 1.0, cv: 0.5}
+    assumption_ids: [A-GAS-02]
+    status: placeholder
+    rationale: Send-out pumps need grid power; emergency generators cover safety loads only.
+  - id: R-ELEC-01
+    dependent: elec.generator
+    supporter: gas.delivery_station
+    mechanism: fuel
+    dep_type: physical
+    group_mode: exclusive
+    k: 1
+    lambda_m: 1000
+    max_distance_m: 5000
+    backup_h: {family: fixed, value: 0.5}
+    assumption_ids: [A-ELEC-01]
+    status: placeholder
+    rationale: Gas-fired plants trip shortly after loss of fuel pressure (line pack covers minutes).

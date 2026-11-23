@@ -1,0 +1,23 @@
+# AI governance policy (blueprint §10.1, invariants I2/I4).
+providers:
+  anthropic:
+    kind: anthropic            # first-party API; inference_geo supports only "us" | "global" (no EU pin)
+  vertex_eu:
+    kind: vertex               # EU-resident option (portable feature subset only); needs a GCP project
+    region: eu
+    project_id_env: GCP_PROJECT
+
+# Data tier -> provider allowed to see data of that tier. "none" = no external LLM for that tier.
+# D24 (pending institutional decision): internal tier currently routed to the first-party API for P0-P2
+# on open-data-derived data; switch to vertex_eu if EU residency is required.
+routing:
+  public: anthropic
+  internal: anthropic
+  restricted: none
+
+quotas:
+  agent_max_cascade_simulations: 20000
+
+budgets:
+  session_usd: 5.0
+  daily_usd: 50.0

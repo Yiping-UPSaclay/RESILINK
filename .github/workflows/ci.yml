@@ -1,0 +1,43 @@
+name: ci
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 3 * * *"   # nightly: perf + live evals (if the secret is configured)
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --all-packages --locked
+      - run: uv run lint-imports
+      - run: uv run ruff check .
+      - run: uv run pytest -q --record-mode=none --block-network
+      - name: AI off (capability parity, invariant I7)
+        run: uv run pytest -q -m "not ai" --record-mode=none --block-network
+        env:
+          RESILINK_AI: "off"
+      - name: Reproducibility (invariant I3)
+        shell: bash
+        run: |
+          uv run resilink demo
+          uv run resilink reproduce "$(ls data/results | grep '^run-' | head -1)"
+
+  live-evals:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --all-packages --locked
+      - name: Golden agent evals (costs API credits)
+        if: ${{ env.ANTHROPIC_API_KEY != '' }}
+        run: uv run python -m evals.runner --suite golden

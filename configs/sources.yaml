@@ -1,0 +1,67 @@
+# Source register (blueprint §5.2). Connector paths verified 2026-11-16.
+# NOTE: Enedis migrated its portal to Data Fair (the Opendatasoft v2.1 paths now return HTTP 410).
+sources:
+  - id: rte.postes
+    provider: RTE (via ODRÉ)
+    connector: opendatasoft
+    base_url: https://odre.opendatasoft.com
+    dataset: postes-electriques-rte
+    format: csv
+    territory_field: departement
+    territory_value: name   # RTE uses département names, not codes
+    role: Attributes and completeness denominator for HV substations (NO geometry since 2026-06-16, public safety)
+    licence: Licence Ouverte 2.0
+    sensitivity: public
+    refresh: semiannual
+    id_strategy: native:code_poste
+    priority: P0
+  - id: rte.lignes_aer
+    provider: RTE (via ODRÉ)
+    connector: opendatasoft
+    base_url: https://odre.opendatasoft.com
+    dataset: lignes-aeriennes-rte-nv
+    format: csv
+    role: Line codes, voltage, circuits (geometry from OSM)
+    licence: Licence Ouverte 2.0
+    sensitivity: public
+    refresh: semiannual
+    id_strategy: native:code_ligne
+    priority: P0
+  - id: enedis.poste_electrique
+    provider: Enedis
+    connector: datafair
+    base_url: https://opendata.enedis.fr
+    dataset: poste-electrique
+    territory_field: code_departement
+    role: MV/LV (HTA/BT) substations
+    licence: Licence Ouverte 2.0
+    sensitivity: internal
+    refresh: semiannual
+    id_strategy: fingerprint_point_1m
+    priority: P0
+  - id: natran.trace250
+    provider: NaTran (via ODRÉ)
+    connector: opendatasoft
+    base_url: https://odre.opendatasoft.com
+    dataset: trace-du-reseau-grt-250
+    format: geojson
+    role: Gas transmission network (~250 m accuracy; never for works)
+    licence: Licence Ouverte 2.0
+    sensitivity: internal
+    refresh: annual
+    id_strategy: fingerprint_line_250m
+    priority: P0
+  - id: odre.registre_prod
+    provider: ODRÉ
+    connector: opendatasoft
+    base_url: https://odre.opendatasoft.com
+    dataset: registre-national-installation-production-stockage-electricite-agrege
+    format: csv
+    territory_field: codedepartement
+    role: Generators (fuel, capacity)
+    licence: Licence Ouverte 2.0
+    sensitivity: public
+    refresh: monthly
+    id_strategy: native (TBC)
+    priority: P0
+    notes: territory_field name TBC against the dataset schema

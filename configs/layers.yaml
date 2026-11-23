@@ -1,0 +1,91 @@
+# Self-describing data (blueprint §1.5): column semantics and units for agents and humans.
+# Served by the `catalog.describe_table` op; used by the ViewSpec validator (layer ids, tiers).
+tables:
+  nodes:
+    tier: internal
+    description: Infrastructure nodes of all layers (canonical, EPSG:2154).
+    columns:
+      rid: Stable entity id <layer>.<class>:<ns>:<key>.
+      k: Dense integer index within the release (used to join result arrays).
+      layer: elec | gas | telecom | facility.
+      class: Controlled vocabulary class (see knowledge/ontology.yaml).
+      name: Human-readable name.
+      is_source: True if the node is a supply source of its layer.
+      voltage_kv: Nominal voltage (kV), electricity only.
+      pos_uncertainty_m: Positional uncertainty (m).
+      confidence: Existence/attribute confidence in [0, 1].
+      sensitivity: public | internal | restricted.
+  edges:
+    tier: internal
+    description: Intra-layer links (lines, cables, pipelines, logical backhaul).
+    columns:
+      rid: Stable id.
+      src_rid: Endpoint node rid.
+      dst_rid: Endpoint node rid.
+      length_m: Length in metres.
+      aerial_share: Share of the length that is overhead (0-1).
+  grid_cells:
+    tier: public
+    description: 200 m population lattice (INSEE Filosofi in real releases).
+    columns:
+      cell_id: Lattice cell id.
+      pop: Resident population.
+      admin_commune: Commune code.
+  hazard_scenarios:
+    tier: public
+    description: Hazard scenarios with return periods.
+    columns:
+      scenario_id: Scenario id.
+      return_period_y: Return period (years).
+      annual_rate: 1 / return period.
+      im_type: Intensity measure type (e.g. depth_m).
+  exposure:
+    tier: internal
+    description: Asset x scenario intensity (the exposure contract).
+    columns:
+      scenario_id: Scenario id.
+      asset_rid: Exposed asset rid.
+      im_value: Intensity value (unit per im_type, e.g. metres of water).
+      exposed_length_m: For lines, exposed length (m).
+  metrics:
+    tier: internal
+    description: Risk metrics of a run (values with 5/50/95 % epistemic bands where available).
+    columns:
+      metric: mean_loss | mean_direct_loss | var_95 | cvar_95 | eal | amplification_ratio | mc_rel_se.
+      scenario_id: Scenario id, or 'annual' for EAL.
+      sector: elec | gas | telecom | all.
+      value: Point estimate.
+      p05: 5th percentile over the epistemic (outer) loop.
+      p50: Median over the epistemic loop.
+      p95: 95th percentile over the epistemic loop.
+      unit: people-hours, people-hours/year or ratio.
+  node_stats:
+    tier: restricted
+    description: Per-asset failure probability and mean downtime (asset-level vulnerability -> restricted).
+    columns:
+      rid: Asset rid.
+      p_down: Probability the asset is non-functional at some time within the horizon.
+      mean_downtime_h: Mean hours non-functional within the horizon.
+  cell_stats:
+    tier: internal
+    description: Per-cell service disruption statistics by sector.
+    columns:
+      cell_id: Lattice cell id.
+      k: Dense cell index.
+      sector: elec | gas | telecom.
+      p_disruption: Probability that outage exceeds the disruption threshold.
+      mean_outage_h: Mean outage hours.
+  sample_losses:
+    tier: internal
+    description: Per-sample losses (people-hours) by sector, total and direct-only.
+    columns:
+      o: Outer (epistemic) sample index.
+      i: Inner (aleatory) sample index.
+      loss_total: People-hours lost.
+      loss_direct: People-hours lost attributable to directly damaged suppliers.
+map_layers:
+  infrastructure_nodes: {table: nodes, tier: internal, geometry: point}
+  infrastructure_edges: {table: edges, tier: internal, geometry: line}
+  population_grid: {table: grid_cells, tier: public, geometry: polygon}
+  flood_footprints: {table: hazard_footprints, tier: public, geometry: polygon}
+  communes: {table: admin_areas, tier: public, geometry: polygon}
