@@ -1,4 +1,4 @@
-"""Registries for systems, slots and models (ADR-0008 step E1): discovery, refusals with reasons, pinning."""
+"""Registries for systems, slots and models (ADR-0008 steps E1-E2): discovery, refusals with reasons, pinning."""
 
 from __future__ import annotations
 
@@ -11,7 +11,6 @@ from typing import Any, Protocol
 import pytest
 from pydantic import BaseModel
 
-from resilink.engine import PluginPolicy, PluginRegistry, code_hash, load_policy
 from resilink.plugin_api import (
     PLUGIN_API_VERSION,
     ModelCard,
@@ -22,6 +21,7 @@ from resilink.plugin_api import (
     Subsystem,
     SystemPack,
 )
+from resilink.registry import PluginPolicy, PluginRegistry, code_hash, load_policy
 
 
 @dataclass

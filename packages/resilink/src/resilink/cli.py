@@ -33,7 +33,7 @@ app.add_typer(plugins_app, name="plugins")
 @plugins_app.command("list")
 def plugins_list() -> None:
     """Show installed system packs, slots and models, their pinned code, and any plugin refused (with why)."""
-    from resilink.engine import get_registry
+    from resilink.registry import get_registry
 
     typer.echo(json.dumps(get_registry().describe(), indent=2, ensure_ascii=False))
 

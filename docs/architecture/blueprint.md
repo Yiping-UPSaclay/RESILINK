@@ -112,7 +112,7 @@ flowchart TB
 
   subgraph EXTN["Registered extensions — versioned, 0.x draft until proven"]
     direction LR
-    SYS["System packs<br/>elec · gas · telecom · facilities<br/>later: water · roads · heat"]:::proposed
+    SYS["System packs<br/>elec · gas · telecom · facility<br/>later: water · roads · heat"]:::proposed
     SLT["Slot definitions<br/>hazard · fragility · dependency · service<br/>propagation · restoration · consequence"]:::proposed
     ANT["Anticipated slots<br/>degradation · resources · policy<br/>lifecycle orchestrator"]:::deferred
     MOD["Models<br/>built-ins · thesis plugins · function plugs"]:::proposed
@@ -196,8 +196,9 @@ Each invariant is enforced by code, a test or an eval.
 | `resilink.io` | Release catalog, GeoParquet I/O, DuckDB sessions, results store | Contain domain logic | [E] |
 | `resilink.etl` | Connectors, adapters, entity resolution, topology build, QA, publish, tiles | Be imported by analysis modules | [E] |
 | **`resilink.plugin_api`** (v2.2) | **Public contract for extensions (0.x draft → 1.0 after two theses):** `ModelCard`, `SlotDefinition`, system-pack schema, board fields, events, contexts, data needs, execution modes, function-plug decorators. The only core module plugins may import. | Import anything above `domain`; change without re-certifying registered plugs | **[E]** |
-| **`resilink.engine`** (v2.2) | The small fixed core: registries for systems, slots and models (entry points, pinning); composer (data needs, defaults report, ensembles); event kernel and shared board; RNG streams; samplers (`nested_mc`); execution runners (in-process, worker); weighted reducers; conformance kit and impact report | Name a specific system or model; contain model logic | **[E]** |
-| `resilink.systems` · `resilink.slots` (v2.2) | Built-in system packs (`elec`, `gas`, `telecom`, `facilities`, replacing the constants in `domain/vocab.py`) and the seven built-in slot definitions, registered through the core's own entry points | Be special-cased by the engine | [E] |
+| **`resilink.registry`** (v2.2, E1–E2) | Registries for systems, slots and models (entry points, policy, pinning) and the **system catalog**. It sits just above `io` because network compilation, the synthetic territory and ETL checks need it | Contain model logic | **[E]** |
+| **`resilink.engine`** (v2.2) | The small fixed core: composer (data needs, defaults report, ensembles); event kernel and shared board; RNG streams; samplers (`nested_mc`); execution runners (in-process, worker); weighted reducers; conformance kit and impact report | Name a specific system or model; contain model logic | **[E]** |
+| `resilink.systems` · `resilink.slots` (v2.2) | Built-in system packs (`elec`, `facility`, `gas`, `telecom`, as YAML files, replacing the constants in `domain/vocab.py`) and the seven built-in slot definitions, registered through the core's own entry points | Be special-cased by the engine | [E] |
 | `resilink.spatial` · `network` · `dependencies` · `hazards` · `fragility` · `cascade` · `risk` · `decisions` · `experiments` | Deterministic analytics (§6). From v2.2, models in these modules are **built-in plugins** registered like external ones. | Import LLM or UI code; be called by the engine except through the registry | [E] |
 | `resilink.sandbox` (v2.2) | Notebook API for trying a model on the synthetic territory before packaging it | Write releases or canonical results | [E] |
 | `plugins/*` · `examples/plugins/*` (v2.2) | Research plugins (models, draft slots, system packs) as workspace members under incubation; the examples `resilink-example-ageing` (new slot) and `resilink-example-water` (new system); mature plugins may live in pinned repositories | Import core internals other than `resilink.plugin_api`; call LLMs or the network | [E] |
@@ -499,7 +500,7 @@ RESILINK/
 **Import-linter contracts [E]:**
 - Layering inside `resilink`.
   - Sprint 0, as implemented: `cli > ops > views > experiments > risk > cascade > fragility|dependencies|hazards > network > synthetic|knowledge|etl > io > domain`.
-  - v2.2 target: `cli > ops > views > experiments > sandbox > engine > risk > cascade|restoration|consequence > fragility|dependencies|hazards > network > systems|slots > synthetic|knowledge|etl > io > plugin_api > domain`.
+  - v2.2 target: `cli > ops > views > experiments > sandbox > engine > risk > cascade|restoration|consequence > fragility|dependencies|hazards > network > synthetic|knowledge|etl > registry > io > systems|slots > plugin_api > domain` (implemented after E2 without the layers of later steps).
   - The engine reaches systems, slots and models **only through the registries** (entry points), never by static import.
 - Forbidden imports for `resilink`: `streamlit`, `pydeck`, `fastapi`, `starlette`, `rq`, **`anthropic`, `mcp`, `claude_agent_sdk`**.
 - `resilink_ai` must not import `resilink.io` write paths. It goes through ops only.
@@ -874,7 +875,7 @@ ExperimentConfig ─▶ engine.compose(systems, components, alternatives, design
 
 | Kind | Entry-point group | Built-in now | Added later by | Gate |
 |---|---|---|---|---|
-| **System pack** | `resilink.systems` | `elec` (transmission, distribution), `gas`, `telecom`, `facilities` | Studies adding water, roads, heat, hydrogen, or finer subsystems | One-page extension proposal + pack checks (§6.14) |
+| **System pack** | `resilink.systems` | `elec` (transmission, distribution), `facility`, `gas`, `telecom` | Studies adding water, roads, heat, hydrogen, or finer subsystems | One-page extension proposal + pack checks (§6.14) |
 | **Slot definition** | `resilink.slots` | `hazard`, `fragility`, `dependency`, `service`, `propagation`, `restoration`, `consequence`; engine-level `orchestrator`, `sampler` | Studies needing a new kind of question (`degradation`, `resources`, `policy`, `road_access`, …) | One-page extension proposal + slot checks |
 | **Model** | `resilink.models` | The seven Sprint 0 models, ported; `episode`; `nested_mc` | Every thesis | Conformance kit + supervisor (L2) |
 | **Analysis op** | `resilink.ops` | — | Standalone methods (L1) | Op tests; READ/COMPUTE/PROPOSE only |
@@ -924,7 +925,7 @@ A system pack defines one infrastructure system:
 The constants now in `domain/vocab.py` move into four built-in packs. `domain` keeps only the generic vocabulary (tiers, cause codes, the `rid` grammar `<system>.<class>:<ns>:<key>`).
 
 ```yaml
-# packages/resilink/src/resilink/systems/elec/pack.yaml   (external packs ship the same file)
+# packages/resilink/src/resilink/systems/elec.yaml   (external packs ship the same kind of file)
 id: elec
 version: 0.1.0                                     # draft until two theses rely on it
 title: Electricity
@@ -954,7 +955,7 @@ synthetic: resilink.systems.elec:synthetic_assets  # fixture used by the conform
 | `elec` | `elec_transmission`, `elec_distribution` | Fraction of load served | `sub_mv_lv` | RTE, Enedis |
 | `gas` | `gas_transmission` | Delivery pressure available (binary in v0.1) | `delivery_station` | NaTran, Teréga |
 | `telecom` | `telecom_mobile` | Site on air | `mobile_site` | Mobile operators |
-| `facilities` | — (critical users, no internal network) | Facility operating | — | — |
+| `facility` | `facility` (critical users, no internal network) | Facility operating | — | — |
 
 **Rules.**
 - **Additive.** A new pack only adds things. It may add dependency rules involving other packs' classes, e.g. water pumps depend on `elec.sub_mv_lv`.
@@ -1152,7 +1153,7 @@ flowchart LR
 
 ```text
 experiments.validate → composition report (also stored in the run manifest)
-  systems     elec 0.1.0 · gas 0.1.0 · telecom 0.1.0 · facilities 0.1.0
+  systems     elec 0.1.0 · facility 0.1.0 · gas 0.1.0 · telecom 0.1.0
   components  hazard flood_footprints 0.1.0 · fragility {lognormal_library 0.5 | condition_lognormal 0.5} · …
   defaulted   asset.condition = 1.0 — read by condition_lognormal; no active model writes it (ageing not modelled)
   data needs  ok
@@ -1258,7 +1259,7 @@ def trace_explain(trace: CascadeTrace, rid: str) -> CausalChain: ...  # determin
 ### 6.13 Discovery, composition config and pinning [E]
 
 ```python
-# packages/resilink/src/resilink/engine/registry.py
+# packages/resilink/src/resilink/registry/core.py
 for group in ("resilink.systems", "resilink.slots", "resilink.models", "resilink.ops"):
     for ep in importlib.metadata.entry_points(group=group):     # selection by group, Python ≥ 3.10 ✔
         try:
@@ -1276,7 +1277,7 @@ REGISTRY.validate()   # unique ids; slot and plugin-API ranges; licences and ena
 schema: 2
 experiment: bdr_flood_tri_v1
 release: bdr-2027.01.0
-systems: [elec, gas, telecom, facilities]
+systems: [elec, facility, gas, telecom]
 orchestrator: { model: episode, params: { horizon_h: 72, decision_epoch_h: 6 } }
 design: { sampler: nested_mc, outer: 50, inner: 400, seed: 20270115, workers: auto }
 components:
@@ -1391,7 +1392,7 @@ First candidates:
 ### 6.18 Worked example: power operation models (DC-OPF, AC-OPF)
 
 ```yaml
-systems: [elec, gas, telecom, facilities]            # elec pack with transmission tables filled (estimated, graded)
+systems: [elec, facility, gas, telecom]              # elec pack with transmission tables filled (estimated, graded)
 components:
   service:
     elec_transmission:

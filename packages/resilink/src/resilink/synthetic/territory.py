@@ -21,10 +21,12 @@ import pandas as pd
 from shapely.geometry import LineString, Point, box
 
 from resilink.domain.ids import make_rid, point_fingerprint
-from resilink.domain.vocab import SECTOR_SUPPLIER_CLASS
 from resilink.io.release import Release, load_release, publish_release
+from resilink.registry import SystemCatalog, system_catalog
 
 SYNTHETIC_RELEASE_ID = "synthetic-2026.11.0"
+# The built-in systems this fixture generates. Packs installed later (e.g. water) never change this release.
+SYNTHETIC_SYSTEMS = ("elec", "gas", "telecom")
 CRS = "EPSG:2154"
 X0, Y0 = 888_000.0, 6_240_000.0  # south-west corner (Lambert-93), Marseille area
 SIZE = 8_000.0
@@ -70,7 +72,8 @@ def _edge(rows: list[dict], nodes: dict[str, Point], layer: str, cls: str, a: st
     })
 
 
-def build_synthetic_tables() -> dict[str, tuple[gpd.GeoDataFrame | pd.DataFrame, str]]:
+def build_synthetic_tables(catalog: SystemCatalog | None = None) -> dict[str, tuple[gpd.GeoDataFrame | pd.DataFrame, str]]:
+    catalog = catalog or system_catalog()
     rng = np.random.default_rng(SEED)
     n: list[dict] = []
     e: list[dict] = []
@@ -174,7 +177,8 @@ def build_synthetic_tables() -> dict[str, tuple[gpd.GeoDataFrame | pd.DataFrame,
     # --- service links (cell -> supplier) ----------------------------------------------------------
     centroids = np.column_stack([X0 + cx, Y0 + cy])
     links = []
-    for sector, (layer, cls) in SECTOR_SUPPLIER_CLASS.items():
+    for sector, cls in catalog.population_suppliers(SYNTHETIC_SYSTEMS):
+        layer = sector
         sup = nodes[(nodes["layer"] == layer) & (nodes["class"] == cls)]
         sxy = np.column_stack([sup.geometry.x, sup.geometry.y])
         dist = np.sqrt(((centroids[:, None, :] - sxy[None, :, :]) ** 2).sum(-1))
@@ -226,14 +230,14 @@ def build_synthetic_tables() -> dict[str, tuple[gpd.GeoDataFrame | pd.DataFrame,
     }
 
 
-def ensure_synthetic_release(root: Path | None = None) -> Release:
+def ensure_synthetic_release(root: Path | None = None, catalog: SystemCatalog | None = None) -> Release:
     """Load the synthetic release, building it on first use (deterministic, so rebuilds are byte-identical)."""
     try:
         return load_release(SYNTHETIC_RELEASE_ID, root)
     except FileNotFoundError:
         return publish_release(
             SYNTHETIC_RELEASE_ID,
-            build_synthetic_tables(),
+            build_synthetic_tables(catalog),
             territory={"id": "synthetic", "name": "Synthetic 8 km x 8 km test territory", "crs_metric": CRS},
             snapshots=[{"id": "synthetic@deterministic", "licence": "CC0 (generated)"}],
             qa={"status": "pass", "note": "synthetic fixture"},

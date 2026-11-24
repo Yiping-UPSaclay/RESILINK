@@ -4,7 +4,7 @@
 # are NEVER set by hand: their status comes from the tests they name.
 # Item status: done | in_progress | not_started | blocked | deferred
 
-updated: 2026-11-23
+updated: 2026-11-24
 repository: Yiping-UPSaclay/RESILINK   # GitHub (public); tools/progress.py reads its CI status
 
 phases:
@@ -17,7 +17,7 @@ phases:
       - { id: ADR-0008, name: "Extension architecture accepted (revision 2)", status: done, done_on: 2026-11-23 }
       - { id: TRACK, name: "Progress tracking: roadmap, acceptance tests, dashboard", status: done, done_on: 2026-11-23 }
       - { id: E1, name: "plugin_api 0.1 and registries for systems, slots and models", status: done, done_on: 2026-11-23, criteria: [ADR-0008/AC9] }
-      - { id: E2, name: "System packs elec/gas/telecom/facilities; vocabulary out of the core", status: not_started, criteria: [ADR-0008/AC1] }
+      - { id: E2, name: "System packs elec/facility/gas/telecom; vocabulary out of the core", status: done, done_on: 2026-11-24, criteria: [ADR-0008/AC1] }
       - { id: E3, name: "Seven slot definitions; built-in models ported; plugin import contract", status: not_started, criteria: [ADR-0008/AC1, ADR-0008/AC9] }
       - { id: E4, name: "Event-driven episode kernel; RNG streams; revisable repair plans", status: not_started, criteria: [ADR-0008/AC2] }
       - { id: E5, name: "Composition: config schema 2, ensembles, data-need check, defaults report, pinning", status: not_started, criteria: [ADR-0008/AC4, ADR-0008/AC5] }

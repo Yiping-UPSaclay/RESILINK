@@ -8,7 +8,7 @@ from hypothesis import strategies as st
 
 from resilink.cascade.topological import TopologicalTemporalCascade
 from resilink.dependencies.model import DependencyRealisation, infer_proximity_softmax, load_rules
-from resilink.domain.vocab import CAUSE_INTER, LAYER_CODE
+from resilink.domain.vocab import CAUSE_INTER
 from resilink.fragility.lognormal import Damage
 
 SETTINGS = settings(max_examples=40, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
@@ -57,5 +57,7 @@ def test_downtime_bounded_by_horizon_and_restores_after_repair(net, nodes):
     assert np.all(total <= 72.0)
 
 
-def test_layer_codes_are_stable():
-    assert LAYER_CODE == {"elec": 0, "gas": 1, "telecom": 2, "facility": 3}
+def test_layer_codes_follow_the_systems_present_in_the_release(net, release):
+    """Codes are internal to a compiled network: the release's systems, sorted (installing packs never shifts them)."""
+    assert net.layer_names == tuple(sorted(set(release.read("nodes")["layer"])))
+    assert all(net.layer_code(name) == i for i, name in enumerate(net.layer_names))
