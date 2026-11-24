@@ -142,10 +142,12 @@ def test_ac8_discovery_ops_and_eval_task():
 
 
 @pytest.mark.acceptance("ADR-0008/AC9")
-@pytest.mark.xfail(strict=True, reason=f"{NOT_BUILT} (E1); runtime budget is tracked by tools/progress.py")
+@pytest.mark.xfail(strict=True, reason=f"{NOT_BUILT}: plugin_api exists (E1); the plugin import contract comes "
+                                       "with the ported built-ins (E3). Runtime budget: tools/progress.py")
 def test_ac9_plugin_api_and_import_contract():
     import resilink.plugin_api as api
 
     assert api.PLUGIN_API_VERSION.startswith("0.")
     contracts = (ROOT / ".importlinter").read_text(encoding="utf-8")
-    assert "resilink.plugin_api" in contracts, "plugins must be limited to resilink.plugin_api by an import contract"
+    assert "[importlinter:contract:plugins-use-only-plugin-api]" in contracts, (
+        "plugins (built-in models and plugins/*) must be limited to resilink.plugin_api by an import contract")

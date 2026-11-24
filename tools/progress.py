@@ -89,6 +89,25 @@ def demo() -> dict[str, object]:
             "reproduce_identical": "IDENTICAL" in (rep.stdout + rep.stderr)}
 
 
+def github_ci(repo: str) -> dict[str, object]:
+    """Latest GitHub Actions run on main (public API, no credentials)."""
+    import httpx
+
+    try:
+        r = httpx.get(f"https://api.github.com/repos/{repo}/actions/runs", params={"branch": "main", "per_page": 1},
+                      headers={"User-Agent": "resilink-progress", "Accept": "application/vnd.github+json"},
+                      timeout=15)
+        r.raise_for_status()
+        runs = r.json().get("workflow_runs", [])
+        if not runs:
+            return {"status": "none"}
+        run = runs[0]
+        return {"status": run["status"], "conclusion": run["conclusion"], "sha": run["head_sha"][:7],
+                "url": run["html_url"], "updated_at": run["updated_at"]}
+    except Exception as exc:
+        return {"status": "unknown", "error": str(exc)[:200]}
+
+
 def summarise(roadmap: dict, outcomes: dict, measured: dict) -> dict:
     criteria = []
     for c in roadmap.get("acceptance", []):
@@ -150,6 +169,12 @@ def _check_rows(measured: dict, budgets: dict, at: str) -> list[dict]:
             "identical" if d["reproduce_identical"] else "differs")
     elif d:
         add("demo_runtime_s", "Demo runtime", None, "s", "", "fail", "demo failed")
+    if ci := measured.get("github_ci"):
+        concl, status = ci.get("conclusion"), ci.get("status")
+        result = "ok" if concl == "success" else "fail" if concl in ("failure", "timed_out", "cancelled") else "info"
+        detail = (f"{concl or status} on commit {ci['sha']}" if ci.get("sha")
+                  else "no run yet" if status == "none" else "status unavailable")
+        add("ci_main", "GitHub CI (main, Linux + Windows)", None, "", "success", result, detail)
     return rows
 
 
@@ -188,6 +213,8 @@ def main() -> None:
     if not args.quick:
         measured = {"tests": test_suite(), "import_contracts": import_contracts(), "ruff_clean": ruff_clean(),
                     "demo": demo()}
+        if repo := roadmap.get("repository"):
+            measured["github_ci"] = github_ci(repo)
     report = summarise(roadmap, outcomes, measured)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(report, indent=2, default=str), encoding="utf-8")
