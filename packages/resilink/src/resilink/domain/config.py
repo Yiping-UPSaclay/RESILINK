@@ -4,8 +4,12 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-import numpy as np
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from resilink.plugin_api.params import PriorSpec
+
+__all__ = ["ComponentSpec", "Components", "DesignSpec", "ExperimentConfig", "OutputSpec", "PriorSpec",
+           "TerritoryConfig", "upgrade_schema_1"]
 
 
 class _Strict(BaseModel):
@@ -21,73 +25,44 @@ class TerritoryConfig(_Strict):
     grid: dict[str, Any] = Field(default_factory=lambda: {"id": "insee200m", "crs": "EPSG:3035", "size_m": 200})
 
 
-class PriorSpec(_Strict):
-    """A scalar epistemic parameter: fixed, or sampled once per outer Monte Carlo iteration."""
+class ComponentSpec(_Strict):
+    """One model for a slot: a registered model id, an optional PEP 440 version range, and its parameters."""
 
-    prior: Literal["fixed", "lognormal", "gamma", "uniform"] = "fixed"
-    value: float | None = None
-    median: float | None = None
-    gsd: float | None = None  # geometric standard deviation (lognormal)
-    mean: float | None = None
-    cv: float | None = None  # coefficient of variation (gamma)
-    low: float | None = None
-    high: float | None = None
+    model: str
+    version: str | None = None
+    params: dict[str, Any] = Field(default_factory=dict)
+
+
+def _c(model: str, **params: Any) -> ComponentSpec:
+    return ComponentSpec(model=model, params=params)
+
+
+class Components(_Strict):
+    hazard: ComponentSpec = Field(default_factory=lambda: _c("flood_footprints"))
+    fragility: ComponentSpec = Field(default_factory=lambda: _c("lognormal_library"))
+    dependency: ComponentSpec = Field(default_factory=lambda: _c("proximity_softmax"))
+    service: dict[str, ComponentSpec] = Field(default_factory=lambda: {"default": _c("connectivity")})
+    propagation: ComponentSpec = Field(default_factory=lambda: _c("topological_temporal"))
+    restoration: ComponentSpec = Field(default_factory=lambda: _c("independent_repair"))
+    consequence: list[ComponentSpec] = Field(default_factory=lambda: [_c("people_hours")])
 
     @model_validator(mode="after")
-    def _check(self) -> PriorSpec:
-        need = {
-            "fixed": ("value",),
-            "lognormal": ("median", "gsd"),
-            "gamma": ("mean", "cv"),
-            "uniform": ("low", "high"),
-        }[self.prior]
-        missing = [k for k in need if getattr(self, k) is None]
-        if missing:
-            raise ValueError(f"prior '{self.prior}' requires {missing}")
+    def _check(self) -> Components:
+        if "default" not in self.service:
+            raise ValueError("components.service needs a 'default' model")
+        extra = sorted(set(self.service) - {"default"})
+        if extra:
+            raise ValueError(f"per-subsystem service models {extra} arrive with the event kernel (ADR-0008 step "
+                             "E4); use 'default' for now")
+        if len(self.consequence) != 1:
+            raise ValueError("exactly one consequence model is supported by the episode orchestrator 0.1")
         return self
 
-    def sample(self, rng: np.random.Generator) -> float:
-        match self.prior:
-            case "fixed":
-                return float(self.value)  # type: ignore[arg-type]
-            case "lognormal":
-                return float(rng.lognormal(np.log(self.median), np.log(self.gsd)))  # type: ignore[arg-type]
-            case "gamma":
-                shape = 1.0 / (self.cv**2)  # type: ignore[operator]
-                return float(rng.gamma(shape, self.mean / shape))  # type: ignore[operator]
-            case "uniform":
-                return float(rng.uniform(self.low, self.high))  # type: ignore[arg-type]
-        raise AssertionError(self.prior)
 
-    def central(self) -> float:
-        return float({"fixed": self.value, "lognormal": self.median, "gamma": self.mean}.get(
-            self.prior, ((self.low or 0.0) + (self.high or 0.0)) / 2.0))
+class DesignSpec(_Strict):
+    """How simulated worlds are drawn (the sampler) and how many."""
 
-
-class HazardSpec(_Strict):
-    model: Literal["flood_footprints"] = "flood_footprints"
-    scenarios: list[str] | None = None  # None = all scenarios of the release for this hazard
-
-
-class FragilitySpec(_Strict):
-    library: str = "configs/fragility/v1.yaml"
-
-
-class DependencySpec(_Strict):
-    model: str = "proximity_softmax@1.0.0"
-    rules: str = "knowledge/dependency_rules.yaml"
-    lambda_scale: PriorSpec = Field(default_factory=lambda: PriorSpec(prior="fixed", value=1.0))
-    backup_scale: PriorSpec = Field(default_factory=lambda: PriorSpec(prior="fixed", value=1.0))
-    enabled: bool = True  # False = no-interdependency baseline (structural sensitivity)
-
-
-class CascadeSpec(_Strict):
-    model: Literal["topological_temporal"] = "topological_temporal"
-    horizon_h: float = 72.0
-    topology_mode: Literal["meshed_optimistic"] = "meshed_optimistic"
-
-
-class MonteCarloSpec(_Strict):
+    sampler: str = "nested_mc"
     outer: int = Field(10, ge=1, le=10_000)
     inner: int = Field(50, ge=1, le=100_000)
     seed: int = 20270115
@@ -103,17 +78,73 @@ class OutputSpec(_Strict):
     tier: Literal["public", "internal", "restricted"] = "internal"
 
 
-class ExperimentConfig(_Strict):
+_V1_KEYS = {"hazard", "fragility", "dependencies", "cascade", "monte_carlo", "disruption_threshold_h"}
+
+
+def upgrade_schema_1(data: dict[str, Any]) -> dict[str, Any]:
+    """Translate a Sprint 0 (schema 1) experiment config into schema 2, choosing the same models and values."""
+    d = dict(data)
+    for key in ("schema", "schema_version"):
+        d.pop(key, None)
+    hz = d.pop("hazard", None) or {}
+    fr = d.pop("fragility", None) or {}
+    dp = d.pop("dependencies", None) or {}
+    cs = d.pop("cascade", None) or {}
+    mc = d.pop("monte_carlo", None) or {}
+    thr = d.pop("disruption_threshold_h", None)
+
+    comps: dict[str, Any] = {
+        "hazard": {"model": hz.get("model", "flood_footprints"),
+                   "params": {k: v for k, v in hz.items() if k != "model" and v is not None}},
+        "fragility": {"model": "lognormal_library", "params": {"library": fr["library"]} if "library" in fr else {}},
+        "service": {"default": {"model": "connectivity",
+                                "params": {"topology_mode": cs["topology_mode"]} if "topology_mode" in cs else {}}},
+        "propagation": {"model": cs.get("model", "topological_temporal")},
+        "restoration": {"model": "independent_repair"},
+        "consequence": [{"model": "people_hours",
+                         "params": {"disruption_threshold_h": thr} if thr is not None else {}}],
+    }
+    if dp.get("enabled", True) is False:
+        comps["dependency"] = {"model": "no_dependencies"}
+    else:
+        model_id, _, version = str(dp.get("model", "proximity_softmax")).partition("@")
+        comps["dependency"] = {"model": model_id, "params": {k: dp[k] for k in ("rules", "lambda_scale",
+                                                                                "backup_scale") if k in dp}}
+        if version:
+            comps["dependency"]["version"] = f"=={version}"
+    d["schema"] = 2
+    d["orchestrator"] = {"model": "episode", "params": {"horizon_h": cs.get("horizon_h", 72.0)}}
+    d["design"] = {"sampler": "nested_mc", **mc}
+    d["components"] = comps
+    return d
+
+
+class ExperimentConfig(BaseModel):
+    """Experiment configuration, schema 2 (ADR-0008 §4): one model per slot, chosen by id from the registry.
+
+    Schema 1 configs (Sprint 0) are upgraded on load by ``upgrade_schema_1``.
+    """
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    schema_version: Literal[2] = Field(2, alias="schema")
     experiment: str
     release: str
-    hazard: HazardSpec = Field(default_factory=HazardSpec)
-    fragility: FragilitySpec = Field(default_factory=FragilitySpec)
-    dependencies: DependencySpec = Field(default_factory=DependencySpec)
-    cascade: CascadeSpec = Field(default_factory=CascadeSpec)
-    monte_carlo: MonteCarloSpec = Field(default_factory=MonteCarloSpec)
-    disruption_threshold_h: float = Field(4.0, gt=0)
+    orchestrator: ComponentSpec = Field(default_factory=lambda: _c("episode", horizon_h=72.0))
+    design: DesignSpec = Field(default_factory=DesignSpec)
+    components: Components = Field(default_factory=Components)
     metrics: list[str] = Field(
         default_factory=lambda: ["people_hours_lost", "p_disruption", "eal", "var_95", "cvar_95", "amplification_ratio"]
     )
     outputs: OutputSpec = Field(default_factory=OutputSpec)
     provenance: dict[str, str] = Field(default_factory=dict)  # authored_by / approved_by (AI artifacts, I6)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _upgrade(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        declared = data.get("schema", data.get("schema_version"))
+        if declared == 1 or (declared is None and _V1_KEYS & set(data)):
+            return upgrade_schema_1(data)
+        return data

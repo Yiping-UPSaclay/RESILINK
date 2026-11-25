@@ -2,6 +2,8 @@
 
 Output contract (one row per exposed asset and scenario):
 ``scenario_id, asset_rid, asset_kind (node|edge), im_type, im_value, method, exposed_length_m``.
+
+Plugin module: imports only ``resilink.plugin_api`` from the core (ADR-0008, import contract).
 """
 
 from __future__ import annotations
@@ -10,13 +12,12 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 
-from resilink.io.release import Release
-from resilink.network.compiled import CompiledNetwork
+from resilink.plugin_api import NetworkView, ReleaseView
 
 COLUMNS = ["scenario_id", "asset_rid", "asset_kind", "im_type", "im_value", "method", "exposed_length_m"]
 
 
-def compute_exposure(release: Release, scenario_ids: list[str] | None = None) -> pd.DataFrame:
+def compute_exposure(release: ReleaseView, scenario_ids: list[str] | None = None) -> pd.DataFrame:
     scenarios = release.read("hazard_scenarios")
     foot: gpd.GeoDataFrame = release.read("hazard_footprints")
     if scenario_ids is not None:
@@ -57,7 +58,7 @@ def compute_exposure(release: Release, scenario_ids: list[str] | None = None) ->
     return pd.concat(out, ignore_index=True)[COLUMNS].sort_values(["scenario_id", "asset_rid"]).reset_index(drop=True)
 
 
-def exposure_arrays(exposure: pd.DataFrame, net: CompiledNetwork, scenario_id: str) -> tuple[np.ndarray, np.ndarray]:
+def exposure_arrays(exposure: pd.DataFrame, net: NetworkView, scenario_id: str) -> tuple[np.ndarray, np.ndarray]:
     node_im = np.zeros(net.n)
     edge_im = np.zeros(net.e)
     ex = exposure[exposure["scenario_id"] == scenario_id]

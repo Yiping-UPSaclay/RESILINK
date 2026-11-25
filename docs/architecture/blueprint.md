@@ -1005,6 +1005,8 @@ RESTORATION = SlotDefinition(
 
 ### 6.5 Models and the plugin API (public contract, 0.x draft) [E]
 
+**As implemented in E3 (plugin API 0.1, 2026-11-25).** The slot contracts in `plugin_api/protocols.py` match the fixed-sequence `episode` orchestrator 0.1: for example `damage(rng, p_node, p_edge)`, `plan(rng, damage)` and `run(deps, damage, plan, horizon_h)`. Models receive the network, the release and the service model through the setup context. The context-and-event form sketched below is the target of the event kernel (E4), which will bring `episode` 0.2.
+
 ```python
 # packages/resilink/src/resilink/plugin_api/   — the ONLY core module that plugins import
 PLUGIN_API_VERSION = "0.1.0"                     # draft; 1.0 after two independent theses (§6.14)

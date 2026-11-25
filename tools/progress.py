@@ -166,10 +166,10 @@ def _check_rows(measured: dict, budgets: dict, at: str) -> list[dict]:
         add("ruff", "Linter (ruff)", None, "", "clean", "ok" if measured["ruff_clean"] else "fail",
             "clean" if measured["ruff_clean"] else "issues found")
     if (d := measured.get("demo")) and d.get("ok"):
-        budget = budgets.get("demo_runtime_s", {}).get("max")
-        within = budget is None or (d["runtime_s"] or 0) <= budget
-        add("demo_runtime_s", "Demo runtime", d["runtime_s"], "s", f"≤ {budget} s" if budget else "",
-            "ok" if within else "fail", f"{d['runtime_s']} s for {d['samples']:,} worlds (budget ≤ {budget} s)")
+        # Absolute time depends on the machine's state (the same demo varies by ±10 % within minutes on a laptop),
+        # so it is reported, not judged; speed regressions are checked by paired runs against main (A/B).
+        add("demo_runtime_s", "Demo runtime", d["runtime_s"], "s", "A/B vs main ≤ +15 %", "info",
+            f"{d['runtime_s']} s for {d['samples']:,} worlds on this machine (speed is judged by A/B runs)")
         add("demo_samples", "Demo size", d["samples"], "worlds", "", "info", f"{d['samples']:,} simulated worlds")
         add("reproduce", "Reproduction", None, "", "identical", "ok" if d["reproduce_identical"] else "fail",
             "identical" if d["reproduce_identical"] else "differs")

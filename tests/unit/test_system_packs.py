@@ -96,10 +96,11 @@ def test_compiling_a_release_with_an_unknown_system_fails_clearly(release):
 
 
 def test_dependency_rules_match_present_systems_and_reject_unknown_ones(net):
-    assert _class_mask(net, "telecom.mobile_site").sum() == 16
-    assert not _class_mask(net, "facility.health").any()  # installed system, absent from this release
+    known = system_catalog().systems
+    assert _class_mask(net, "telecom.mobile_site", known).sum() == 16
+    assert not _class_mask(net, "facility.health", known).any()  # installed system, absent from this release
     with pytest.raises(ValueError, match="'watr'"):
-        _class_mask(net, "watr.pump")
+        _class_mask(net, "watr.pump", known)
 
 
 def test_ontology_classes_are_declared_by_the_packs():

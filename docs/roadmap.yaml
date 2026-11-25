@@ -26,7 +26,7 @@ phases:
       - { id: E1, name: "plugin_api 0.1 and registries for systems, slots and models", status: done, done_on: 2026-11-23, criteria: [ADR-0008/AC9] }
       - { id: E2, name: "System packs elec/facility/gas/telecom; vocabulary out of the core", status: done, done_on: 2026-11-24, criteria: [ADR-0008/AC1] }
       - { id: PLAN, name: "Plan re-ordered: proof of concept on real data first; proof-of-concept criteria tracked", status: done, done_on: 2026-11-25 }
-      - { id: E3, name: "Slots and built-in models as plugins, chosen by the experiment config; current loop as episode 0.1 and nested_mc; version pinning; plugin import contract", status: not_started, criteria: [ADR-0008/AC1, ADR-0008/AC9] }
+      - { id: E3, name: "Slots and built-in models as plugins, chosen by the experiment config; current loop as episode 0.1 and nested_mc; version pinning; plugin import contract", status: done, done_on: 2026-11-25, criteria: [ADR-0008/AC1, ADR-0008/AC9] }
       - { id: C3, name: "GitHub board: milestones per phase, an issue per item, linked pull requests", status: blocked, blocked_by: [D-GHTOOL] }
 
   - id: P1
@@ -98,7 +98,7 @@ acceptance:
   - { id: ADR-0008/AC9, kind: goal, text: "plugin_api 0.x exists and plugins are limited to it by an import contract", test: tests/acceptance/test_adr0008.py::test_ac9_plugin_api_and_import_contract }
 
 budgets:
-  demo_runtime_s: { baseline: 12.8, max: 14.7, note: "ADR-0008: within +15 % of Sprint 0 (1,200 samples)" }
+  demo_runtime_s: { note: "ADR-0008: within +15 % of Sprint 0, judged by paired A/B runs against main on the same machine (absolute times vary with machine load). E3: +2-4 % (main 22.7/26.5 s vs E3 23.1/27.5 s, 2026-11-25)" }
   demo_total_s: { max: 60, note: "P0 gate: resilink demo under 60 s" }
   real_s_per_world: { max: 1.0, note: "blueprint §6: median <= 1 s per simulated world on the real territory (POC/AC2)" }
 

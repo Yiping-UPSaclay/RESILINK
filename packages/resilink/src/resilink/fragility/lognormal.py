@@ -1,16 +1,19 @@
-"""Lognormal fragility: P(fail | IM) = Phi(ln(IM / median) / beta). Repair times ~ lognormal(median_h, sigma)."""
+"""Lognormal fragility: P(fail | IM) = Phi(ln(IM / median) / beta) (built-in model ``lognormal_library``).
+
+Plugin module: imports only ``resilink.plugin_api`` from the core (ADR-0008, import contract).
+"""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from pathlib import Path
 from typing import Literal
 
 import numpy as np
+import yaml
 from pydantic import BaseModel, ConfigDict, Field
 from scipy.special import ndtr
 
-from resilink.io.paths import load_yaml
-from resilink.network.compiled import CompiledNetwork
+from resilink.plugin_api import DamageState, NetworkView
 
 
 class FragilityCurve(BaseModel):
@@ -28,7 +31,7 @@ class FragilityCurve(BaseModel):
 class FragilityLibrary(BaseModel):
     model_config = ConfigDict(extra="forbid")
     version: str
-    repair_sigma: float = 0.5
+    repair_sigma: float = 0.5  # read by the restoration model since E3 (parameter `sigma` of independent_repair)
     curves: list[FragilityCurve]
 
     def arrays(self, classes: np.ndarray, hazard: str = "flood") -> tuple[np.ndarray, np.ndarray]:
@@ -45,43 +48,22 @@ class FragilityLibrary(BaseModel):
         return p
 
 
-def load_library(path: str = "configs/fragility/v1.yaml") -> FragilityLibrary:
-    return FragilityLibrary.model_validate(load_yaml(path))
+def load_library(path: str | Path) -> FragilityLibrary:
+    """Load a fragility library from an already resolved path (the engine resolves configured file references)."""
+    return FragilityLibrary.model_validate(yaml.safe_load(Path(path).read_text(encoding="utf-8")))
 
 
-@dataclass(frozen=True)
-class Damage:
-    node_repair_t: np.ndarray  # hours until repaired (0 = undamaged)
-    edge_repair_t: np.ndarray
+class LognormalFragility:
+    """Binary damage: an element fails when a uniform draw falls below its failure probability."""
 
-    @property
-    def node_failed(self) -> np.ndarray:
-        return self.node_repair_t > 0
+    def __init__(self, library: FragilityLibrary, net: NetworkView) -> None:
+        self.library = library
+        self.net = net
 
-    @property
-    def edge_failed(self) -> np.ndarray:
-        return self.edge_repair_t > 0
+    def failure_probabilities(self, node_im: np.ndarray, edge_im: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        return self.library.p_fail(self.net.cls, node_im), self.library.p_fail(self.net.edge_cls, edge_im)
 
-    @classmethod
-    def none(cls, net: CompiledNetwork) -> Damage:
-        return cls(np.zeros(net.n), np.zeros(net.e))
-
-
-def sample_damage(
-    rng: np.random.Generator,
-    net: CompiledNetwork,
-    node_im: np.ndarray,
-    edge_im: np.ndarray,
-    library: FragilityLibrary,
-    p_node: np.ndarray | None = None,
-    p_edge: np.ndarray | None = None,
-) -> Damage:
-    if p_node is None:
-        p_node = library.p_fail(net.cls, node_im)
-    if p_edge is None:
-        p_edge = library.p_fail(net.edge_cls, edge_im)
-    u_n = rng.random(net.n)
-    u_e = rng.random(net.e)
-    rep_n = rng.lognormal(np.log(net.repair_median_h), library.repair_sigma)
-    rep_e = rng.lognormal(np.log(net.edge_repair_median_h), library.repair_sigma)
-    return Damage(np.where(u_n < p_node, rep_n, 0.0), np.where(u_e < p_edge, rep_e, 0.0))
+    def damage(self, rng: np.random.Generator, p_node: np.ndarray, p_edge: np.ndarray) -> DamageState:
+        u_n = rng.random(self.net.n)
+        u_e = rng.random(self.net.e)
+        return DamageState.from_failed(u_n < p_node, u_e < p_edge)

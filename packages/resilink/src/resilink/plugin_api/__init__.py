@@ -21,6 +21,18 @@ from resilink.plugin_api.cards import (
     ModelPlugin,
 )
 from resilink.plugin_api.contexts import NetworkView, ReleaseView, SetupContext, SimContext
+from resilink.plugin_api.params import FileRef, PriorSpec, file_refs
+from resilink.plugin_api.protocols import (
+    ConsequenceModel,
+    DependencyModel,
+    FragilityModel,
+    HazardModel,
+    Orchestrator,
+    PropagationModel,
+    RestorationModel,
+    Sampler,
+    ServiceModel,
+)
 from resilink.plugin_api.slots import (
     CORE_EVENTS,
     DAMAGE_CHANGED,
@@ -35,12 +47,28 @@ from resilink.plugin_api.slots import (
     SlotDefinition,
 )
 from resilink.plugin_api.systems import AttributeDecl, Served, Subsystem, SystemPack
+from resilink.plugin_api.types import (
+    CAUSE_DIRECT,
+    CAUSE_INTER,
+    CAUSE_INTRA,
+    CAUSE_LABEL,
+    CascadeTrace,
+    DamageState,
+    DependencyRealisation,
+    RepairPlan,
+    ScenarioInfo,
+    outage,
+)
 from resilink.plugin_api.versioning import PLUGIN_API_VERSION, satisfies
 
 __all__ = [
-    "CORE_EVENTS", "DAMAGE_CHANGED", "DECISION_EPOCH", "ELEMENT_CHANGED", "EPISODE_END", "EPISODE_START",
-    "HAZARD_CHANGED", "OUTER_START", "PLUGIN_API_VERSION", "SERVICE_CHANGED", "STANDARD",
-    "Applicability", "AttributeDecl", "Citation", "ColumnDecl", "DataNeed", "Execution", "MetricDecl",
-    "ModelCard", "ModelPlugin", "NetworkView", "On", "ReleaseView", "Served", "SetupContext", "SimContext",
-    "SlotDefinition", "StateField", "Subsystem", "SystemPack", "TableDecl", "is_standard", "satisfies",
+    "CAUSE_DIRECT", "CAUSE_INTER", "CAUSE_INTRA", "CAUSE_LABEL", "CORE_EVENTS", "DAMAGE_CHANGED", "DECISION_EPOCH",
+    "ELEMENT_CHANGED", "EPISODE_END", "EPISODE_START", "HAZARD_CHANGED", "OUTER_START", "PLUGIN_API_VERSION",
+    "SERVICE_CHANGED", "STANDARD",
+    "Applicability", "AttributeDecl", "CascadeTrace", "Citation", "ColumnDecl", "ConsequenceModel", "DamageState",
+    "DataNeed", "DependencyModel", "DependencyRealisation", "Execution", "FileRef", "FragilityModel",
+    "HazardModel", "MetricDecl", "ModelCard", "ModelPlugin", "NetworkView", "On", "Orchestrator", "PriorSpec",
+    "PropagationModel", "ReleaseView", "RepairPlan", "RestorationModel", "Sampler", "ScenarioInfo", "Served",
+    "ServiceModel", "SetupContext", "SimContext", "SlotDefinition", "StateField", "Subsystem", "SystemPack",
+    "TableDecl", "file_refs", "is_standard", "outage", "satisfies",
 ]

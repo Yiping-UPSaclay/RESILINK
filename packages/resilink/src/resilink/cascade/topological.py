@@ -1,89 +1,56 @@
-"""Topological-temporal cascade (blueprint §6.3).
+"""Topological-temporal cascade (built-in model ``topological_temporal``, blueprint §6.3).
 
 Semantics at every event time t:
 1. physical state: an asset is physically ok if not damaged or already repaired;
-2. intra-layer service: an ok node is served if connected (through ok nodes and ok edges) to an ok source;
-3. inter-layer dependency: a dependent fails once its realised supporter has been non-functional for longer
+2. within-system service: decided by the configured service model (default ``connectivity``);
+3. cross-system dependency: a dependent fails once its realised supporter has been non-functional for longer
    than the sampled backup autonomy;
 4. steps 2-3 are iterated to a fixed point (monotone, so it converges in <= N iterations).
 
 Event-driven: the state is recomputed only at t=0, repair completions and backup expiries, which keeps the
 per-sample cost low. Nodes that are non-functional in the undamaged baseline are excluded from accounting.
+Plugin module: imports only ``resilink.plugin_api`` from the core (ADR-0008, import contract).
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 import numpy as np
-import pandas as pd
 
-from resilink.dependencies.model import DependencyRealisation
-from resilink.domain.vocab import CAUSE_DIRECT, CAUSE_INTER, CAUSE_INTRA, CAUSE_LABEL
-from resilink.fragility.lognormal import Damage
-from resilink.network.compiled import CompiledNetwork, served
+from resilink.plugin_api import (
+    CAUSE_DIRECT,
+    CAUSE_INTER,
+    CAUSE_INTRA,
+    CascadeTrace,
+    DamageState,
+    DependencyRealisation,
+    NetworkView,
+    RepairPlan,
+    ServiceModel,
+)
 
 _EPS = 1e-9
 
-
-@dataclass(frozen=True)
-class CascadeTrace:
-    t: np.ndarray  # event times (h)
-    node: np.ndarray  # node index
-    kind: np.ndarray  # +1 fail, -1 restore
-    cause: np.ndarray  # cause code for fail events (0 for restore)
-    culprit: np.ndarray  # supporter index for inter-layer failures, else -1
-    baseline_ok: np.ndarray
-    horizon_h: float
-
-    def downtime(self, n: int) -> tuple[np.ndarray, np.ndarray]:
-        """Total and direct-cause down hours per node within [0, horizon]."""
-        total = np.zeros(n)
-        direct = np.zeros(n)
-        if len(self.t) == 0:
-            return total, direct
-        order = np.lexsort((self.t, self.node))
-        t, node, kind, cause = self.t[order], self.node[order], self.kind[order], self.cause[order]
-        fails = np.flatnonzero(kind == 1)
-        nxt = fails + 1
-        has_next = (nxt < len(t))
-        end = np.full(len(fails), self.horizon_h)
-        valid_next = has_next.copy()
-        valid_next[has_next] = (node[nxt[has_next]] == node[fails[has_next]]) & (kind[nxt[has_next]] == -1)
-        end[valid_next] = t[nxt[valid_next]]
-        dur = np.clip(end - t[fails], 0.0, None)
-        np.add.at(total, node[fails], dur)
-        np.add.at(direct, node[fails], np.where(cause[fails] == CAUSE_DIRECT, dur, 0.0))
-        return total, direct
-
-    def ever_down(self, n: int) -> np.ndarray:
-        out = np.zeros(n, dtype=bool)
-        out[self.node[self.kind == 1]] = True
-        return out
-
-    def to_frame(self, net: CompiledNetwork) -> pd.DataFrame:
-        return pd.DataFrame({
-            "t_h": np.round(self.t, 4),
-            "rid": net.rid[self.node],
-            "event": np.where(self.kind == 1, "fail", "restore"),
-            "cause": [CAUSE_LABEL.get(int(c), "") for c in self.cause],
-            "culprit_rid": [net.rid[c] if c >= 0 else "" for c in self.culprit],
-        })
+__all__ = ["CascadeTrace", "TopologicalTemporalCascade"]
 
 
 class TopologicalTemporalCascade:
     model_id = "topological_temporal"
     version = "1.0.0"
 
+    def __init__(self, net: NetworkView, service: ServiceModel) -> None:
+        self.net = net
+        self.service = service
+
     def _fixed_point(
-        self, net: CompiledNetwork, t: float, phys: np.ndarray, eok: np.ndarray, deps: DependencyRealisation,
+        self, t: float, phys: np.ndarray, eok: np.ndarray, deps: DependencyRealisation,
         func_prev: np.ndarray, down_since: np.ndarray,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        n = self.net.n
         f = phys.copy()
         violated = np.zeros(len(deps), dtype=bool)
         while True:
-            srv = served(net, f, eok)
-            dep_bad = np.zeros(net.n, dtype=bool)
+            srv = self.service.served(f, eok)
+            dep_bad = np.zeros(n, dtype=bool)
             if len(deps):
                 sup_down = ~f[deps.dep_j]
                 ds = np.where(func_prev[deps.dep_j] | np.isnan(down_since[deps.dep_j]), t, down_since[deps.dep_j])
@@ -94,11 +61,14 @@ class TopologicalTemporalCascade:
                 return f, dep_bad, violated
             f = f_new
 
-    def run(self, net: CompiledNetwork, deps: DependencyRealisation, damage: Damage, horizon_h: float) -> CascadeTrace:
+    def run(self, deps: DependencyRealisation, damage: DamageState, plan: RepairPlan,
+            horizon_h: float) -> CascadeTrace:
+        net = self.net
         n = net.n
+        node_repair_t, edge_repair_t = plan.node_repair_h, plan.edge_repair_h
         all_ok = np.ones(n, dtype=bool)
         nan = np.full(n, np.nan)
-        base, _, _ = self._fixed_point(net, 0.0, all_ok, np.ones(net.e, dtype=bool), deps, all_ok, nan)
+        base, _, _ = self._fixed_point(0.0, all_ok, np.ones(net.e, dtype=bool), deps, all_ok, nan)
 
         func = base.copy()
         down_since = np.full(n, np.nan)
@@ -117,9 +87,9 @@ class TopologicalTemporalCascade:
 
         t = 0.0
         while True:
-            phys = ~(damage.node_repair_t > t + _EPS)
-            eok = ~(damage.edge_repair_t > t + _EPS)
-            f, dep_bad, violated = self._fixed_point(net, t, phys, eok, deps, func, down_since)
+            phys = ~(node_repair_t > t + _EPS)
+            eok = ~(edge_repair_t > t + _EPS)
+            f, dep_bad, violated = self._fixed_point(t, phys, eok, deps, func, down_since)
             f &= base
             down = np.flatnonzero(func & ~f)
             up = np.flatnonzero(~func & f)
@@ -138,8 +108,7 @@ class TopologicalTemporalCascade:
                 down_since[up] = np.nan
             func = f
 
-            cands = [damage.node_repair_t[damage.node_repair_t > t + _EPS],
-                     damage.edge_repair_t[damage.edge_repair_t > t + _EPS]]
+            cands = [node_repair_t[node_repair_t > t + _EPS], edge_repair_t[edge_repair_t > t + _EPS]]
             if len(deps):
                 sup_down = ~func[deps.dep_j] & base[deps.dep_j] & func[deps.dep_i]
                 expiry = down_since[deps.dep_j] + deps.backup_h

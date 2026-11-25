@@ -8,7 +8,6 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
-from scipy.sparse import csgraph
 
 from resilink.io.release import Release
 from resilink.registry import SystemCatalog, system_catalog
@@ -122,18 +121,3 @@ def compile_network(release: Release, catalog: SystemCatalog | None = None) -> C
         cell_commune=grid["admin_commune"].to_numpy(dtype=object), supply=supply, layer_has_source=has_src,
         index=index, edge_index={r: i for i, r in enumerate(edge_rid)}, layer_names=layer_names,
     )
-
-
-def served(net: CompiledNetwork, node_ok: np.ndarray, edge_ok: np.ndarray) -> np.ndarray:
-    """Intra-layer service: a node is served if it is ok and its component (over ok nodes and ok edges)
-    contains an ok source of its layer. Layers without any source are served whenever the node is ok."""
-    m = edge_ok & node_ok[net.edge_src] & node_ok[net.edge_dst]
-    ones = np.ones(int(m.sum()), dtype=np.int8)
-    a = sp.coo_array((ones, (net.edge_src[m], net.edge_dst[m])), shape=(net.n, net.n)).tocsr()
-    _, lab = csgraph.connected_components(a, directed=False)
-    has = np.zeros(lab.max() + 1, dtype=bool)
-    has[lab[net.is_source & node_ok]] = True
-    out = has[lab] & node_ok
-    no_src_layer = ~net.layer_has_source[net.layer]
-    out[no_src_layer] = node_ok[no_src_layer]
-    return out

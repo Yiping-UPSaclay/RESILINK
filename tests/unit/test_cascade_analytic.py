@@ -7,10 +7,9 @@ import pytest
 import scipy.sparse as sp
 
 from resilink.cascade.topological import TopologicalTemporalCascade
-from resilink.dependencies.model import DependencyRealisation
-from resilink.domain.vocab import CAUSE_DIRECT, CAUSE_INTER, CAUSE_INTRA
-from resilink.fragility.lognormal import Damage
 from resilink.network.compiled import CompiledNetwork
+from resilink.plugin_api import CAUSE_DIRECT, CAUSE_INTER, CAUSE_INTRA, DependencyRealisation, outage
+from resilink.service.connectivity import ConnectivityService
 
 # elec: S(source) - A - B ; telecom: X(source) - T ; T depends on B
 RIDS = ["elec.sub_tx:t:S", "elec.sub_mv_lv:t:A", "elec.sub_mv_lv:t:B", "telecom.exchange:t:X", "telecom.mobile_site:t:T"]
@@ -43,7 +42,8 @@ def run(damage_nodes: dict[int, float], backup: float | None, horizon: float = 7
     for i, t in damage_nodes.items():
         rep[i] = t
     d = deps(backup) if backup is not None else DependencyRealisation.empty()
-    return net, TopologicalTemporalCascade().run(net, d, Damage(rep, np.zeros(3)), horizon)
+    damage, plan = outage(rep, np.zeros(3))
+    return net, TopologicalTemporalCascade(net, ConnectivityService(net)).run(d, damage, plan, horizon)
 
 
 def test_no_damage_no_events():

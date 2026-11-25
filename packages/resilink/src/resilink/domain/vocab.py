@@ -32,7 +32,7 @@ class Tier(IntEnum):
 DEP_TYPES: tuple[str, ...] = ("physical", "cyber", "geographic", "logical")
 MECHANISMS: tuple[str, ...] = ("power_supply", "fuel", "scada", "backhaul", "service")
 
-CAUSE_DIRECT = 1  # physical damage from the hazard
-CAUSE_INTRA = 2  # lost connectivity to a source within its own layer
-CAUSE_INTER = 3  # a supporting asset in another layer was down longer than the backup autonomy
-CAUSE_LABEL: dict[int, str] = {CAUSE_DIRECT: "direct", CAUSE_INTRA: "intra", CAUSE_INTER: "inter"}
+# Cascade cause codes are part of the plugin API (shared by propagation models and explanations).
+from resilink.plugin_api.types import CAUSE_DIRECT, CAUSE_INTER, CAUSE_INTRA, CAUSE_LABEL  # noqa: E402
+
+__all__ = ["CAUSE_DIRECT", "CAUSE_INTER", "CAUSE_INTRA", "CAUSE_LABEL", "DEP_TYPES", "MECHANISMS", "Tier"]

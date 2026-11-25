@@ -1,14 +1,23 @@
-# Synthetic end-to-end demo (Sprint 0 vertical slice).
+# Synthetic end-to-end demo, experiment configuration schema 2 (ADR-0008 §4): one model per slot, chosen by
+# id from the registry (`uv run resilink plugins list`). Equivalent to the Sprint 0 (schema 1) demo, which still
+# loads: schema 1 files are upgraded automatically, and both give the same run.
+schema: 2
 experiment: synthetic_flood_demo
 release: synthetic-2026.11.0
-hazard: {model: flood_footprints}
-fragility: {library: configs/fragility/v1.yaml}
-dependencies:
-  model: proximity_softmax@1.0.0
-  rules: knowledge/dependency_rules.yaml
-  lambda_scale: {prior: lognormal, median: 1.0, gsd: 1.5}   # A-DEP-03 epistemic spread
-  backup_scale: {prior: lognormal, median: 1.0, gsd: 1.4}   # A-TEL-01..03 epistemic spread
-cascade: {model: topological_temporal, horizon_h: 72}
-monte_carlo: {outer: 10, inner: 40, seed: 20270115, workers: 1}
-disruption_threshold_h: 4
+orchestrator: {model: episode, params: {horizon_h: 72.0}}
+design: {sampler: nested_mc, outer: 10, inner: 40, seed: 20270115, workers: 1}
+components:
+  hazard: {model: flood_footprints}
+  fragility: {model: lognormal_library, params: {library: configs/fragility/v1.yaml}}
+  dependency:
+    model: proximity_softmax
+    version: "==1.0.0"
+    params:
+      rules: knowledge/dependency_rules.yaml
+      lambda_scale: {prior: lognormal, median: 1.0, gsd: 1.5}   # A-DEP-03 epistemic spread
+      backup_scale: {prior: lognormal, median: 1.0, gsd: 1.4}   # A-TEL-01..03 epistemic spread
+  service: {default: {model: connectivity}}
+  propagation: {model: topological_temporal}
+  restoration: {model: independent_repair}
+  consequence: [{model: people_hours, params: {disruption_threshold_h: 4}}]
 outputs: {keep_traces: 5, tier: internal}
