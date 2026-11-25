@@ -57,7 +57,7 @@ Everything else is a registered, versioned extension, discovered through Python 
 
 | Extension | Entry-point group | Examples | Who adopts it |
 |---|---|---|---|
-| **System pack** | `resilink.systems` | `elec` (transmission and distribution subsystems), `gas`, `telecom`, `facilities`; later water, roads, heat, hydrogen | Platform review of a one-page proposal |
+| **System pack** | `resilink.systems` | `elec` (transmission and distribution subsystems), `facility`, `gas`, `telecom`; later water, roads, heat, hydrogen | Platform review of a one-page proposal |
 | **Slot definition** (a kind of modelling question) | `resilink.slots` | `hazard`, `fragility`, …; later `degradation`, `resources`, `policy`, `road_access` | Platform review of a one-page proposal |
 | **Model** (a plug for a slot) | `resilink.models` | `flood_footprints`, `dc_opf_load_shedding`, `gamma_condition` | Conformance kit + supervisor (ladder L2) |
 | **Analysis op** | `resilink.ops` | Rankings, optimisation tools (READ/COMPUTE/PROPOSE only) | Op tests (ladder L1) |
@@ -337,7 +337,7 @@ First candidates:
 
 ## Acceptance criteria
 1. **Built-ins ported.**
-   - 4 system packs: `elec` with 2 subsystems, `gas`, `telecom`, `facilities`.
+   - 4 system packs: `elec` with 2 subsystems, `facility`, `gas`, `telecom`.
    - 7 slot definitions (v0.1), 7 built-in models, the `episode` kernel and the `nested_mc` sampler.
    - `domain/vocab.py` no longer lists systems or asset classes.
 2. **Existing guarantees kept.**
@@ -372,7 +372,7 @@ First candidates:
 | Step | Content |
 |---|---|
 | E1 | `resilink.plugin_api` 0.1 (cards, board, events, base protocols, function-plug helpers); registries for systems, slots and models (entry points, pinning) |
-| E2 | System packs: move `domain/vocab.py` systems into `elec`/`gas`/`telecom`/`facilities`; network compilation and the synthetic territory driven by packs; subsystems |
+| E2 | System packs: move `domain/vocab.py` systems into `elec`/`facility`/`gas`/`telecom`; network compilation and the synthetic territory driven by packs; subsystems |
 | E3 | Seven slot definitions; built-in models ported (repair split from damage; service per subsystem split from the cascade; consequence) |
 | E4 | Event-driven `episode` kernel replacing `risk/montecarlo._run_chunk` and the cascade's internal loop; deterministic ordering; RNG streams; revisable restoration plans |
 | E5 | Composition: config schema 2, subsystems, ensembles, data-need check, composition report, manifest pinning, `run_id`; `nested_mc` sampler with weights |

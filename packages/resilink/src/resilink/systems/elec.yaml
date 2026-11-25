@@ -1,0 +1,40 @@
+# Built-in system pack: electricity (ADR-0008 §2, blueprint §6.3). Values moved unchanged from Sprint 0's
+# domain/vocab.py; repair times are placeholder priors (assumption A-REP-01, grade C).
+id: elec
+version: 0.1.0
+title: Electricity
+subsystems:
+  elec_transmission:
+    nodes: [sub_tx, generator]
+    links: [line_hv]
+    default_service: connectivity
+  elec_distribution:
+    nodes: [sub_primary, sub_mv_lv]
+    links: [line_mv_aerial, cable_mv]
+    default_service: connectivity
+served:
+  measure: load_served_fraction
+  population_supplier: sub_mv_lv
+attributes:
+  line_hv:
+    voltage_kv: {unit: kV, description: Nominal voltage}
+  line_mv_aerial:
+    aerial_share: {unit: "1", description: Share of the section that is overhead}
+tables:  # optional; filled by adapters when data exists (operation models such as DC-OPF need them)
+  elec_bus: {v_nom_kv: kV}
+  elec_branch_params: {x_pu: pu, r_pu: pu, b_pu: pu, rate_mva: MVA}
+  elec_generators: {p_max_mw: MW, q_min_mvar: Mvar, q_max_mvar: Mvar, cost_eur_mwh: EUR/MWh}
+  elec_loads: {p_mw: MW, q_mvar: Mvar}
+repair_median_h:
+  sub_tx: 48.0
+  generator: 72.0
+  line_hv: 48.0
+  sub_primary: 36.0
+  sub_mv_lv: 12.0
+  line_mv_aerial: 10.0
+  cable_mv: 24.0
+repair_assumption: A-REP-01
+dependency_rules: knowledge/dependency_rules.yaml
+actors:
+  rte: [elec_transmission]
+  enedis: [elec_distribution]

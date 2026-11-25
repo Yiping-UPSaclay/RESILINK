@@ -33,7 +33,7 @@ def _schema2(cfg, components: dict) -> dict:
 def test_ac1_builtins_registered_and_vocab_freed():
     import resilink.domain.vocab as vocab
 
-    assert {"elec", "gas", "telecom", "facilities"} <= _names("resilink.systems")
+    assert {"elec", "gas", "telecom", "facility"} <= _names("resilink.systems")
     assert {"hazard", "fragility", "dependency", "service", "propagation", "restoration", "consequence"} <= _names(
         "resilink.slots")
     assert {"flood_footprints", "lognormal_library", "proximity_softmax", "connectivity", "topological_temporal",

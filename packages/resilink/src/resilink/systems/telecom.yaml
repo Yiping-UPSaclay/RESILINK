@@ -1,0 +1,25 @@
+# Built-in system pack: mobile telecommunications (ADR-0008 §2, blueprint §6.3). Values moved unchanged from
+# Sprint 0's domain/vocab.py; repair times are placeholder priors (assumption A-REP-01, grade C).
+id: telecom
+version: 0.1.0
+title: Mobile telecommunications
+subsystems:
+  telecom_mobile:
+    nodes: [exchange, aggregation_logical, mobile_site]
+    links: [backhaul_logical]
+    default_service: connectivity
+served:
+  measure: site_on_air
+  population_supplier: mobile_site
+repair_median_h:
+  exchange: 24.0
+  aggregation_logical: 12.0
+  mobile_site: 8.0
+  backhaul_logical: 12.0
+repair_assumption: A-REP-01
+dependency_rules: knowledge/dependency_rules.yaml
+actors:
+  orange: [telecom_mobile]
+  sfr: [telecom_mobile]
+  bouygues_telecom: [telecom_mobile]
+  free_mobile: [telecom_mobile]

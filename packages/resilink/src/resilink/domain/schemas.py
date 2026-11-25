@@ -6,7 +6,6 @@ import pandera.pandas as pa
 from pandera.engines.geopandas_engine import Geometry
 
 from resilink.domain.ids import RID_PATTERN
-from resilink.domain.vocab import LAYERS
 
 TIERS = ("public", "internal", "restricted")
 CANONICAL_CRS = "EPSG:2154"
@@ -21,7 +20,7 @@ def _core_columns() -> dict[str, pa.Column]:
     return {
         "rid": pa.Column(str, pa.Check.str_matches(RID_PATTERN), unique=True),
         "k": pa.Column("uint32", unique=True),
-        "layer": pa.Column(str, pa.Check.isin(LAYERS)),
+        "layer": pa.Column(str, pa.Check.str_matches(r"^[a-z][a-z0-9_]*$")),  # system id; packs are checked at compile
         "class": pa.Column(str),
         "confidence": pa.Column(float, pa.Check.in_range(0.0, 1.0)),
         "sensitivity": pa.Column(str, pa.Check.isin(TIERS)),

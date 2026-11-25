@@ -1,0 +1,17 @@
+# Built-in system pack: critical facilities (ADR-0008 §2, blueprint §6.3). They have no internal network: their
+# service depends on other systems through dependency rules. Classes moved unchanged from Sprint 0's
+# domain/vocab.py. Sprint 0 gave them the default repair time of 24 h; it is now explicit (A-REP-01, grade C).
+id: facility
+version: 0.1.0
+title: Critical facilities
+subsystems:
+  facility:
+    nodes: [health, emergency]
+    default_service: connectivity
+served:
+  measure: facility_operating
+repair_median_h:
+  health: 24.0
+  emergency: 24.0
+repair_assumption: A-REP-01
+dependency_rules: knowledge/dependency_rules.yaml

@@ -21,9 +21,9 @@ import pandas as pd
 from pydantic import BaseModel, ConfigDict, Field
 from scipy.spatial import cKDTree
 
-from resilink.domain.vocab import LAYER_CODE
 from resilink.io.paths import load_yaml
 from resilink.network.compiled import CompiledNetwork
+from resilink.registry import system_catalog
 
 MODEL_ID = "proximity_softmax"
 MODEL_VERSION = "1.0.0"
@@ -171,7 +171,12 @@ class DependencySet:
 
 def _class_mask(net: CompiledNetwork, qualified: str) -> np.ndarray:
     layer, cls = qualified.split(".", 1)
-    return (net.layer == LAYER_CODE[layer]) & (net.cls == cls)
+    code = net.layer_code(layer)
+    if code < 0:  # the release has no such system: the rule matches nothing, unless the system is unknown
+        if layer not in system_catalog().systems:
+            raise ValueError(f"dependency rule refers to system {layer!r}, which has no installed system pack")
+        return np.zeros(net.n, dtype=bool)
+    return (net.layer == code) & (net.cls == cls)
 
 
 def infer_proximity_softmax(net: CompiledNetwork, rules: DependencyRules) -> DependencySet:

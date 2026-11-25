@@ -1,0 +1,29 @@
+# Built-in system pack: natural gas (ADR-0008 §2, blueprint §6.3). Values moved unchanged from Sprint 0's
+# domain/vocab.py; repair times are placeholder priors (assumption A-REP-01, grade C).
+id: gas
+version: 0.1.0
+title: Natural gas
+subsystems:
+  gas_transmission:
+    nodes: [lng_terminal, storage, compressor, junction, delivery_station]
+    links: [pipeline_tx]
+    default_service: connectivity
+  gas_distribution:
+    nodes: [commune_distribution]
+    default_service: connectivity
+served:
+  measure: pressure_available
+  population_supplier: delivery_station
+repair_median_h:
+  lng_terminal: 96.0
+  storage: 96.0
+  compressor: 48.0
+  junction: 24.0
+  delivery_station: 24.0
+  pipeline_tx: 72.0
+  commune_distribution: 24.0
+repair_assumption: A-REP-01
+dependency_rules: knowledge/dependency_rules.yaml
+actors:
+  natran: [gas_transmission]
+  grdf: [gas_distribution]

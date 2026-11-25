@@ -16,8 +16,9 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-from resilink.engine.policy import PluginPolicy, load_policy
 from resilink.plugin_api import PLUGIN_API_VERSION, ModelPlugin, SlotDefinition, SystemPack, satisfies
+from resilink.registry.catalog import SystemCatalog
+from resilink.registry.policy import PluginPolicy, load_policy
 
 GROUPS = {"systems": "resilink.systems", "slots": "resilink.slots", "models": "resilink.models"}
 _EXPECTED: dict[str, type] = {"systems": SystemPack, "slots": SlotDefinition, "models": ModelPlugin}
@@ -192,6 +193,11 @@ class PluginRegistry:
     def pin(self, kind: str, ident: str) -> Pin:
         return self._get(kind, ident).pin
 
+    def system_catalog(self) -> SystemCatalog:
+        """The registered system packs as one lookup table (network compilation, synthetic build, ETL checks)."""
+        self.load()
+        return SystemCatalog(tuple(r.obj for r in self.systems.values()))
+
     def describe(self) -> dict[str, Any]:
         """Machine-readable summary (CLI today; the discovery ops of step E9 later)."""
         self.load()
@@ -215,3 +221,8 @@ class PluginRegistry:
 def get_registry() -> PluginRegistry:
     """The process-wide registry of installed plugins, loaded once with the repository's policy."""
     return PluginRegistry(policy=load_policy()).load()
+
+
+def system_catalog() -> SystemCatalog:
+    """Catalog of the installed system packs (process-wide registry)."""
+    return get_registry().system_catalog()

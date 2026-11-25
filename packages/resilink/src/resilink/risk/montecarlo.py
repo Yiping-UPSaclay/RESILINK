@@ -17,7 +17,6 @@ import pandas as pd
 from resilink.cascade.topological import TopologicalTemporalCascade
 from resilink.dependencies.model import DependencyRealisation, DependencySet
 from resilink.domain.config import ExperimentConfig
-from resilink.domain.vocab import SECTORS
 from resilink.fragility.lognormal import FragilityLibrary, sample_damage
 from resilink.network.compiled import CompiledNetwork
 from resilink.risk.metrics import amplification_ratio, eal_from_return_periods, var_cvar
@@ -77,7 +76,7 @@ def _run_chunk(args: tuple[CampaignInput, int, int]) -> ChunkResult:
     p_node = inp.library.p_fail(net.cls, scen.node_im)
     p_edge = inp.library.p_fail(net.edge_cls, scen.edge_im)
     res = ChunkResult(s=s, o=o, node_down=np.zeros(net.n), node_downtime=np.zeros(net.n))
-    for sector in SECTORS:
+    for sector in net.sectors:
         res.cell_disrupt[sector] = np.zeros(len(net.cell_id))
         res.cell_outage[sector] = np.zeros(len(net.cell_id))
     thr = cfg.disruption_threshold_h
@@ -88,7 +87,7 @@ def _run_chunk(args: tuple[CampaignInput, int, int]) -> ChunkResult:
         total, direct = trace.downtime(net.n)
         res.node_down += trace.ever_down(net.n)
         res.node_downtime += total
-        for sector in SECTORS:
+        for sector in net.sectors:
             out_t = net.supply[sector] @ total
             out_d = net.supply[sector] @ direct
             res.cell_disrupt[sector] += out_t > thr
@@ -135,7 +134,7 @@ def summarise(inp: CampaignInput, chunks: list[ChunkResult]) -> dict[str, pd.Dat
             "scenario_id": scen.scenario_id, "rid": net.rid,
             "p_down": down / n_samples, "mean_downtime_h": dt / n_samples,
         }))
-        for sector in SECTORS:
+        for sector in net.sectors:
             dis = np.sum([c.cell_disrupt[sector] for c in sc], axis=0)
             out = np.sum([c.cell_outage[sector] for c in sc], axis=0)
             served_mask = np.asarray(net.supply[sector].sum(axis=1)).ravel() > 0

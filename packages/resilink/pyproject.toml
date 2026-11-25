@@ -27,6 +27,13 @@ dependencies = [
 [project.scripts]
 resilink = "resilink.cli:app"
 
+# Built-in system packs, registered exactly like a pack from a separate package (ADR-0008 §2).
+[project.entry-points."resilink.systems"]
+elec = "resilink.systems:ELEC"
+facility = "resilink.systems:FACILITY"
+gas = "resilink.systems:GAS"
+telecom = "resilink.systems:TELECOM"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

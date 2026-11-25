@@ -18,7 +18,9 @@ layers =
     fragility | dependencies | hazards
     network
     synthetic | knowledge | etl
+    registry
     io
+    systems
     plugin_api
     domain
 containers =
