@@ -3,50 +3,59 @@
 # progress dashboard. Item status is set here by hand at the end of each work session; acceptance criteria
 # are NEVER set by hand: their status comes from the tests they name.
 # Item status: done | in_progress | not_started | blocked | deferred
+#
+# Re-ordered 2026-11-25 (user decision): the proof of concept on real open data comes first. The refactor keeps
+# what the P1-P2 models need (E3), then the data track starts; the other extension features follow when the
+# analytics or the first thesis need them.
 
-updated: 2026-11-24
+updated: 2026-11-25
 repository: Yiping-UPSaclay/RESILINK   # GitHub (public); tools/progress.py reads its CI status
 
 phases:
   - id: P0
     name: Foundations
-    planned: { start: 2026-11-23, end: 2026-12-21 }
-    goal: Core skeleton, Operation Registry, MCP, AI gateway, evals, synthetic slice; extension architecture (ADR-0008)
+    planned: { start: 2026-11-23, end: 2026-12-11 }
+    goal: Core, Operation Registry, MCP, AI gateway, evals, synthetic slice; models as plugins (ADR-0008 E1-E3)
     items:
       - { id: S0, name: "Sprint 0: core, ops, MCP, AI gateway, evals, synthetic demo, first connectors", status: done, done_on: 2026-11-23 }
       - { id: ADR-0008, name: "Extension architecture accepted (revision 2)", status: done, done_on: 2026-11-23 }
       - { id: TRACK, name: "Progress tracking: roadmap, acceptance tests, dashboard", status: done, done_on: 2026-11-23 }
-      - { id: E1, name: "plugin_api 0.1 and registries for systems, slots and models", status: done, done_on: 2026-11-23, criteria: [ADR-0008/AC9] }
-      - { id: E2, name: "System packs elec/facility/gas/telecom; vocabulary out of the core", status: done, done_on: 2026-11-24, criteria: [ADR-0008/AC1] }
-      - { id: E3, name: "Seven slot definitions; built-in models ported; plugin import contract", status: not_started, criteria: [ADR-0008/AC1, ADR-0008/AC9] }
-      - { id: E4, name: "Event-driven episode kernel; RNG streams; revisable repair plans", status: not_started, criteria: [ADR-0008/AC2] }
-      - { id: E5, name: "Composition: config schema 2, ensembles, data-need check, defaults report, pinning", status: not_started, criteria: [ADR-0008/AC4, ADR-0008/AC5] }
-      - { id: E6, name: "Declared tables, weighted reducers, model-uncertainty breakdown, observations", status: not_started, criteria: [ADR-0008/AC4] }
-      - { id: E7, name: "Execution modes: in-process and persistent worker", status: not_started, criteria: [ADR-0008/AC6] }
-      - { id: E8, name: "Conformance kit, impact report, scaffolds, sandbox, function plugs", status: not_started, criteria: [ADR-0008/AC7] }
-      - { id: E9, name: "Example packages (ageing, water), discovery ops, eval task, docs", status: not_started, criteria: [ADR-0008/AC3, ADR-0008/AC8] }
       - { id: LIC, name: "Licence: Apache-2.0 (LICENSE, NOTICE, package metadata)", status: done, done_on: 2026-11-23 }
       - { id: C1, name: "First commit: Sprint 0 baseline with ADR-0008, blueprint v2.2, roadmap, licence", status: done, done_on: 2026-11-23 }
       - { id: C2, name: "Push to GitHub (public repository); CI green on Linux and Windows", status: done, done_on: 2026-11-23 }
+      - { id: E1, name: "plugin_api 0.1 and registries for systems, slots and models", status: done, done_on: 2026-11-23, criteria: [ADR-0008/AC9] }
+      - { id: E2, name: "System packs elec/facility/gas/telecom; vocabulary out of the core", status: done, done_on: 2026-11-24, criteria: [ADR-0008/AC1] }
+      - { id: PLAN, name: "Plan re-ordered: proof of concept on real data first; proof-of-concept criteria tracked", status: done, done_on: 2026-11-25 }
+      - { id: E3, name: "Slots and built-in models as plugins, chosen by the experiment config; current loop as episode 0.1 and nested_mc; version pinning; plugin import contract", status: not_started, criteria: [ADR-0008/AC1, ADR-0008/AC9] }
       - { id: C3, name: "GitHub board: milestones per phase, an issue per item, linked pull requests", status: blocked, blocked_by: [D-GHTOOL] }
 
   - id: P1
-    name: Data, network, knowledge
-    planned: { start: 2026-12-21, end: 2027-03-01 }
-    goal: First real release for Bouches-du-Rhône, Steward agent, knowledge plane v1
+    name: Real data for Bouches-du-Rhône
+    planned: { start: 2026-12-07, end: 2027-02-19 }
+    goal: First real release on open data and a first flood risk run on it (target mid-January); Steward; knowledge v1
     items:
-      - { id: P1a, name: "P0 sources, ID persistence, release bdr-2027.01.0", status: not_started }
+      - { id: D1, name: "Territory and population: IGN ADMIN EXPRESS (département + buffer), INSEE Filosofi 2021 200 m grid", status: not_started }
+      - { id: D2, name: "Electricity: Enedis HTA/BT substations and HTA lines, RTE substations (attributes), OSM high-voltage lines", status: not_started }
+      - { id: D3, name: "Telecom: ARCEP mobile sites with ANFR identifiers", status: not_started }
+      - { id: D4, name: "Gas: NaTran transmission network and delivery stations", status: not_started }
+      - { id: D5, name: "Flood hazard: Géorisques flood-risk zones (TRI / AZI)", status: not_started }
+      - { id: D6, name: "Adapters, entity matching, topology build, QA gates; publish release bdr-2027.01.0", status: not_started, criteria: [POC/AC1] }
+      - { id: D7, name: "First flood risk campaign on Bouches-du-Rhône (target 2027-01-15)", status: not_started, criteria: [POC/AC2] }
+      - { id: OPX, name: "Operator-data readiness: switch-state field in the elec pack; generic mapping importer", status: not_started }
       - { id: P1b, name: "Steward agent (drift, mappings, entity resolution) + Review page", status: not_started }
-      - { id: P1c, name: "Topology, QA gates, PMTiles, canonical views 1-2", status: not_started, blocked_by: [D-DOCKER] }
+      - { id: P1c, name: "PMTiles map layers, canonical views 1-2", status: not_started, blocked_by: [D-DOCKER] }
       - { id: P1d, name: "Knowledge plane v1, document corpus, BM25", status: not_started }
-      - { id: P1e, name: "Proving ground v1 (first observed event)", status: not_started }
+      - { id: P1e, name: "Proving ground v1: score models against an observed event", status: not_started, criteria: [POC/AC3] }
 
   - id: P2
     name: Analytics and AI MVP (proof-of-concept gate)
-    planned: { start: 2027-03-01, end: 2027-05-31 }
+    planned: { start: 2027-02-19, end: 2027-05-21 }
     goal: First scientific results on the real territory; Copilot end to end; first thesis model integrated
     items:
-      - { id: P2a, name: "Dependencies v1, flood and wildfire hazards, cascade on real data", status: not_started }
+      - { id: P2a, name: "Dependencies v1 and wildfire hazard on real data", status: not_started }
+      - { id: E4, name: "Event-driven episode kernel (episode 0.2): revisable repair plans, decision epochs", status: not_started, criteria: [ADR-0008/AC2] }
+      - { id: E5b, name: "Ensembles, data-need check, composition report of defaulted couplings", status: not_started, criteria: [ADR-0008/AC4, ADR-0008/AC5] }
+      - { id: E6, name: "Declared tables, weighted reducers, model-uncertainty breakdown, observations", status: not_started, criteria: [ADR-0008/AC4] }
       - { id: P2b, name: "Monte Carlo risk, sensitivity, interventions", status: not_started }
       - { id: P2c, name: "Copilot, Experimenter, Analyst, Reviewer, ViewSpecs, Curator priors", status: not_started, blocked_by: [D-APIKEY] }
       - { id: P2d, name: "Integration assistant (plugins from students' code)", status: not_started, blocked_by: [D-APIKEY] }
@@ -54,20 +63,31 @@ phases:
 
   - id: P3
     name: Service layer and autonomy
-    planned: { start: 2027-05-31, end: 2027-08-23 }
+    planned: { start: 2027-05-21, end: 2027-08-13 }
     goal: FastAPI and MCP over HTTP with OAuth, job queue, event-driven agents
     items:
       - { id: P3a, name: "FastAPI/MCP HTTP + OAuth, RQ agent queue, event loops, vectors", status: not_started, blocked_by: [D24] }
 
   - id: P4
     name: Canvas and learned compute
-    planned: { start: 2027-08-23, end: 2027-12-13 }
+    planned: { start: 2027-08-13, end: 2027-12-03 }
     goal: React canvas, surrogates, operation models, second territory, v1.0 and paper
     items:
       - { id: P4a, name: "React agentic canvas, surrogates, Builder, DC-OPF service plugins, CVaR-MILP, 2nd territory", status: not_started }
 
+  - id: PT
+    name: Thesis-integration features (pulled by the first thesis)
+    goal: Built when a thesis needs them, or before the proof-of-concept gate if time allows
+    items:
+      - { id: E7, name: "Execution modes: persistent worker with its own environment", status: deferred, criteria: [ADR-0008/AC6] }
+      - { id: E8, name: "Conformance kit, impact report, scaffolds, notebook sandbox, function plugs", status: deferred, criteria: [ADR-0008/AC7] }
+      - { id: E9, name: "Example packages (ageing, water), discovery ops, eval task", status: deferred, criteria: [ADR-0008/AC3, ADR-0008/AC8] }
+
 acceptance:
-  - { id: ADR-0008/AC1, kind: goal, text: "Built-ins ported: 4 system packs, 7 slots, 7 models, episode kernel, sampler; vocab.py freed", test: tests/acceptance/test_adr0008.py::test_ac1_builtins_registered_and_vocab_freed }
+  - { id: POC/AC1, kind: goal, text: "A real Bouches-du-Rhône release is built from open data, validates, and passes its QA gates", test: tests/acceptance/test_poc.py::test_poc_ac1_real_release_builds_from_open_data }
+  - { id: POC/AC2, kind: goal, text: "A flood risk campaign runs on the real territory within 1 s per simulated world, with Monte Carlo error under 5 %", test: tests/acceptance/test_poc.py::test_poc_ac2_flood_risk_campaign_on_the_real_territory }
+  - { id: POC/AC3, kind: goal, text: "Results on the real territory are scored against an observed event", test: tests/acceptance/test_poc.py::test_poc_ac3_results_compared_with_an_observed_event }
+  - { id: ADR-0008/AC1, kind: goal, text: "Built-ins ported: 4 system packs, 7 slots, 7 models, episode orchestrator, sampler; vocab.py freed", test: tests/acceptance/test_adr0008.py::test_ac1_builtins_registered_and_vocab_freed }
   - { id: ADR-0008/AC2, kind: guard, text: "Results stay consistent with Sprint 0 (3 Monte Carlo SE) and reruns are bit-identical", test: tests/acceptance/test_adr0008.py::test_ac2_guard_results_stay_consistent_with_sprint0 }
   - { id: ADR-0008/AC3, kind: goal, text: "A new slot and a new system added from separate packages, with no core file changed", test: tests/acceptance/test_adr0008.py::test_ac3_new_slot_and_new_system_come_from_separate_packages }
   - { id: ADR-0008/AC4, kind: goal, text: "Ensembles: two alternatives in one slot, with a model-uncertainty breakdown", test: tests/acceptance/test_adr0008.py::test_ac4_ensemble_reports_model_uncertainty }
@@ -80,8 +100,10 @@ acceptance:
 budgets:
   demo_runtime_s: { baseline: 12.8, max: 14.7, note: "ADR-0008: within +15 % of Sprint 0 (1,200 samples)" }
   demo_total_s: { max: 60, note: "P0 gate: resilink demo under 60 s" }
+  real_s_per_world: { max: 1.0, note: "blueprint §6: median <= 1 s per simulated world on the real territory (POC/AC2)" }
 
 decisions:   # status: open | decided (with `decision` and `decided_on`)
+  - { id: D-ORDER, question: "Finish the whole ADR-0008 refactor first, or the proof of concept on real data first?", needed_for: "plan", status: decided, decision: "Proof of concept first: E3, then the data track; other extension features when needed", decided_on: 2026-11-25 }
   - { id: D-LICENCE, question: "Licence: Apache-2.0 or EUPL-1.2?", needed_for: "first commit (C1)", status: decided, decision: "Apache-2.0", decided_on: 2026-11-23 }
   - { id: D-GITHUB, question: "GitHub repository URL", needed_for: "push and CI (C2)", status: decided, decision: "https://github.com/Yiping-UPSaclay/RESILINK (public; commits use the GitHub noreply address)", decided_on: 2026-11-23 }
   - { id: D-GHTOOL, question: "Install the GitHub CLI (gh) and sign in, so the board, milestones and issues can be created", needed_for: "GitHub board (C3)", status: open }

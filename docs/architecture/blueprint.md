@@ -960,6 +960,7 @@ synthetic: resilink.systems.elec:synthetic_assets  # fixture used by the conform
 **Rules.**
 - **Additive.** A new pack only adds things. It may add dependency rules involving other packs' classes, e.g. water pumps depend on `elec.sub_mv_lv`.
 - **Gated.** A pack becomes a release-schema option only after the pack checks pass (§6.15).
+- **Ready for operator data.** Operator networks usually come with switch positions (normally-open points) that open data lacks. The `elec` pack will declare an edge attribute for them (roadmap item OPX), so service models can use the real configuration instead of the `topology_mode` assumption.
 
 ### 6.4 Slot definitions [E]
 
@@ -1707,9 +1708,10 @@ gantt
   dateFormat YYYY-MM-DD
   section P0 Foundations
   Core skeleton, Operation Registry, MCP stdio, AI gateway, eval harness, synthetic slice :p0, 2026-11-23, 4w
-  Extension architecture (ADR-0008 r2) core, packs, slots, kernel, ports, kit, examples :p0e, 2026-11-30, 3w
-  section P1 Data, network, knowledge
-  P0 sources, ID persistence, release bdr-2027.01.0      :p1a, after p0, 6w
+  Extension architecture E1-E3 (plugin API, system packs, models as plugins) :p0e, 2026-11-23, 3w
+  section P1 Real data for Bouches-du-Rhone
+  Open-data sources, adapters, topology, QA, release bdr-2027.01.0 :p1a, 2026-12-07, 6w
+  First flood risk run on the real territory (target mid-January) :milestone, p1m, 2027-01-15, 0d
   Steward agent (drift, mappings, ER) + Review page      :p1b, after p0, 6w
   Topology, QA gates, PMTiles, canonical views 1-2       :p1c, after p1a, 4w
   Knowledge plane v1 + corpus intake + BM25              :p1d, after p1b, 4w
@@ -1847,7 +1849,7 @@ gantt
 - 49 tests pass and 1 is skipped (live AI); AI-off is green; ruff is clean; 3 import contracts hold;
 - `resilink demo` completes 1,200 samples in 12.8 s, and `resilink reproduce` is IDENTICAL.
 
-Nothing is committed yet. **Next (ADR-0008 r2 accepted 2026-11-23):** the extension refactor E1–E9 (§6, about 3 weeks), done **before the first commit** so that nothing is built on the hard-wired core.
+**Update 2026-11-25.** Sprint 0, E1 and E2 are merged on `main` (public repository, CI green). After a review against the project goal, the order of work was revised: E3 (models as plugins) next, then the real-data track for Bouches-du-Rhône (roadmap P1, items D1–D7, first flood run targeted for mid-January); the remaining extension features follow with the P2 analytics or the first thesis. Progress is tracked in `docs/roadmap.yaml` and measured by `tests/acceptance` (proof-of-concept criteria POC/AC1–AC3 and ADR-0008 criteria).
 
 ## 15. Verification (end to end, once implemented)
 
