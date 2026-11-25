@@ -9,8 +9,9 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 os.environ.setdefault("RESILINK_ROOT", str(ROOT))
+REAL_DATA = Path(os.environ.get("RESILINK_DATA") or ROOT / "data")  # read-only, for proof-of-concept criteria
 _DATA = Path(tempfile.mkdtemp(prefix="resilink-test-data-"))
-os.environ["RESILINK_DATA"] = str(_DATA)  # tests never touch ./data
+os.environ["RESILINK_DATA"] = str(_DATA)  # tests never write to ./data
 sys.path.insert(0, str(ROOT / "apps" / "streamlit"))  # `lib` package of the Streamlit app
 sys.path.insert(0, str(ROOT))  # `evals` package (uv run pytest does not add the rootdir like python -m pytest)
 
@@ -29,6 +30,12 @@ SMALL_EXPERIMENT = {
 @pytest.fixture(scope="session")
 def data_dir() -> Path:
     return _DATA
+
+
+@pytest.fixture(scope="session")
+def real_data_root() -> Path:
+    """This machine's real data directory (./data, or RESILINK_DATA as set before the tests); never written."""
+    return REAL_DATA
 
 
 @pytest.fixture(scope="session")

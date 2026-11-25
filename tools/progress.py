@@ -123,6 +123,11 @@ def summarise(roadmap: dict, outcomes: dict, measured: dict) -> dict:
                        else "not_started"})
     goals = [c for c in criteria if c.get("kind") == "goal"]
     guards = [c for c in criteria if c.get("kind") == "guard"]
+    groups = {}
+    for c in goals:
+        g = groups.setdefault(c["id"].split("/")[0], {"goals_met": 0, "goals_total": 0})
+        g["goals_total"] += 1
+        g["goals_met"] += c["status"] in ("met", "met_remove_xfail")
     return {
         "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "roadmap_updated": str(roadmap.get("updated")),
@@ -134,6 +139,7 @@ def summarise(roadmap: dict, outcomes: dict, measured: dict) -> dict:
             "guards_holding": sum(c["status"] == "met" for c in guards),
             "guards_total": len(guards),
             "open_decisions": sum(d.get("status") == "open" for d in roadmap.get("decisions", [])),
+            "groups": groups,  # e.g. POC (proof of concept) and ADR-0008 (refactor)
         },
         "budgets": roadmap.get("budgets", {}),
         "decisions": roadmap.get("decisions", []),
@@ -187,11 +193,13 @@ def dashboard_files(report: dict) -> Path:
             {"label": "Input", "value": "docs/roadmap.yaml, tests/acceptance, full test suite, lint-imports, ruff, "
                                         "resilink demo and reproduce"}]
     items = [{"phase": ph["id"], "phase_name": ph["name"], "phase_goal": ph.get("goal", ""),
-              "planned_start": str(ph["planned"]["start"]), "planned_end": str(ph["planned"]["end"]),
+              "planned_start": str(ph.get("planned", {}).get("start") or ""),
+              "planned_end": str(ph.get("planned", {}).get("end") or ""),
               "item": it["id"], "name": it["name"], "status": it["status"], "done_on": str(it.get("done_on") or ""),
               "blocked_by": ", ".join(it.get("blocked_by", [])), "criteria": ", ".join(it.get("criteria", []))}
              for ph in report["phases"] for it in ph.get("items", [])]
-    criteria = [{k: c.get(k, "") for k in ("id", "kind", "text", "status", "test")} for c in report["acceptance"]]
+    criteria = [{**{k: c.get(k, "") for k in ("id", "kind", "text", "status", "test")},
+                 "group": c["id"].split("/")[0]} for c in report["acceptance"]]
     decisions = [{k: str(d.get(k) or "") for k in ("id", "question", "needed_for", "status", "decision", "decided_on")}
                  for d in report["decisions"]]
     checks = _check_rows(report["measured"], report["budgets"], report["generated_at"])
@@ -223,8 +231,9 @@ def main() -> None:
     print(f"RESILINK progress ({report['generated_at']})")
     for ph in report["phases"]:
         print(f"  {ph['id']:<3} {ph['name']:<45} {ph['done']:>2}/{ph['total']:<2} {ph['status']}")
-    print(f"  ADR-0008 goals met {s['goals_met']}/{s['goals_total']} · guards holding "
-          f"{s['guards_holding']}/{s['guards_total']} · open decisions {s['open_decisions']}")
+    goals = " · ".join(f"{g} goals met {v['goals_met']}/{v['goals_total']}" for g, v in s["groups"].items())
+    print(f"  {goals} · guards holding {s['guards_holding']}/{s['guards_total']} · "
+          f"open decisions {s['open_decisions']}")
     for c in report["acceptance"]:
         print(f"    {c['id']:<14} {c['status']:<17} {c['text']}")
     if measured:

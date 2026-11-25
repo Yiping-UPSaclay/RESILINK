@@ -20,6 +20,8 @@ _OUTCOMES: dict[str, dict[str, str]] = {}
 def _status(rep: pytest.TestReport) -> str:
     if hasattr(rep, "wasxfail"):
         return "not_met"
+    if rep.skipped:
+        return "not_run"
     if rep.passed:
         return "met"
     if "XPASS(strict)" in str(rep.longrepr):

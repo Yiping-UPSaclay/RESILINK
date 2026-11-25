@@ -367,7 +367,22 @@ First candidates:
    - Demo runtime is within +15 % of Sprint 0 (12.8 s for 1,200 samples).
    - Import contracts: plugins import only `resilink.plugin_api` from the core.
 
-## Implementation plan (approved 2026-11-23; not started)
+## Implementation plan (approved 2026-11-23; order revised 2026-11-25)
+
+**Revised order (2026-11-25).** A review against the project goal (a proof of concept on real French open data)
+found that the platform was ahead and the real data had not started. The decision itself is unchanged; the
+order of work is:
+1. **E1, E2:** done and merged.
+2. **E3, extended:** slots and built-in models as plugins, chosen by the experiment configuration (the config
+   schema 2 and version-pinning part of E5); the current Monte Carlo loop is registered as the `episode` 0.1
+   orchestrator and the `nested_mc` sampler; plugin import contract. This makes AC1 and AC9 reachable.
+3. **The real-data track (roadmap P1, items D1–D7)** starts right after E3; it is tracked by the proof-of-concept
+   criteria POC/AC1–AC3 in `tests/acceptance/test_poc.py`.
+4. **With the P2 analytics:** E4 (event kernel, `episode` 0.2), the rest of E5 (ensembles, data-need check,
+   composition report) and E6.
+5. **When the first thesis needs them:** E7, E8, E9.
+
+The original step list follows.
 
 | Step | Content |
 |---|---|
