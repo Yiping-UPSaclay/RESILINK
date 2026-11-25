@@ -42,6 +42,10 @@ telecom). The full design is in `docs/architecture/blueprint.md`; decisions are 
 - **New capability** → add a typed op in `packages/resilink/src/resilink/ops/` (`@op` with side-effect
   class, minimum tier, and a description that says WHEN to call it). MCP, CLI, Ops console and agents get it
   automatically. Add a test in `tests/integration/test_ops_agents_mcp.py`.
+- **New model (e.g. from a thesis)** → a `ModelPlugin` (model card + pydantic params + factory) for a registered
+  slot, exposed in the `resilink.models` entry-point group of its package (examples: `resilink/*/plugin.py`). It
+  imports only `resilink.plugin_api` from the core and is chosen per experiment under `components:` (config
+  schema 2). `uv run resilink plugins list` shows installed systems, slots and models, and any refused plugin.
 - **New data source** → entry in `configs/sources.yaml` (+ connector if a new portal technology), then an
   adapter producing canonical tables; record cassettes; never weaken the drift gate.
 - **New assumption / prior** → `knowledge/assumptions.yaml` with an ID and grade; cite the ID in code/configs.

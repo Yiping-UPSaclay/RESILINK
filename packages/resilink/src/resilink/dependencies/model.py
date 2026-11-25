@@ -9,21 +9,24 @@ Rules (``knowledge/dependency_rules.yaml``, human-approved, evidence-linked) say
 
 Backup autonomy (hours) is drawn per realised edge. Realisations are sampled in the *outer* (epistemic)
 Monte Carlo loop, so the dependency structure itself is a random variable.
+
+Plugin module: imports only ``resilink.plugin_api`` from the core (ADR-0008, import contract).
 """
 
 from __future__ import annotations
 
+from collections.abc import Collection
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Literal
 
 import numpy as np
 import pandas as pd
+import yaml
 from pydantic import BaseModel, ConfigDict, Field
 from scipy.spatial import cKDTree
 
-from resilink.io.paths import load_yaml
-from resilink.network.compiled import CompiledNetwork
-from resilink.registry import system_catalog
+from resilink.plugin_api import DependencyRealisation, NetworkView
 
 MODEL_ID = "proximity_softmax"
 MODEL_VERSION = "1.0.0"
@@ -62,24 +65,9 @@ class DependencyRules(BaseModel):
     rules: list[DependencyRule]
 
 
-def load_rules(path: str = "knowledge/dependency_rules.yaml") -> DependencyRules:
-    return DependencyRules.model_validate(load_yaml(path))
-
-
-@dataclass(frozen=True)
-class DependencyRealisation:
-    dep_i: np.ndarray  # dependent node index
-    dep_j: np.ndarray  # supporter node index
-    backup_h: np.ndarray
-    rule_idx: np.ndarray
-
-    @classmethod
-    def empty(cls) -> DependencyRealisation:
-        z = np.zeros(0, dtype=np.int64)
-        return cls(z, z, np.zeros(0), z)
-
-    def __len__(self) -> int:
-        return len(self.dep_i)
+def load_rules(path: str | Path) -> DependencyRules:
+    """Load dependency rules from an already resolved path (the engine resolves configured file references)."""
+    return DependencyRules.model_validate(yaml.safe_load(Path(path).read_text(encoding="utf-8")))
 
 
 @dataclass(frozen=True)
@@ -153,7 +141,7 @@ class DependencySet:
                 backup[n] = (spec.value or 0.0) * backup_scale
         return DependencyRealisation(self.dependent[sel], self.supporter[sel], backup, self.rule_idx[sel])
 
-    def to_frame(self, net: CompiledNetwork, lambda_scale: float = 1.0) -> pd.DataFrame:
+    def to_frame(self, net: NetworkView, lambda_scale: float = 1.0) -> pd.DataFrame:
         p = self.probabilities(lambda_scale)
         rules = self.rules.rules
         return pd.DataFrame({
@@ -169,22 +157,23 @@ class DependencySet:
         })
 
 
-def _class_mask(net: CompiledNetwork, qualified: str) -> np.ndarray:
+def _class_mask(net: NetworkView, qualified: str, known_systems: Collection[str] | None = None) -> np.ndarray:
     layer, cls = qualified.split(".", 1)
     code = net.layer_code(layer)
     if code < 0:  # the release has no such system: the rule matches nothing, unless the system is unknown
-        if layer not in system_catalog().systems:
+        if known_systems is not None and layer not in known_systems:
             raise ValueError(f"dependency rule refers to system {layer!r}, which has no installed system pack")
         return np.zeros(net.n, dtype=bool)
     return (net.layer == code) & (net.cls == cls)
 
 
-def infer_proximity_softmax(net: CompiledNetwork, rules: DependencyRules) -> DependencySet:
+def infer_proximity_softmax(net: NetworkView, rules: DependencyRules,
+                            known_systems: Collection[str] | None = None) -> DependencySet:
     rows: list[tuple[int, int, float, int, int]] = []  # (dependent, supporter, distance, group, rule)
     g = 0
     for r_i, rule in enumerate(rules.rules):
-        d_idx = np.flatnonzero(_class_mask(net, rule.dependent))
-        s_idx = np.flatnonzero(_class_mask(net, rule.supporter))
+        d_idx = np.flatnonzero(_class_mask(net, rule.dependent, known_systems))
+        s_idx = np.flatnonzero(_class_mask(net, rule.supporter, known_systems))
         if len(d_idx) == 0 or len(s_idx) == 0:
             continue
         k = min(rule.k, len(s_idx))

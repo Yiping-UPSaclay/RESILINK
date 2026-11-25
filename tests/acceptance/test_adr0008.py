@@ -28,8 +28,7 @@ def _schema2(cfg, components: dict) -> dict:
     return cfg.model_dump(mode="json") | {"schema": 2, "components": components}
 
 
-@pytest.mark.acceptance("ADR-0008/AC1")
-@pytest.mark.xfail(strict=True, reason=f"{NOT_BUILT} (E1–E3)")
+@pytest.mark.acceptance("ADR-0008/AC1")  # met with E3 (2026-11-25)
 def test_ac1_builtins_registered_and_vocab_freed():
     import resilink.domain.vocab as vocab
 
@@ -141,9 +140,7 @@ def test_ac8_discovery_ops_and_eval_task():
     assert "models.describe" in tasks, "a golden eval task must exercise model discovery"
 
 
-@pytest.mark.acceptance("ADR-0008/AC9")
-@pytest.mark.xfail(strict=True, reason=f"{NOT_BUILT}: plugin_api exists (E1); the plugin import contract comes "
-                                       "with the ported built-ins (E3). Runtime budget: tools/progress.py")
+@pytest.mark.acceptance("ADR-0008/AC9")  # met with E3 (2026-11-25); runtime budget: tools/progress.py
 def test_ac9_plugin_api_and_import_contract():
     import resilink.plugin_api as api
 

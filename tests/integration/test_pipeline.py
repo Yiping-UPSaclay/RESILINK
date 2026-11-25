@@ -40,7 +40,7 @@ def test_run_reproduces_bit_for_bit(small_cfg, small_run):
 
 
 def test_worker_count_invariance(small_cfg):
-    cfg2 = small_cfg.model_copy(update={"monte_carlo": small_cfg.monte_carlo.model_copy(update={"workers": 2})})
+    cfg2 = small_cfg.model_copy(update={"design": small_cfg.design.model_copy(update={"workers": 2})})
     a = run_experiment(small_cfg, store=ResultsStore(Path(tempfile.mkdtemp())), force=True)
     b = run_experiment(cfg2, store=ResultsStore(Path(tempfile.mkdtemp())), force=True)
     la = pd.read_parquet(a.path / "sample_losses.parquet")

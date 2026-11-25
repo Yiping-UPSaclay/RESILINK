@@ -34,6 +34,31 @@ facility = "resilink.systems:FACILITY"
 gas = "resilink.systems:GAS"
 telecom = "resilink.systems:TELECOM"
 
+# Built-in slot definitions v0.1 (ADR-0008 §3).
+[project.entry-points."resilink.slots"]
+consequence = "resilink.slots:CONSEQUENCE"
+dependency = "resilink.slots:DEPENDENCY"
+fragility = "resilink.slots:FRAGILITY"
+hazard = "resilink.slots:HAZARD"
+orchestrator = "resilink.slots:ORCHESTRATOR"
+propagation = "resilink.slots:PROPAGATION"
+restoration = "resilink.slots:RESTORATION"
+sampler = "resilink.slots:SAMPLER"
+service = "resilink.slots:SERVICE"
+
+# Built-in models, registered exactly like a thesis plugin from a separate package (ADR-0008 §4).
+[project.entry-points."resilink.models"]
+connectivity = "resilink.service.plugin:connectivity"
+episode = "resilink.engine.episode:episode"
+flood_footprints = "resilink.hazards.plugin:flood_footprints"
+independent_repair = "resilink.restoration.plugin:independent_repair"
+lognormal_library = "resilink.fragility.plugin:lognormal_library"
+nested_mc = "resilink.engine.sampler:nested_mc"
+no_dependencies = "resilink.dependencies.plugin:no_dependencies"
+people_hours = "resilink.consequence.plugin:people_hours"
+proximity_softmax = "resilink.dependencies.plugin:proximity_softmax"
+topological_temporal = "resilink.cascade.plugin:topological_temporal"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

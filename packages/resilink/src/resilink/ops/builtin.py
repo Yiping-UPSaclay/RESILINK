@@ -16,15 +16,17 @@ from resilink.cascade.explain import explain
 from resilink.dependencies.model import DependencySet, infer_proximity_softmax, load_rules
 from resilink.domain.config import ExperimentConfig
 from resilink.domain.vocab import Tier
+from resilink.engine.compose import CompositionError, compose
 from resilink.experiments.runner import compute_run_id, estimate, get_release, run_experiment
 from resilink.hazards.exposure import compute_exposure
 from resilink.io.hashing import stable_hash
-from resilink.io.paths import load_yaml
+from resilink.io.paths import load_yaml, resolve
 from resilink.io.release import list_releases
 from resilink.io.results import ResultsStore
 from resilink.knowledge.store import KnowledgeStore, ValueRef
 from resilink.network.compiled import CompiledNetwork, compile_network
 from resilink.ops.registry import OpContext, OpDenied, SideEffect, op
+from resilink.registry import system_catalog
 from resilink.views import ViewSpec, required_tier, validate_view
 
 SYNTHETIC_TERRITORIES = {"synthetic"}
@@ -38,7 +40,8 @@ def _network(release_id: str, data: str | None) -> CompiledNetwork:
 
 @lru_cache(maxsize=8)
 def _depset(release_id: str, data: str | None) -> DependencySet:
-    return infer_proximity_softmax(_network(release_id, data), load_rules())
+    rules = load_rules(resolve("knowledge/dependency_rules.yaml"))
+    return infer_proximity_softmax(_network(release_id, data), rules, known_systems=system_catalog().systems)
 
 
 def _data(ctx: OpContext) -> str | None:
@@ -266,12 +269,13 @@ def validate_experiment(inp: ExperimentIn, ctx: OpContext) -> ValidateOut:
     submitting any experiment; show the estimate to the user."""
     cfg = inp.config
     try:
-        get_release(cfg.release, ctx.data)
-    except FileNotFoundError as exc:
+        release = get_release(cfg.release, ctx.data)
+        composition = compose(cfg)  # every model resolves, versions match, parameters and files are valid
+    except (FileNotFoundError, CompositionError) as exc:
         return ValidateOut(valid=False, run_id=None, already_computed=False, cascade_simulations=0,
                            estimated_seconds=0, within_quota=False, errors=[str(exc)])
     est = estimate(cfg)
-    rid = compute_run_id(cfg, get_release(cfg.release, ctx.data))
+    rid = compute_run_id(cfg, release, composition)
     return ValidateOut(valid=True, run_id=rid, already_computed=_store(ctx).exists(rid),
                        cascade_simulations=est["cascade_simulations"], estimated_seconds=est["estimated_seconds"],
                        within_quota=est["cascade_simulations"] <= ctx.max_cascade_simulations, errors=[])

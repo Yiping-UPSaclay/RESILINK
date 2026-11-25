@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 from scipy.sparse import csgraph
 
-from resilink.network.compiled import CompiledNetwork
+from resilink.plugin_api import NetworkView
 
 
 @dataclass(frozen=True)
@@ -34,7 +34,7 @@ def _down_interval_at(events: pd.DataFrame, rid: str, t: float) -> pd.Series | N
 
 
 def explain(
-    net: CompiledNetwork,
+    net: NetworkView,
     events: pd.DataFrame,
     damage: pd.DataFrame,
     rid: str,
