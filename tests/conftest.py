@@ -64,3 +64,14 @@ def small_run(small_cfg, release):
     from resilink.experiments import run_experiment
 
     return run_experiment(small_cfg)
+
+
+@pytest.fixture(scope="module")
+def vcr_config():
+    """Recorded cassettes keep no credentials or session cookies (pytest-recording)."""
+
+    def scrub(response):
+        response["headers"] = {k: v for k, v in response["headers"].items() if k.lower() != "set-cookie"}
+        return response
+
+    return {"filter_headers": ["authorization", "cookie"], "before_record_response": scrub}

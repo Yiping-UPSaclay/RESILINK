@@ -17,6 +17,7 @@ from resilink.dependencies.model import DependencySet, infer_proximity_softmax, 
 from resilink.domain.config import ExperimentConfig
 from resilink.domain.vocab import Tier
 from resilink.engine.compose import CompositionError, compose
+from resilink.etl.staging import list_staged
 from resilink.experiments.runner import compute_run_id, estimate, get_release, run_experiment
 from resilink.hazards.exposure import compute_exposure
 from resilink.io.hashing import stable_hash
@@ -118,6 +119,40 @@ def describe_table(inp: DescribeTableIn, ctx: OpContext) -> TableDescription:
     if spec is None:
         raise ValueError(f"unknown table {inp.table!r}")
     return TableDescription(table=inp.table, tier=spec["tier"], description=spec["description"], columns=spec["columns"])
+
+
+class StagedIn(BaseModel):
+    territory: str = Field("bdr", description="Territory id, e.g. 'bdr' (Bouches-du-Rhône)")
+
+
+class StagedTableInfo(BaseModel):
+    table: str
+    rows: int
+    sensitivity: str
+    adapter: str
+    snapshots: list[str]
+    licences: dict[str, str]
+    qa: dict[str, Any]
+    staged_at: str
+
+
+class StagedOut(BaseModel):
+    territory: str
+    tables: list[StagedTableInfo]
+    withheld: int = Field(description="Staged tables above the caller's clearance (not listed)")
+
+
+@op("etl.staged_tables", side_effect=SideEffect.READ, min_tier="public", cost_hint="ms")
+def staged_tables(inp: StagedIn, ctx: OpContext) -> StagedOut:
+    """List the canonical tables built for a real territory from open-data snapshots but not yet published as a
+    release: rows, source snapshot ids, adapter version, licences and QA figures (e.g. population checked against
+    INSEE). Call when the user asks what real data has been ingested, or before judging a data-quality question."""
+    recs = list_staged(inp.territory, ctx.data)
+    visible = [r for r in recs if Tier.parse(r.sensitivity) <= ctx.tier]
+    return StagedOut(territory=inp.territory, withheld=len(recs) - len(visible), tables=[
+        StagedTableInfo(table=r.table, rows=r.rows, sensitivity=r.sensitivity, adapter=r.adapter,
+                        snapshots=r.snapshots, licences=r.licences, qa=r.qa, staged_at=r.staged_at.isoformat())
+        for r in visible])
 
 
 # ------------------------------------------------------------------------------------------- data

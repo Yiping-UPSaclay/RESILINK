@@ -8,6 +8,6 @@ stages:
     outs:
       - data/releases/synthetic
   # P1 (Bouches-du-Rhône):
-  # normalize:  foreach source -> data/staging/<source>
+  # normalize:  `resilink etl stage` -> data/staging/<territory>/<table>.parquet (+ .json: snapshots, QA)
   # build:      data/staging -> data/releases/bdr/<version>
   # tiles:      release -> data/tiles/bdr-<version>__*.pmtiles

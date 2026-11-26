@@ -35,7 +35,7 @@ phases:
     planned: { start: 2026-12-07, end: 2027-02-19 }
     goal: First real release on open data and a first flood risk run on it (target mid-January); Steward; knowledge v1
     items:
-      - { id: D1, name: "Territory and population: IGN ADMIN EXPRESS (département + buffer), INSEE Filosofi 2021 200 m grid", status: not_started }
+      - { id: D1, name: "Territory and population: IGN ADMIN EXPRESS COG 2026 (WFS; département + 30 km buffer), INSEE Filosofi 2021 200 m grid; staging adapters", status: done, done_on: 2026-11-26 }
       - { id: D2, name: "Electricity: Enedis HTA/BT substations and HTA lines, RTE substations (attributes), OSM high-voltage lines", status: not_started }
       - { id: D3, name: "Telecom: ARCEP mobile sites with ANFR identifiers", status: not_started }
       - { id: D4, name: "Gas: NaTran transmission network and delivery stations", status: not_started }

@@ -86,3 +86,10 @@ assumptions:
     grade: B
     sensitivity: false
     evidence_ids: []
+  - id: A-POP-01
+    title: Population on the 200 m grid
+    statement: The population that loses service is INSEE Filosofi 2021 individuals in fiscal households on inhabited 200 m cells. People living in communities (care homes, student halls, barracks, prisons) are not on the grid; in Bouches-du-Rhône the grid holds 0.918 of the census municipal population (measured 2026-11-26).
+    rationale: Filosofi is the only open population grid at 200 m. The gap is reported in every staged grid (QA pop_core_vs_census); communities can later enter as facility nodes (e.g. FINESS care homes).
+    grade: B
+    sensitivity: false
+    evidence_ids: []

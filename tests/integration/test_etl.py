@@ -69,3 +69,25 @@ def test_enedis_datafair_contract():
     meta = DataFairConnector().describe(load_sources()["enedis.poste_electrique"])
     assert meta.has_geometry and meta.count and meta.count > 900_000
     assert {"code_departement", "code_commune", "geometry"} <= {f.name for f in meta.fields}
+
+
+@pytest.mark.network
+@pytest.mark.vcr
+def test_geoplateforme_wfs_admin_express_contract():
+    from resilink.etl.connectors import WfsConnector
+
+    meta = WfsConnector().describe(load_sources()["ign.admin_express.commune"])
+    assert meta.has_geometry and meta.count and meta.count > 34_000  # COG 2026: 34,877 communes (2026-11-26)
+    assert {"code_insee", "nom_officiel", "population", "date_du_recensement", "code_insee_du_departement",
+            "geometrie"} <= {f.name for f in meta.fields}
+
+
+@pytest.mark.network
+@pytest.mark.vcr
+def test_insee_filosofi_page_still_offers_the_registered_file():
+    import httpx
+
+    spec = load_sources()["insee.filosofi2021_200m"]
+    r = httpx.get(spec.docs_url, follow_redirects=True, timeout=60,
+                  headers={"User-Agent": "resilink-lab/0.1 (research; open-data client)"})
+    assert r.status_code == 200 and f"/{spec.dataset}" in r.text  # link to the registered download

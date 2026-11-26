@@ -26,11 +26,38 @@ tables:
       aerial_share: Share of the length that is overhead (0-1).
   grid_cells:
     tier: public
-    description: 200 m population lattice (INSEE Filosofi in real releases).
+    description: >-
+      200 m population lattice. Real territories use INSEE Filosofi 2021 (inhabited cells only; cell in the
+      territory when its centre lies in the buffer). Other INSEE variables keep their INSEE names (men, men_pauv,
+      log_soc, ind_0_3 ... ind_80p; see https://www.insee.fr/fr/statistiques/8735162).
     columns:
-      cell_id: Lattice cell id.
-      pop: Resident population.
-      admin_commune: Commune code.
+      cell_id: Lattice cell id (INSPIRE code CRS3035RES200mN<y>E<x> of the cell's south-west corner, EPSG:3035).
+      k: Dense integer index within the release.
+      pop: Individuals in fiscal households (Filosofi `ind`, 2021); excludes people living in communities.
+      admin_commune: COG code of the commune containing the cell centre (nearest within 500 m for coastal cells).
+      in_core: True if the cell centre lies in the territory's départements (false in the buffer).
+      imputed: True when INSEE imputed the cell's values (fewer than 11 fiscal households).
+      lcog_geo_2021: INSEE's commune codes for the cell (COG 2021, largest share first; arrondissements for PLM).
+  admin_areas:
+    tier: public
+    description: Départements of the territory and every commune meeting its buffer (IGN ADMIN EXPRESS COG).
+    columns:
+      admin_id: Stable id admin.<level>:cog<year>:<code>.
+      level: departement | commune.
+      code: Official geographic code (COG) of the edition in cog_year.
+      parent_id: admin_id of the enclosing area.
+      cog_year: COG edition of the code and boundary.
+      population: Municipal population from the census (départements - sum of their communes).
+      census_date: Reference date of the census population.
+      in_core: True for areas of the territory's départements, false for buffer-only communes.
+      area_km2: Area in km² (Lambert-93).
+  territory_extent:
+    tier: public
+    description: The territory's départements (core) and the core grown by the territory buffer.
+    columns:
+      extent_id: <territory>:core or <territory>:buffer.
+      kind: core | buffer.
+      buffer_m: Buffer distance in metres (0 for the core).
   hazard_scenarios:
     tier: public
     description: Hazard scenarios with return periods.

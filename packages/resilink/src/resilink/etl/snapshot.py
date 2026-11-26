@@ -70,9 +70,15 @@ def fetch_snapshot(spec: SourceSpec, territory: TerritoryConfig | None = None, *
     conn = CONNECTORS[spec.connector]
     meta = conn.describe(spec)
     prev = latest_snapshot(spec.id, root)
-    report = diff(spec.id, prev.metadata, meta) if prev else None
-    if report is not None and report.breaking and not accept_drift:
-        raise DriftError(report)
+
+    def gate(current: SourceMetadata) -> DriftReport | None:
+        rep = diff(spec.id, prev.metadata, current) if prev else None
+        if rep is not None and rep.breaking and not accept_drift:
+            raise DriftError(rep)
+        return rep
+
+    inspect = getattr(conn, "inspect", None)
+    report = gate(meta) if inspect is None else None  # portals publish their schema: fail before downloading
     base = raw_dir(spec.id, root)
     base.mkdir(parents=True, exist_ok=True)
     tmp = Path(tempfile.mkdtemp(prefix=".fetch-", dir=base))
@@ -81,6 +87,10 @@ def fetch_snapshot(spec: SourceSpec, territory: TerritoryConfig | None = None, *
             "geojson" if spec.format == "geojson" or spec.connector == "datafair" else spec.format)
         data_path = tmp / f"data.{ext}"
         url, rows = conn.fetch(spec, territory, data_path, limit=limit)
+        if inspect is not None:  # static files: the schema is read from the download, gated before publishing
+            meta = inspect(spec, data_path, meta)
+            report = gate(meta)
+            rows = rows if rows is not None else meta.count
         sha = sha256_file(data_path)
         now = datetime.now(UTC)
         snap_id = f"{spec.id}@{now:%Y%m%dT%H%M%SZ}#{sha[:12]}"
