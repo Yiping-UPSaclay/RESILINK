@@ -67,6 +67,34 @@ def etl_fetch(source_id: str, territory: str = "configs/territories/bdr.yaml", l
                            "drift": report.model_dump() if report else None}, ensure_ascii=False, indent=2))
 
 
+@etl_app.command("adapters")
+def etl_adapters(territory: str = "configs/territories/bdr.yaml") -> None:
+    """List adapters (sources -> canonical tables) in run order, with what is staged for the territory."""
+    from resilink.etl.adapters import ADAPTERS
+    from resilink.etl.staging import list_staged, ordered
+    from resilink.io.paths import load_territory
+
+    staged = {s.table: s for s in list_staged(load_territory(territory).id)}
+    for a in ordered(ADAPTERS):
+        state = ", ".join(f"{t}: {staged[t].rows} rows ({staged[t].adapter})" if t in staged else f"{t}: not staged"
+                          for t in a.produces)
+        typer.echo(f"{a.id}@{a.version}  sources={list(a.sources)}  needs={list(a.needs)}\n    {state}")
+
+
+@etl_app.command("stage")
+def etl_stage(adapter_id: str = typer.Argument(None, help="Adapter id; all adapters in run order if omitted"),
+              territory: str = "configs/territories/bdr.yaml") -> None:
+    """Build canonical tables for the territory from the latest raw snapshots (data/staging/<territory>/)."""
+    from resilink.etl.adapters import ADAPTERS
+    from resilink.etl.staging import ordered, stage
+    from resilink.io.paths import load_territory
+
+    terr = load_territory(territory)
+    for a in [ADAPTERS[adapter_id]] if adapter_id else ordered(ADAPTERS):
+        for rec in stage(a.id, terr):
+            typer.echo(json.dumps(rec.model_dump(mode="json", exclude={"staged_at"}), ensure_ascii=False, indent=2))
+
+
 @app.command()
 def demo(config: str = "configs/experiments/synthetic_demo.yaml") -> None:
     """Build the synthetic release (if needed), run the demo experiment and print headline metrics."""

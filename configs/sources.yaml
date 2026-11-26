@@ -65,3 +65,61 @@ sources:
     id_strategy: native (TBC)
     priority: P0
     notes: territory_field name TBC against the dataset schema
+
+  # --- D1 territory and population (verified 2026-11-26) -------------------------------------------------
+  # ADMIN EXPRESS COG (full precision, not the generalised CARTO edition) from the IGN Géoplateforme WFS, pinned
+  # to the COG 2026 edition (1 Jan 2026). Licence: Licence Ouverte 2.0 (IGN entry on data.gouv.fr: lov2).
+  - id: ign.admin_express.departement
+    provider: IGN (Géoplateforme WFS)
+    connector: wfs
+    base_url: https://data.geopf.fr/wfs/ows
+    dataset: ADMINEXPRESS-COG.2026:departement
+    format: geojson
+    territory_field: code_insee
+    vintage: "COG 2026"
+    role: Boundary of the territory's départements (core of the territory; the buffer is derived from it)
+    licence: Licence Ouverte 2.0
+    sensitivity: public
+    refresh: annual
+    id_strategy: native:code_insee
+    priority: P0
+    docs_url: https://www.data.gouv.fr/datasets/admin-express-admin-express-cog-admin-express-cog-carto-admin-express-cog-carto-pe-admin-express-cog-carto-plus-pe
+  - id: ign.admin_express.commune
+    provider: IGN (Géoplateforme WFS)
+    connector: wfs
+    base_url: https://data.geopf.fr/wfs/ows
+    dataset: ADMINEXPRESS-COG.2026:commune
+    format: geojson
+    territory_mode: buffer_bbox
+    territory_layer: ADMINEXPRESS-COG.2026:departement
+    territory_field: code_insee
+    vintage: "COG 2026"
+    role: Communes in the territory and its buffer (codes, names, census population dated 2023-01-01)
+    licence: Licence Ouverte 2.0
+    sensitivity: public
+    refresh: annual
+    id_strategy: native:code_insee
+    priority: P0
+    notes: The WFS returns communes in the buffered bounding box; the adapter keeps those meeting the buffer itself.
+    docs_url: https://www.data.gouv.fr/datasets/admin-express-admin-express-cog-admin-express-cog-carto-admin-express-cog-carto-pe-admin-express-cog-carto-plus-pe
+  # INSEE Filosofi 2021, 200 m cells (published 2026-02-12): national zip of three CSVs (metropolitan France,
+  # Martinique, La Réunion). Only inhabited cells; values imputed where a cell has fewer than 11 fiscal households
+  # (i_est_200 = 1). Cell ids are INSPIRE codes of the cell's south-west corner in EPSG:3035 (checked on all
+  # 2,298,582 metropolitan cells against their 1 km parent ids). Licence Ouverte 2.0 ("Source : Insee").
+  - id: insee.filosofi2021_200m
+    provider: INSEE
+    connector: http_file
+    base_url: https://www.insee.fr
+    dataset: fr/statistiques/fichier/8735162/Filosofi2021_carreaux_200m_csv.zip
+    format: zip
+    territory_mode: none
+    members: [carreaux_200m_met.csv, carreaux_200m_mart.csv, carreaux_200m_reun.csv]
+    vintage: "Filosofi 2021 (incomes 2021), published 2026-02-12"
+    role: 200 m population lattice (individuals, households, age bands, housing) for exposure and consequences
+    licence: Licence Ouverte 2.0
+    sensitivity: public
+    refresh: annual
+    id_strategy: native:idcar_200m
+    priority: P0
+    notes: The raw snapshot is the national file byte for byte; the adapter selects the territory's cells.
+    docs_url: https://www.insee.fr/fr/statistiques/8735162

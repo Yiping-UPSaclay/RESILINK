@@ -1,0 +1,150 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - data.geopf.fr
+      user-agent:
+      - resilink-lab/0.1 (research; open-data client)
+    method: GET
+    uri: https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAMES=ADMINEXPRESS-COG.2026%3Acommune
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAA/7xW227bMAx971cYfq+dpMAwBHGKom2KAU1bLC3QN0ORaVeDbtVlSf9+tBxnCZYL
+        sFzebIrS4SEl8gyu54JHv8FYpmQWd5NOHIGkqmCyyuK319Hl9/h6OJjbom/pBwgSob+0/Zu78Y+n
+        +/eXn/eTyeXt80PS6/S+ZfGHc7qfphtX48XWSvCl42w2S5QGWTGbSHAprqVXSa91nZV2qyuupb06
+        3MYVI1xznV0lylRpr9Pppu/jx0kIHrlxECDdSBlxByXx3GXxpyeclQyKOHLEVOCeiACrCYU9hIYX
+        URRSw4RWxkXyn31b+TXJfFSUuJD42t/ihoI4klSgdJmUJnBsPG27NenWXwmixukSnyqhOcxfvzSE
+        ILIYLcJLqC0hzHXHWyUdZqFZWCzBHE31LYimxOIJiNK/mVpnCHUjIM6b1dOW2yx8erww8Nfcntdk
+        OhJk/kypN1jJbhwJJts/LN0iVg5kavGPcU6mHC3OeMBiIFwWBxBn8D42hP8TRCqRq7JklAE/I1QO
+        Mhfkl7fUczg1R+uwTO7EINgbIGfSApwYSCvteXgeu4CYdAeh4IODvPC5AYrXP+zaBVe7H4SHTYlI
+        ZgW0iN6crWA1T0qk253RI0NCznNijJIFs/vze3S+BWhi3LlxkTTBAld7Lu+xUC0zcA4g2yDl9Rdo
+        ys7BTStsa6du2dZrMKFj4wMpSD31+M7+dmjbwREvAOPeClKP3zHKEzbxpkRJ8WJQRxj3FWbwCvIg
+        3TSFG+typC8UQLpZAqzZ6/OXuqLls6YpULx41AUMRw0e/WCU1xvVQstko3bqrwoUpLOgEbTO8OIP
+        AAAA//8DAAsUz3WWCgAA
+    headers:
+      access-control-allow-credentials:
+      - 'true'
+      access-control-allow-headers:
+      - DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Content-Disposition,Content-Length,X-Community
+      access-control-allow-methods:
+      - GET, PUT, POST, DELETE, PATCH, OPTIONS
+      access-control-allow-origin:
+      - '*'
+      access-control-max-age:
+      - '1728000'
+      cache-control:
+      - private, max-age=1814400
+      content-disposition:
+      - inline; filename=ADMINEXPRESS-COG.2026-commune.xsd
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - base-uri 'self'; default-src 'none'; child-src 'self'; connect-src 'self';
+        font-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src
+        'self'; form-action 'self'; frame-ancestors 'self';
+      content-type:
+      - application/gml+xml; version=3.2
+      date:
+      - Thu, 26 Nov 2026 11:38:27 GMT
+      ratelimit-limit:
+      - '30'
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains
+      transfer-encoding:
+      - chunked
+      www-authenticate:
+      - Key realm="kong"
+      x-content-type-options:
+      - nosniff
+      x-frame-options:
+      - SAMEORIGIN
+      x-iplb-instance:
+      - '61217'
+      x-iplb-request-id:
+      - 8AC3DE0C:FB61_91EFC1E7:01BB_6B081A33_1B95389C:253CE7
+      x-ratelimit-limit-second:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - data.geopf.fr
+      user-agent:
+      - resilink-lab/0.1 (research; open-data client)
+    method: GET
+    uri: https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=ADMINEXPRESS-COG.2026%3Acommune&RESULTTYPE=hits
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAA/4SS0W6jMBBFfwVZat+wMbRNwtaNotSpIiVpi0k3u28scShasCPsFD6/AyRVV2q6
+        Dwgx99wZzzW346YsnDdZmVwrhij2kCNVqre5yhhaxzN3iMZ3t/XOhDOZ2EMlp7ooZGoBd8CqTNgY
+        hl6t3YeE1HWN6wDrKiO+51GyWS5E+irLBB3ZnfwX1nupstxgJS0Bjfjt/B6FkWdR0D6jWVmcRUEj
+        AfZPqK7PdwWNUExPaFPk6u9Xq9HRaEQ69QM1+f8zcHNlbKJSiRwlG9sbDDi2iU1wJvV+h3dVtxs8
+        44iL9SKOfz1xVklzKKy5TMr9j4g/r7mI2YO0xwvpyi88EvPHFYNUsNdVWudqsuSCTe6X8xXfPEFH
+        4U4fH7Dv+TcXwSTVZXlQvV/w6GU+5eznTPTf8SSK56t7vmEQszqUf2S1TCwssmUouBoOBqdqJOEQ
+        qi0DaPNSCgsNGGqHuJS6/k1MaRgMQ3+Ar6+GvyEzk4emi2Sh08R2P973F+0c5d5lvkLaN27MFpG7
+        dwAAAP//AwBYuD1u1AIAAA==
+    headers:
+      access-control-allow-credentials:
+      - 'true'
+      access-control-allow-headers:
+      - DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Content-Disposition,Content-Length,X-Community
+      access-control-allow-methods:
+      - GET, PUT, POST, DELETE, PATCH, OPTIONS
+      access-control-allow-origin:
+      - '*'
+      access-control-max-age:
+      - '1728000'
+      cache-control:
+      - private, max-age=1814400
+      content-disposition:
+      - inline; filename=geoserver-GetFeature.text
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - base-uri 'self'; default-src 'none'; child-src 'self'; connect-src 'self';
+        font-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src
+        'self'; form-action 'self'; frame-ancestors 'self';
+      content-type:
+      - text/xml; charset=UTF-8
+      date:
+      - Thu, 26 Nov 2026 11:38:27 GMT
+      ratelimit-limit:
+      - '30'
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains
+      transfer-encoding:
+      - chunked
+      www-authenticate:
+      - Key realm="kong"
+      x-content-type-options:
+      - nosniff
+      x-frame-options:
+      - SAMEORIGIN
+      x-iplb-instance:
+      - '61217'
+      x-iplb-request-id:
+      - 8AC3DE0C:FB61_91EFC1E7:01BB_6B081A33_1B95391C:253CE7
+      x-ratelimit-limit-second:
+      - '1'
+    status:
+      code: 200
+      message: OK
+version: 1

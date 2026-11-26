@@ -87,3 +87,24 @@ def test_mcp_server_projects_the_registry():
     assert {t.name for t in tools} == expected
     res = asyncio.run(srv.call_tool("hazards__list_scenarios", {}))
     assert "flood_rp100" in str(res)
+
+
+def test_staged_tables_lists_real_data_by_clearance(human):
+    from datetime import UTC, datetime
+
+    from resilink.etl.staging import StagedTable, staging_dir
+    from resilink.io.hashing import canonical_json
+
+    d = staging_dir("optest", human.data)
+    d.mkdir(parents=True, exist_ok=True)
+    for table, tier in (("grid_cells", "public"), ("nodes", "internal")):
+        rec = StagedTable(table=table, territory="optest", path=f"{table}.parquet", rows=3, sha256="0" * 64,
+                          sensitivity=tier, adapter="x@1.0.0", snapshots=["s@1#abc"], licences={"s": "LO 2.0"},
+                          qa={"cells": 3}, staged_at=datetime.now(UTC))
+        (d / f"{table}.json").write_text(canonical_json(rec), encoding="utf-8")
+    public = make_context("agent:steward", tier=Tier.PUBLIC, autonomy=SideEffect.READ)
+    out = call("etl.staged_tables", {"territory": "optest"}, public).output
+    assert [t.table for t in out.tables] == ["grid_cells"] and out.withheld == 1
+    assert out.tables[0].qa == {"cells": 3}
+    full = call("etl.staged_tables", {"territory": "optest"}, human).output
+    assert {t.table for t in full.tables} == {"grid_cells", "nodes"} and full.withheld == 0

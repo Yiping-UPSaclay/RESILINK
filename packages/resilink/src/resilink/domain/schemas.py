@@ -54,3 +54,30 @@ GRID_SCHEMA = _GeoSchema(
     },
     strict=False,
 )
+
+ADMIN_LEVELS = ("region", "departement", "commune")
+
+ADMIN_SCHEMA = _GeoSchema(
+    {
+        "admin_id": pa.Column(str, pa.Check.str_matches(RID_PATTERN), unique=True),  # admin.<level>:cog<year>:<code>
+        "level": pa.Column(str, pa.Check.isin(ADMIN_LEVELS)),
+        "code": pa.Column(str),
+        "name": pa.Column(str),
+        "cog_year": pa.Column(int),
+        "geometry": pa.Column(Geometry(crs=CANONICAL_CRS)),
+    },
+    strict=False,
+)
+
+EXTENT_SCHEMA = _GeoSchema(  # the territory itself (core) and the core grown by the territory buffer
+    {
+        "extent_id": pa.Column(str, unique=True),
+        "kind": pa.Column(str, pa.Check.isin(["core", "buffer"]), unique=True),
+        "buffer_m": pa.Column(float, pa.Check.ge(0)),
+        "geometry": pa.Column(Geometry(crs=CANONICAL_CRS)),
+    },
+    strict=False,
+)
+
+TABLE_SCHEMAS = {"nodes": NODE_SCHEMA, "edges": EDGE_SCHEMA, "grid_cells": GRID_SCHEMA, "admin_areas": ADMIN_SCHEMA,
+                 "territory_extent": EXTENT_SCHEMA}

@@ -2,7 +2,7 @@
 
 > **Date:** v2.0 approved 2026-11-16 · **v2.2 2026-11-23** · **Pilot:** Bouches-du-Rhône (13) + buffer · **Horizon:** 12+ months · **Repository:** https://github.com/Yiping-UPSaclay/RESILINK (public; Sprint 0 implemented and verified, not yet committed)
 > **Tags:** **[E]** essential now · **[D]** deferred (planned for a later phase) · **[O]** optional (adopted only if a named trigger fires)
-> Claims marked ✔ were checked against official documentation or the publisher's own pages on 2026-11-16, or on 2026-11-23 for F12 and the §6 additions (§16). **TBC** means the claim must be confirmed during implementation.
+> Claims marked ✔ were checked against official documentation or the publisher's own pages on 2026-11-16, on 2026-11-23 for F12 and the §6 additions, or on 2026-11-26 for the D1 sources (§16). **TBC** means the claim must be confirmed during implementation.
 > **v2.2 changes (accepted 2026-11-23: [ADR-0008](../adr/0008-extension-architecture.md) revision 2).**
 > - The core stays small: kernel, shared board, RNG, composition, reducers, provenance.
 > - **System packs, slot definitions and models** are registered, versioned plugins. A new system (e.g. water), a new kind of question (e.g. crew road access) or a new operation model (e.g. DC-OPF, AC-OPF) can be added later without core edits.
@@ -607,7 +607,7 @@ volumes: { valkey: {} }
 | Use | CRS |
 |---|---|
 | Canonical storage and metric computation (metropolitan France) | **EPSG:2154** (Lambert-93; native CRS of Enedis HTA ✔). Territory config sets `crs_metric` for overseas. |
-| Analysis lattice | **INSEE 200 m grid, EPSG:3035**, with INSEE cell IDs (corner convention TBC). Assets map to cells by floor division. |
+| Analysis lattice | **INSEE 200 m grid, EPSG:3035**, with INSEE cell IDs. An ID gives the cell's south-west corner (✔ 2026-11-26 on all 2,298,582 metropolitan cells against their 1 km parent IDs). Assets map to cells by floor division. |
 | Tiles | EPSG:3857 via tippecanoe, from EPSG:4326 exported with `ST_Transform(..., always_xy := true)` |
 | API GeoJSON | EPSG:4326, RFC 7946, 6 decimals |
 
@@ -752,8 +752,8 @@ P0 = needed for the first release.
 
 | ID | Source (✔ verified) | Access | Role | ID strategy | Licence · tier | Prio |
 |---|---|---|---|---|---|---|
-| `ign.admin_express` | ADMIN EXPRESS ✔ | Géoplateforme download | Territory, admin areas | COG | Etalab 2.0 · public | P0 |
-| `insee.filosofi2021_200m` | Filosofi 2021 200 m ✔ | HTTP | Lattice, population | INSEE cell ID | LO · public | P0 |
+| `ign.admin_express.{departement,commune}` | ADMIN EXPRESS COG, edition COG 2026 ✔ | Géoplateforme WFS 2.0 (`data.geopf.fr/wfs/ows`) ✔ | Territory, buffer, admin areas, census population | COG code | LO 2.0 ✔ · public | P0 ✔ D1 |
+| `insee.filosofi2021_200m` | Filosofi 2021 200 m ✔ (published 2026-02-12; inhabited cells; values imputed below 11 households) | HTTP, national zip of 3 CSVs ✔ | Lattice, population (A-POP-01) | INSEE cell ID | LO 2.0 ✔ · public | P0 ✔ D1 |
 | `osm.paca` | Geofabrik PBF → QuackOSM ✔ | HTTP | **HV geometry**, exchanges | OSM + crosswalk | **ODbL** · internal | P0 |
 | `rte.postes` / `rte.lignes_*` | `postes-electriques-rte` ✔ (no geometry) / `lignes-aeriennes-rte-nv` ✔ | ODRÉ Explore v2.1 ✔ | Attributes, completeness | `code_poste` / `code_ligne` | LO · public | P0 |
 | `enedis.poste_electrique` | HTA/BT substations ✔ (≈977k, twice-yearly) | Enedis export | MV/LV substations | Fingerprint | LO 2.0 · internal | P0 |
@@ -830,7 +830,7 @@ provenance: { proposed_by: "prov_…", approved_by: "…" }   # filled when draf
   | HTA/BT substations attached to a feeder | ≥ 95 % |
   | Feeders reachable from a primary substation | ≥ 90 % |
   | ARCEP stations with a supplier candidate within 1.5 km | ≥ 99 % |
-  | Population vs INSEE total | ± 1 % |
+  | Population in the core vs INSEE's own total (cells by largest-share commune) | ± 1 % (bdr 2026-11-26: −0.14 %) |
   | Clean-clone `dvc repro` | Hash-identical |
 
 - **Drift:** a removed field or geometry change fails the stage. The Steward then writes the triage report. F1 is the reference case: RTE removed geometry for public-safety reasons.
@@ -1976,3 +1976,6 @@ uv run streamlit run apps/streamlit/Home.py        # Copilot answers with ValueR
 - Géorisques API: https://www.data.gouv.fr/dataservices/api-georisques
 - IGN Géoplateforme download API: https://geoservices.ign.fr/documentation/services/services-geoplateforme/telechargement
 - INSEE Filosofi 2021, 200 m grid: https://www.insee.fr/fr/statistiques/8735162
+- INSEE licence (Licence Ouverte 2.0, "Source : Insee"): https://www.insee.fr/fr/information/2008466
+- IGN Géoplateforme WFS capabilities (ADMIN EXPRESS COG 2017–2026): https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities
+- IGN ADMIN EXPRESS on data.gouv.fr (licence lov2): https://www.data.gouv.fr/datasets/admin-express-admin-express-cog-admin-express-cog-carto-admin-express-cog-carto-pe-admin-express-cog-carto-plus-pe
