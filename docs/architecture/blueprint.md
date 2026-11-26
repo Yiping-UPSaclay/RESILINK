@@ -2,7 +2,7 @@
 
 > **Date:** v2.0 approved 2026-11-16 · **v2.2 2026-11-23** · **Pilot:** Bouches-du-Rhône (13) + buffer · **Horizon:** 12+ months · **Repository:** https://github.com/Yiping-UPSaclay/RESILINK (public; Sprint 0 implemented and verified, not yet committed)
 > **Tags:** **[E]** essential now · **[D]** deferred (planned for a later phase) · **[O]** optional (adopted only if a named trigger fires)
-> Claims marked ✔ were checked against official documentation or the publisher's own pages on 2026-11-16, on 2026-11-23 for F12 and the §6 additions, or on 2026-11-26 for the D1 sources (§16). **TBC** means the claim must be confirmed during implementation.
+> Claims marked ✔ were checked against official documentation or the publisher's own pages on 2026-11-16, on 2026-11-23 for F12 and the §6 additions, or on 2026-11-26 for the D1 and D2 sources (§16). **TBC** means the claim must be confirmed during implementation.
 > **v2.2 changes (accepted 2026-11-23: [ADR-0008](../adr/0008-extension-architecture.md) revision 2).**
 > - The core stays small: kernel, shared board, RNG, composition, reducers, provenance.
 > - **System packs, slot definitions and models** are registered, versioned plugins. A new system (e.g. water), a new kind of question (e.g. crew road access) or a new operation model (e.g. DC-OPF, AC-OPF) can be added later without core edits.
@@ -754,10 +754,10 @@ P0 = needed for the first release.
 |---|---|---|---|---|---|---|
 | `ign.admin_express.{departement,commune}` | ADMIN EXPRESS COG, edition COG 2026 ✔ | Géoplateforme WFS 2.0 (`data.geopf.fr/wfs/ows`) ✔ | Territory, buffer, admin areas, census population | COG code | LO 2.0 ✔ · public | P0 ✔ D1 |
 | `insee.filosofi2021_200m` | Filosofi 2021 200 m ✔ (published 2026-02-12; inhabited cells; values imputed below 11 households) | HTTP, national zip of 3 CSVs ✔ | Lattice, population (A-POP-01) | INSEE cell ID | LO 2.0 ✔ · public | P0 ✔ D1 |
-| `osm.paca` | Geofabrik PBF → QuackOSM ✔ | HTTP | **HV geometry**, exchanges | OSM + crosswalk | **ODbL** · internal | P0 |
-| `rte.postes` / `rte.lignes_*` | `postes-electriques-rte` ✔ (no geometry) / `lignes-aeriennes-rte-nv` ✔ | ODRÉ Explore v2.1 ✔ | Attributes, completeness | `code_poste` / `code_ligne` | LO · public | P0 |
-| `enedis.poste_electrique` | HTA/BT substations ✔ (≈977k, twice-yearly) | Enedis export | MV/LV substations | Fingerprint | LO 2.0 · internal | P0 |
-| `enedis.reseau_hta` / `reseau_souterrain_hta` | HTA overhead ✔ / underground (EPSG:2154) | Export | MV topology | Fingerprint | LO · internal | P0 |
+| `osm.geofabrik.{paca,languedoc_roussillon}` | Geofabrik PBF, dated extract checked against its `.md5` ✔; read with DuckDB spatial `ST_ReadOSM` ✔ (replaces QuackOSM: no extra dependency). Two regions because the buffer reaches Gard and Hérault | HTTP | **HV geometry** (lines, substations), exchanges | OSM id + `ref:FR:RTE` | **ODbL** · internal | P0 ✔ D2 |
+| `rte.postes` / `rte.lignes_*` | `postes-electriques-rte` ✔ (no geometry; national file, 5,042 sites) / `lignes-aeriennes-rte-nv` ✔ | ODRÉ Explore v2.1 ✔ | Attributes, completeness | `code_poste` / `code_ligne` | LO · public | P0 ✔ D2 (sites) |
+| `enedis.poste_electrique` | HTA/BT substations ✔ (976,678; data of 2026-07-03) | Enedis Data Fair, `bbox` of the territory ✔ | MV/LV substations | Fingerprint | LO 2.0 · internal | P0 ✔ D2 |
+| `enedis.reseau_hta` / `reseau_souterrain_hta` | HTA overhead ✔ (1,036,732 segments) / underground ✔ (1,863,552); geometry only, no voltage or switch state | Enedis Data Fair, `bbox` of the territory; GeoJSON pages linked by the HTTP `Link` header ✔ | MV topology | Fingerprint | LO 2.0 · internal | P0 ✔ D2 |
 | `ore.postes_source` | Agence ORE `postes-source` (TBC) | ORE export | Primary substations | TBC | TBC · internal | P0 |
 | `odre.registre_prod` | Production register ✔ | ODRÉ | Generators | TBC | LO · public | P0 |
 | `natran.trace250` | `trace-du-reseau-grt-250` ✔ (≈250 m) | ODRÉ | Gas transmission | Fingerprint, 250 m | LO · internal | P0 |
@@ -801,7 +801,7 @@ provenance: { proposed_by: "prov_…", approved_by: "…" }   # filled when draf
 ### 5.4 Entity resolution (deterministic first, AI for the long tail)
 
 1. **Deterministic passes:**
-   - OSM ↔ RTE: `ref:FR:RTE` tag (TBC), then normalised name + voltage + département.
+   - OSM ↔ RTE: `ref:FR:RTE` tag ✔ (2026-11-26: on 115 of 135 OSM high-voltage substations in département 13; it alone matches 92 of the 94 RTE substations in service there), then normalised name + voltage + département.
    - ARCEP ↔ ANFR: by ANFR ID ✔.
 2. **Ambiguous residue** (multiple candidates, or a score inside the uncertainty band) goes to `er.propose_match`. The Steward returns a structured decision with reasons, a human approves, and accepted matches are stored as `xref/manual_matches.yaml`, a versioned input to later builds.
 
@@ -1917,7 +1917,10 @@ uv run streamlit run apps/streamlit/Home.py        # Copilot answers with ValueR
 - Shapely `coverage_simplify`: https://shapely.readthedocs.io/en/latest/reference/shapely.coverage_simplify.html
 - pandera with GeoPandas: https://pandera.readthedocs.io/en/stable/geopandas.html
 - NumPy parallel random generation: https://numpy.org/doc/stable/reference/random/parallel.html
-- QuackOSM: https://github.com/kraina-ai/quackosm
+- QuackOSM: https://github.com/kraina-ai/quackosm (evaluated; replaced by DuckDB `ST_ReadOSM` in D2)
+- DuckDB spatial `ST_ReadOSM`: https://duckdb.org/docs/2.0/core_extensions/spatial/functions
+- Geofabrik France extracts (per-region folders, dated files, .md5): https://download.geofabrik.de/europe/france/index.html
+- OpenStreetMap copyright and ODbL: https://www.openstreetmap.org/copyright
 
 **Maps and UI**
 - PMTiles: https://docs.protomaps.com/pmtiles/
@@ -1967,9 +1970,9 @@ uv run streamlit run apps/streamlit/Home.py        # Copilot answers with ValueR
 - ODRÉ, production register: https://odre.opendatasoft.com/explore/dataset/registre-national-installation-production-stockage-electricite-agrege/
 - ODRÉ, NaTran trace (250 m): https://odre.opendatasoft.com/explore/dataset/trace-du-reseau-grt-250/
 - Opendatasoft Explore API v2.1: https://help.opendatasoft.com/apis/ods-explore-v2/explore_v2.1.html
-- Enedis HTA/BT substations: https://data.enedis.fr/explore/dataset/poste-electrique/
-- Enedis HTA overhead lines: https://data.enedis.fr/explore/dataset/reseau-hta/
-- Enedis HTA underground lines: https://www.data.gouv.fr/datasets/lignes-souterraines-moyenne-tension-hta
+- Enedis HTA/BT substations (Data Fair): https://opendata.enedis.fr/data-fair/api/v1/datasets/poste-electrique
+- Enedis HTA overhead lines (Data Fair): https://opendata.enedis.fr/data-fair/api/v1/datasets/reseau-hta
+- Enedis HTA underground lines (Data Fair): https://opendata.enedis.fr/data-fair/api/v1/datasets/reseau-souterrain-hta
 - ARCEP mobile sites: https://data.arcep.fr/mobile/sites/
 - ARCEP unavailable sites: https://www.data.gouv.fr/datasets/sites-indisponibles
 - Hub'Eau hydrometry: https://hubeau.eaufrance.fr/page/api-hydrometrie

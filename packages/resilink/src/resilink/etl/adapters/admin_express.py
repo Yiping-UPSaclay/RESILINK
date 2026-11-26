@@ -45,13 +45,14 @@ def cog_year(ctx: AdapterContext) -> int:
     return year
 
 
-@adapter("ign.admin_express", version="1.0.0", sources=(DEP, COM), produces=("admin_areas", "territory_extent"))
+@adapter("ign.admin_express", version="1.1.0", sources=(DEP, COM), produces=("admin_areas", "territory_extent"))
 def admin_express(ctx: AdapterContext) -> dict[str, Output]:
-    """Territory extent (core départements, and the core grown by the buffer) and admin areas (the core
-    départements and every commune meeting the buffer).
+    """Territory extent (core départements, and the core grown by the buffer) and admin areas (every
+    département and commune meeting the buffer; ``in_core`` marks the territory's own).
 
-    The WFS returns communes in a bounding-box window; the ones meeting the buffer itself are kept. Ids follow the
-    COG edition of the sources, e.g. ``admin.commune:cog2026:13055``.
+    The WFS returns areas in a bounding-box window; the ones meeting the buffer itself are kept. Ids follow the
+    COG edition of the sources, e.g. ``admin.commune:cog2026:13055``. Buffer départements carry no population
+    (only part of them lies in the territory). 1.1.0 adds the buffer départements (their names identify RTE sites).
     """
     t = ctx.territory
     year = cog_year(ctx)
@@ -89,25 +90,31 @@ def admin_express(ctx: AdapterContext) -> dict[str, Output]:
         "geometry": com.geometry,
     }, geometry="geometry", crs=t.crs_metric)
     dep_pop = communes[communes["in_core"]].groupby(communes["parent_id"])["population"].sum()
+    near = deps[deps.geometry.intersects(grown)].sort_values("code_insee")
+    near_core = near["code_insee"].isin(codes)
     departements = gpd.GeoDataFrame({
-        "admin_id": f"admin.departement:cog{year}:" + core_deps["code_insee"],
+        "admin_id": f"admin.departement:cog{year}:" + near["code_insee"],
         "level": "departement",
-        "code": core_deps["code_insee"],
-        "name": core_deps["nom_officiel"],
-        "parent_id": f"admin.region:cog{year}:" + core_deps["code_insee_de_la_region"],
+        "code": near["code_insee"],
+        "name": near["nom_officiel"],
+        "parent_id": f"admin.region:cog{year}:" + near["code_insee_de_la_region"],
         "cog_year": year,
         "status": "",
-        "population": [int(dep_pop.get(f"admin.departement:cog{year}:{c}", 0)) for c in core_deps["code_insee"]],
-        "census_date": sorted(set(census[in_core]))[-1] if in_core.any() else "",
-        "in_core": True,
-        "area_km2": core_deps.geometry.area / 1e6,
-        "geometry": core_deps.geometry,
+        "population": pd.array([int(dep_pop.get(f"admin.departement:cog{year}:{c}", 0)) if core else pd.NA
+                                for c, core in zip(near["code_insee"], near_core, strict=True)], dtype="Int64"),
+        "census_date": [(sorted(set(census[in_core]))[-1] if in_core.any() else "") if core else ""
+                        for core in near_core],
+        "in_core": near_core.to_numpy(),
+        "area_km2": near.geometry.area / 1e6,
+        "geometry": near.geometry,
     }, geometry="geometry", crs=t.crs_metric)
+    communes["population"] = communes["population"].astype("Int64")
     admin = pd.concat([departements, communes], ignore_index=True).sort_values("admin_id").reset_index(drop=True)
     admin = gpd.GeoDataFrame(admin, geometry="geometry", crs=t.crs_metric)
 
     qa_admin = {
         "cog_year": year, "departements": codes,
+        "departements_buffer_only": sorted(near.loc[~near_core, "code_insee"]),
         "communes_core": int(in_core.sum()), "communes_buffer_only": int((~in_core).sum()),
         "communes_in_wfs_window": window, "communes_without_population": int(population.isna().sum()),
         "census_population_core": int(communes.loc[communes["in_core"], "population"].sum()),

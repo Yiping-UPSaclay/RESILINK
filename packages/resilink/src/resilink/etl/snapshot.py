@@ -56,6 +56,17 @@ def diff(source_id: str, prev: SourceMetadata, cur: SourceMetadata) -> DriftRepo
     )
 
 
+def extent_window(territory: TerritoryConfig, root: Path | None = None) -> tuple[float, float, float, float]:
+    """WGS84 bounds (lon_min, lat_min, lon_max, lat_max) of the territory's staged extent (core + buffer)."""
+    import geopandas as gpd
+
+    path = (root or data_root()) / "staging" / territory.id / "territory_extent.parquet"
+    if not path.exists():
+        raise FileNotFoundError(f"no staged extent for {territory.id}: run `resilink etl stage ign.admin_express`")
+    lon0, lat0, lon1, lat1 = gpd.read_parquet(path).to_crs("EPSG:4326").total_bounds
+    return round(float(lon0), 5), round(float(lat0), 5), round(float(lon1), 5), round(float(lat1), 5)
+
+
 def raw_dir(source_id: str, root: Path | None = None) -> Path:
     return (root or data_root()) / "raw" / source_id
 
@@ -86,7 +97,12 @@ def fetch_snapshot(spec: SourceSpec, territory: TerritoryConfig | None = None, *
         ext = "parquet" if spec.format == "parquet" and spec.connector == "opendatasoft" else (
             "geojson" if spec.format == "geojson" or spec.connector == "datafair" else spec.format)
         data_path = tmp / f"data.{ext}"
-        url, rows = conn.fetch(spec, territory, data_path, limit=limit)
+        extra = {}
+        if spec.territory_mode == "extent_bbox":
+            if territory is None:
+                raise ValueError(f"{spec.id}: extent_bbox needs a territory")
+            extra["window"] = extent_window(territory, root)
+        url, rows = conn.fetch(spec, territory, data_path, limit=limit, **extra)
         if inspect is not None:  # static files: the schema is read from the download, gated before publishing
             meta = inspect(spec, data_path, meta)
             report = gate(meta)
