@@ -37,6 +37,9 @@ telecom). The full design is in `docs/architecture/blueprint.md`; decisions are 
 - Run `uv run python tools/progress.py` (full: acceptance, tests, contracts, ruff, demo + reproduce). It writes
   `data/progress/progress.json` and the dashboard's data files `data/progress/dashboard/*.json`, which are then
   uploaded to the progress dashboard.
+- Then `uv run python tools/github_board.py --apply` syncs the GitHub board (one milestone per phase, one issue per
+  item, generated from the roadmap; never edit those issues by hand). Each step is a branch and a PR (`gh pr create`);
+  the user merges.
 
 ## How to add things (AI-native workflow)
 - **New capability** → add a typed op in `packages/resilink/src/resilink/ops/` (`@op` with side-effect

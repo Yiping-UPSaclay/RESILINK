@@ -10,6 +10,7 @@
 
 updated: 2026-11-26
 # Items may carry `target` (a date): the dashboard shows it as a milestone on the timeline.
+# Items may carry `refs` (pull requests "#n" or commits): tools/github_board.py links them from the item's issue.
 repository: Yiping-UPSaclay/RESILINK   # GitHub (public); tools/progress.py reads its CI status
 
 phases:
@@ -18,25 +19,25 @@ phases:
     planned: { start: 2026-11-23, end: 2026-12-11 }
     goal: Core, Operation Registry, MCP, AI gateway, evals, synthetic slice; models as plugins (ADR-0008 E1-E3)
     items:
-      - { id: S0, name: "Sprint 0: core, ops, MCP, AI gateway, evals, synthetic demo, first connectors", status: done, done_on: 2026-11-23 }
-      - { id: ADR-0008, name: "Extension architecture accepted (revision 2)", status: done, done_on: 2026-11-23 }
-      - { id: TRACK, name: "Progress tracking: roadmap, acceptance tests, dashboard", status: done, done_on: 2026-11-23 }
-      - { id: LIC, name: "Licence: Apache-2.0 (LICENSE, NOTICE, package metadata)", status: done, done_on: 2026-11-23 }
-      - { id: C1, name: "First commit: Sprint 0 baseline with ADR-0008, blueprint v2.2, roadmap, licence", status: done, done_on: 2026-11-23 }
-      - { id: C2, name: "Push to GitHub (public repository); CI green on Linux and Windows", status: done, done_on: 2026-11-23 }
-      - { id: E1, name: "plugin_api 0.1 and registries for systems, slots and models", status: done, done_on: 2026-11-23, criteria: [ADR-0008/AC9] }
-      - { id: E2, name: "System packs elec/facility/gas/telecom; vocabulary out of the core", status: done, done_on: 2026-11-24, criteria: [ADR-0008/AC1] }
-      - { id: PLAN, name: "Plan re-ordered: proof of concept on real data first; proof-of-concept criteria tracked", status: done, done_on: 2026-11-25 }
-      - { id: E3, name: "Slots and built-in models as plugins, chosen by the experiment config; current loop as episode 0.1 and nested_mc; version pinning; plugin import contract", status: done, done_on: 2026-11-25, criteria: [ADR-0008/AC1, ADR-0008/AC9] }
-      - { id: C3, name: "GitHub board: milestones per phase, an issue per item, linked pull requests", status: blocked, blocked_by: [D-GHTOOL] }
+      - { id: S0, name: "Sprint 0: core, ops, MCP, AI gateway, evals, synthetic demo, first connectors", status: done, done_on: 2026-11-23, refs: ["bc86885"] }
+      - { id: ADR-0008, name: "Extension architecture accepted (revision 2)", status: done, done_on: 2026-11-23, refs: ["bc86885"] }
+      - { id: TRACK, name: "Progress tracking: roadmap, acceptance tests, dashboard", status: done, done_on: 2026-11-23, refs: ["bc86885", "#5"] }
+      - { id: LIC, name: "Licence: Apache-2.0 (LICENSE, NOTICE, package metadata)", status: done, done_on: 2026-11-23, refs: ["bc86885"] }
+      - { id: C1, name: "First commit: Sprint 0 baseline with ADR-0008, blueprint v2.2, roadmap, licence", status: done, done_on: 2026-11-23, refs: ["bc86885"] }
+      - { id: C2, name: "Push to GitHub (public repository); CI green on Linux and Windows", status: done, done_on: 2026-11-23, refs: ["bc86885"] }
+      - { id: E1, name: "plugin_api 0.1 and registries for systems, slots and models", status: done, done_on: 2026-11-23, criteria: [ADR-0008/AC9], refs: ["#1"] }
+      - { id: E2, name: "System packs elec/facility/gas/telecom; vocabulary out of the core", status: done, done_on: 2026-11-24, criteria: [ADR-0008/AC1], refs: ["#2"] }
+      - { id: PLAN, name: "Plan re-ordered: proof of concept on real data first; proof-of-concept criteria tracked", status: done, done_on: 2026-11-25, refs: ["#3"] }
+      - { id: E3, name: "Slots and built-in models as plugins, chosen by the experiment config; current loop as episode 0.1 and nested_mc; version pinning; plugin import contract", status: done, done_on: 2026-11-25, criteria: [ADR-0008/AC1, ADR-0008/AC9], refs: ["#4"] }
+      - { id: C3, name: "GitHub board: milestones per phase, an issue per item, linked pull requests (tools/github_board.py)", status: done, done_on: 2026-11-26 }
 
   - id: P1
     name: Real data for Bouches-du-Rhône
     planned: { start: 2026-12-07, end: 2027-02-19 }
     goal: First real release on open data and a first flood risk run on it (target mid-January); Steward; knowledge v1
     items:
-      - { id: D1, name: "Territory and population: IGN ADMIN EXPRESS COG 2026 (WFS; département + 30 km buffer), INSEE Filosofi 2021 200 m grid; staging adapters", status: done, done_on: 2026-11-26 }
-      - { id: D2, name: "Electricity: Enedis HTA/BT substations and HTA lines, RTE sites (attributes), OSM high-voltage lines and substations (Geofabrik + DuckDB ST_ReadOSM); staged", status: done, done_on: 2026-11-26 }
+      - { id: D1, name: "Territory and population: IGN ADMIN EXPRESS COG 2026 (WFS; département + 30 km buffer), INSEE Filosofi 2021 200 m grid; staging adapters", status: done, done_on: 2026-11-26, refs: ["#6"] }
+      - { id: D2, name: "Electricity: Enedis HTA/BT substations and HTA lines, RTE sites (attributes), OSM high-voltage lines and substations (Geofabrik + DuckDB ST_ReadOSM); staged", status: done, done_on: 2026-11-26, refs: ["#7"] }
       - { id: D3, name: "Telecom: ARCEP mobile sites with ANFR identifiers", status: not_started }
       - { id: D4, name: "Gas: NaTran transmission network and delivery stations", status: not_started }
       - { id: D5, name: "Flood hazard: Géorisques flood-risk zones (TRI / AZI)", status: not_started }
@@ -107,7 +108,7 @@ decisions:   # status: open | decided (with `decision` and `decided_on`)
   - { id: D-ORDER, question: "Finish the whole ADR-0008 refactor first, or the proof of concept on real data first?", needed_for: "plan", status: decided, decision: "Proof of concept first: E3, then the data track; other extension features when needed", decided_on: 2026-11-25 }
   - { id: D-LICENCE, question: "Licence: Apache-2.0 or EUPL-1.2?", needed_for: "first commit (C1)", status: decided, decision: "Apache-2.0", decided_on: 2026-11-23 }
   - { id: D-GITHUB, question: "GitHub repository URL", needed_for: "push and CI (C2)", status: decided, decision: "https://github.com/Yiping-UPSaclay/RESILINK (public; commits use the GitHub noreply address)", decided_on: 2026-11-23 }
-  - { id: D-GHTOOL, question: "Install the GitHub CLI (gh) and sign in, so the board, milestones and issues can be created", needed_for: "GitHub board (C3)", status: open }
+  - { id: D-GHTOOL, question: "Install the GitHub CLI (gh) and sign in, so the board, milestones and issues can be created", needed_for: "GitHub board (C3)", status: decided, decision: "gh 2.106.0 installed and signed in (scopes repo, workflow; a Projects board also needs the project scope)", decided_on: 2026-11-26 }
   - { id: D-DOCKER, question: "Install Docker Desktop (WSL 2)", needed_for: "map tiles (P1c)", status: open }
   - { id: D-APIKEY, question: "Anthropic API key for live agents and evals", needed_for: "Copilot end to end, integration assistant (P2)", status: open }
   - { id: D-METEO, question: "Météo-France API key", needed_for: "wildfire weather inputs (P2)", status: open }
