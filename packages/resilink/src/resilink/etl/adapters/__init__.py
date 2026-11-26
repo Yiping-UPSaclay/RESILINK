@@ -5,6 +5,7 @@ from resilink.etl.adapters import (  # noqa: F401  (registration)
     arcep,
     enedis,
     filosofi,
+    gas,
     osm_power,
     osm_telecom,
     rte,

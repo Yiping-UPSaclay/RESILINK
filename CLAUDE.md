@@ -40,6 +40,8 @@ telecom). The full design is in `docs/architecture/blueprint.md`; decisions are 
 - Then `uv run python tools/github_board.py --apply` syncs the GitHub board (one milestone per phase, one issue per
   item, generated from the roadmap; never edit those issues by hand). Each step is a branch and a PR (`gh pr create`);
   the user merges.
+- No AI attribution in commits or pull requests: no `Co-Authored-By: Claude` trailer, no "Generated with Claude Code"
+  line (maintainer's decision, 2026-11-26).
 
 ## How to add things (AI-native workflow)
 - **New capability** → add a typed op in `packages/resilink/src/resilink/ops/` (`@op` with side-effect

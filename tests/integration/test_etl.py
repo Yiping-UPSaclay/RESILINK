@@ -135,3 +135,18 @@ def test_arcep_sites_documentation_and_pinned_quarter():
     quarter = spec.dataset.rsplit("/", 1)[0]
     index = httpx.get(f"{spec.base_url}/{quarter}/index.html", headers=UA, follow_redirects=True, timeout=60).text
     assert spec.dataset.rsplit("/", 1)[1] in index  # the pinned file is still published
+
+
+@pytest.mark.network
+@pytest.mark.vcr
+def test_gas_sources_contracts():
+    sources, ods = load_sources(), OpendatasoftConnector()
+    natran = ods.describe(sources["natran.trace250"])
+    assert natran.has_geometry and natran.count and natran.count > 10_000
+    assert {"object_id", "departement"} <= {f.name for f in natran.fields}
+    grdf = ods.describe(sources["grdf.network"])
+    assert grdf.has_geometry and grdf.count and grdf.count > 3_000_000  # national distribution pipes
+    assert {"code_insee_administratif", "etat_serv", "propane", "geo_point_2d"} <= {f.name for f in grdf.fields}
+    plants = ods.describe(sources["odre.gas_power_plants"])
+    assert {"site", "annee_de_reference", "puissance_installee_mw", "latitude_site", "longitude_site"} <= {
+        f.name for f in plants.fields}

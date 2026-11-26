@@ -2,7 +2,7 @@
 
 > **Date:** v2.0 approved 2026-11-16 · **v2.2 2026-11-23** · **Pilot:** Bouches-du-Rhône (13) + buffer · **Horizon:** 12+ months · **Repository:** https://github.com/Yiping-UPSaclay/RESILINK (public; Sprint 0 implemented and verified, not yet committed)
 > **Tags:** **[E]** essential now · **[D]** deferred (planned for a later phase) · **[O]** optional (adopted only if a named trigger fires)
-> Claims marked ✔ were checked against official documentation or the publisher's own pages on 2026-11-16, on 2026-11-23 for F12 and the §6 additions, or on 2026-11-26 for the D1–D3 sources (§16). **TBC** means the claim must be confirmed during implementation.
+> Claims marked ✔ were checked against official documentation or the publisher's own pages on 2026-11-16, on 2026-11-23 for F12 and the §6 additions, or on 2026-11-26 for the D1–D4 sources (§16). **TBC** means the claim must be confirmed during implementation.
 > **v2.2 changes (accepted 2026-11-23: [ADR-0008](../adr/0008-extension-architecture.md) revision 2).**
 > - The core stays small: kernel, shared board, RNG, composition, reducers, provenance.
 > - **System packs, slot definitions and models** are registered, versioned plugins. A new system (e.g. water), a new kind of question (e.g. crew road access) or a new operation model (e.g. DC-OPF, AC-OPF) can be added later without core edits.
@@ -760,7 +760,10 @@ P0 = needed for the first release.
 | `enedis.reseau_hta` / `reseau_souterrain_hta` | HTA overhead ✔ (1,036,732 segments) / underground ✔ (1,863,552); geometry only, no voltage or switch state | Enedis Data Fair, `bbox` of the territory; GeoJSON pages linked by the HTTP `Link` header ✔ | MV topology | Fingerprint | LO 2.0 · internal | P0 ✔ D2 |
 | `ore.postes_source` | Agence ORE `postes-source` (TBC) | ORE export | Primary substations | TBC | TBC · internal | P0 |
 | `odre.registre_prod` | Production register ✔ | ODRÉ | Generators | TBC | LO · public | P0 |
-| `natran.trace250` | `trace-du-reseau-grt-250` ✔ (≈250 m) | ODRÉ | Gas transmission | Fingerprint, 250 m | LO · internal | P0 |
+| `natran.trace250` | `trace-du-reseau-grt-250` ✔ (≈250 m; "MAJ 2024", processed 2025-03-20; national Parquet export). NaTran publishes no delivery stations | ODRÉ | Gas transmission | Fingerprint, 250 m | LO · internal | P0 ✔ D4 |
+| `grdf.network` | `cartographie-du-reseau-grdf-en-service` ✔ (3.7 M distribution pipe segments; no pressure or diameter) | opendata.grdf.fr (Opendatasoft), `in_bbox` window, Parquet | Where gas distribution reaches | Fingerprint | LO · internal | P0 ✔ D4 |
+| `odre.gas_power_plants` | `prod-elec-gaz-naturel-fr` ✔ (site × reference year 2019–2025, coordinates) | ODRÉ | Gas → electricity coupling | Site name | LO · public | P0 ✔ D4 |
+| OSM gas (same Geofabrik extracts) | `man_made=pipeline` + `substance=gas`; `pipeline=substation` (stations; assumption A-GAS-01); LNG terminals as named industrial areas | — | Pipeline geometry, stations, LNG terminals | OSM id | ODbL · internal | P0 ✔ D4 |
 | `arcep.sites` | Quarterly sites CSV ✔, pinned to 2026 T2 (`;`; Lambert-93 x/y and WGS84; ANFR ID). The file departs from its documentation: UTF-8 and cp1252 mixed within lines, leading zeros stripped from codes, some decimal commas, spreadsheet-damaged site numbers; the adapter repairs each | data.arcep.fr | Mobile stations | ANFR + operator | LO · internal | P0 ✔ D3 |
 | `georisques.*` | API v1 (`gaspar/catnat` ✔; TRI/AZI endpoints TBC) + WFS | REST/WFS | Flood scenarios | Scenario ID | LO · public | P1 |
 | `arcep.sites_indisponibles` | Daily GeoJSON since 2020-10 ✔ (last update 2026-07-28) | data.gouv | Validation of electricity → telecom | ANFR ID | LO · internal | P1 |
@@ -782,7 +785,7 @@ class SourceAdapter(Protocol):
     def normalize(self, raw: RawSnapshot, ctx: AdapterContext) -> CanonicalBatch: ...
 ```
 
-- **`OpendatasoftConnector`** covers ODRÉ, Enedis and ORE through `/api/explore/v2.1/catalog/datasets/{id}/exports/{parquet|geojson}` ✔. It streams to disk with SHA-256 and stores `describe()` metadata. Geometry encoding in the Parquet exports is TBC, so adapters parse it explicitly.
+- **`OpendatasoftConnector`** covers ODRÉ, Enedis and ORE through `/api/explore/v2.1/catalog/datasets/{id}/exports/{parquet|geojson}` ✔. It streams to disk with SHA-256 and stores `describe()` metadata. Parquet exports carry geometry as WKB ✔ (2026-11-26); `in_bbox` on the point field windows an export on the territory.
 - **Generic mapping adapter (data-agnostic import).** A YAML file declares input path and CRS, target table/layer/class, ID key, column mappings, precedence, sensitivity and licence. The Steward agent **drafts** these files via `mappings.propose`, and a human approves them.
 
 ```yaml
@@ -1969,6 +1972,8 @@ uv run streamlit run apps/streamlit/Home.py        # Copilot answers with ValueR
 - ODRÉ, RTE overhead lines: https://odre.opendatasoft.com/explore/dataset/lignes-aeriennes-rte-nv/
 - ODRÉ, production register: https://odre.opendatasoft.com/explore/dataset/registre-national-installation-production-stockage-electricite-agrege/
 - ODRÉ, NaTran trace (250 m): https://odre.opendatasoft.com/explore/dataset/trace-du-reseau-grt-250/
+- ODRÉ, gas-fired power stations: https://odre.opendatasoft.com/explore/dataset/prod-elec-gaz-naturel-fr/
+- GRDF distribution network in service: https://opendata.grdf.fr/explore/dataset/cartographie-du-reseau-grdf-en-service/
 - Opendatasoft Explore API v2.1: https://help.opendatasoft.com/apis/ods-explore-v2/explore_v2.1.html
 - Enedis HTA/BT substations (Data Fair): https://opendata.enedis.fr/data-fair/api/v1/datasets/poste-electrique
 - Enedis HTA overhead lines (Data Fair): https://opendata.enedis.fr/data-fair/api/v1/datasets/reseau-hta

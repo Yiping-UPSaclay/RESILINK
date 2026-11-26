@@ -10,6 +10,7 @@ import zipfile
 from pathlib import Path
 
 import httpx
+import numpy as np
 import pytest
 import shapely
 from pyproj import Transformer
@@ -178,17 +179,88 @@ def osm_pbfs(tmp: Path) -> dict[str, bytes]:
         node(42, X0 + 10_500, Y0 + 8_000), node(43, X0 + 10_560, Y0 + 8_000), node(44, X0 + 10_560, Y0 + 8_050),
         node(45, X0 + 10_500, Y0 + 8_050),  # data centre polygon in the buffer
         node(47, X0 + 50_000, Y0 + 5_000, {"telecom": "exchange", "operator": "Orange"}),  # outside the buffer
+        # gas
+        node(60, X0 + 1_000, Y0 + 9_000), node(61, X0 + 9_000, Y0 + 9_000),  # NaTran pipeline in the core
+        node(62, X0 + 2_000, Y0 + 9_500, {"pipeline": "substation", "substance": "gas", "name": "Poste A"}),
+        node(63, X0 + 2_500, Y0 + 9_500, {"pipeline": "substation", "substance": "ethylene"}),  # not gas: dropped
+        node(64, X0 + 3_000, Y0 + 9_500, {"pipeline": "substation", "operator": "NaTran"}),  # no substance, gas operator
+        node(70, X0 + 4_000, Y0 + 500), node(71, X0 + 4_040, Y0 + 500), node(72, X0 + 4_040, Y0 + 540),
+        node(73, X0 + 4_000, Y0 + 540),  # station mapped as an industrial area: still a station
+        node(80, X0 + 8_000, Y0 + 500), node(81, X0 + 8_500, Y0 + 500), node(82, X0 + 8_500, Y0 + 800),
+        node(83, X0 + 8_000, Y0 + 800),  # LNG terminal area
     ]
     paca_ways = [(10, [1, 2], {"power": "line", "voltage": "225000", "circuits": "2"}),
                  (11, [3, 4], {"power": "minor_line", "voltage": "20000"}),
                  (12, [5, 6], {"power": "line"}),
                  (13, [20, 21, 22, 23, 20], {"power": "substation", "voltage": "63000", "ref:FR:RTE": "BBBBB"}),
-                 (41, [42, 43, 44, 45, 42], {"telecom": "data_center", "operator": "DC Co"})]
+                 (41, [42, 43, 44, 45, 42], {"telecom": "data_center", "operator": "DC Co"}),
+                 (65, [60, 61], {"man_made": "pipeline", "substance": "gas", "operator": "NaTran", "diameter": "600"}),
+                 (74, [70, 71, 72, 73, 70], {"pipeline": "substation", "substance": "gas", "landuse": "industrial",
+                                             "name": "Poste de Livraison B", "substation": "distribution"}),
+                 (84, [80, 81, 82, 83, 80], {"landuse": "industrial", "industrial": "port", "operator": "Elengy",
+                                             "name": "Terminal méthanier de Test"})]
     lr_nodes = [*shared, node(30, X0 + 40000, Y0 + 5000), node(31, X0 + 45000, Y0 + 5000)]
     lr_ways = [(10, [1, 2], {"power": "line", "voltage": "225000", "circuits": "2"}),
                (14, [30, 31], {"power": "line", "voltage": "400000"})]  # outside the buffer
     return {"paca": write_pbf(tmp / "paca.pbf", paca_nodes, paca_ways).read_bytes(),
             "languedoc-roussillon": write_pbf(tmp / "lr.pbf", lr_nodes, lr_ways).read_bytes()}
+
+
+def ods_parquet(rows: list[dict], geoms: list) -> bytes:
+    """An Opendatasoft Parquet export: geometry as WKB (WGS84) in ``geo_shape``, a WKB point in ``geo_point_2d``."""
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    def wgs84(g):
+        return shapely.transform(g, lambda xy: np.column_stack(TO_WGS84.transform(xy[:, 0], xy[:, 1])))
+
+    shapes = [wgs84(g) for g in geoms]
+    cols = {"geo_shape": pa.array([shapely.to_wkb(g) for g in shapes], pa.binary()),
+            "geo_point_2d": pa.array([shapely.to_wkb(g.representative_point()) for g in shapes], pa.binary())}
+    for key in rows[0]:
+        cols[key] = pa.array([r[key] for r in rows])
+    buf = io.BytesIO()
+    pq.write_table(pa.table(cols), buf)
+    return buf.getvalue()
+
+
+def natran_parquet() -> bytes:
+    lines = [shapely.LineString([(X0 + 1_000, Y0 + 9_100), (X0 + 9_000, Y0 + 9_100)]),  # in the core
+             shapely.LineString([(X0 + 40_000, Y0), (X0 + 45_000, Y0)])]  # outside the buffer
+    return ods_parquet([{"object_id": 1, "nom_region": "PACA", "departement": "Bouches-du-Rhône"},
+                        {"object_id": 2, "nom_region": "PACA", "departement": "Vaucluse"}], lines)
+
+
+def grdf_parquet() -> bytes:
+    lines = [shapely.LineString([(X0 + 1_000, Y0 + 1_000), (X0 + 1_200, Y0 + 1_000)]),  # 13001, in the core
+             shapely.LineString([(X0 + 11_000, Y0 + 1_000), (X0 + 11_300, Y0 + 1_000)]),  # 84001, buffer
+             shapely.LineString([(X0 + 40_000, Y0 + 1_000), (X0 + 40_300, Y0 + 1_000)])]  # outside the buffer
+    rows = [{"etat_serv": "En service", "propane": None, "code_insee_administratif": c} for c in ("13001", "84001", "84002")]
+    return ods_parquet(rows, lines)
+
+
+PLANTS_CSV = ("annee_de_reference;site;statut;puissance_installee_mw;longitude_site;latitude_site;operateur;"
+              "date_de_mise_en_service;point_geo;status\n"
+              "2024;Plant A;En service;400.0;{lon};{lat};EDF;2010;;In service\n"
+              "2025;Plant A;En service;430.0;{lon};{lat};EDF;2010;;In service\n"
+              "2025;Far plant;En service;300.0;2.85;48.37;EDF;2010;;In service\n")
+
+
+def plants_csv() -> bytes:
+    lon, lat = lonlat(X0 + 5_000, Y0 + 5_000)
+    return PLANTS_CSV.format(lon=lon, lat=lat).encode("utf-8")
+
+
+ODS_FIELDS = {
+    "postes-electriques-rte": RTE_FIELDS,
+    "trace-du-reseau-grt-250": [{"name": n, "type": t} for n, t in (
+        ("geo_shape", "geo_shape"), ("geo_point_2d", "geo_point_2d"), ("object_id", "int"), ("nom_region", "text"),
+        ("departement", "text"))],
+    "prod-elec-gaz-naturel-fr": [{"name": n, "type": "text"} for n in PLANTS_CSV.split("\n")[0].split(";")],
+    "cartographie-du-reseau-grdf-en-service": [{"name": n, "type": t} for n, t in (
+        ("geo_point_2d", "geo_point_2d"), ("geo_shape", "geo_shape"), ("etat_serv", "text"), ("propane", "text"),
+        ("code_insee_administratif", "text"))],
+}
 
 
 class Portal:
@@ -217,11 +289,14 @@ class Portal:
             return httpx.Response(200, content=data)
         if "/data-fair/api/v1/datasets/" in path:
             return self._datafair(request, path, q)
-        if "/api/explore/v2.1/catalog/datasets/postes-electriques-rte" in path:
-            if path.endswith("/exports/csv"):
-                return httpx.Response(200, content=RTE_CSV.encode("utf-8"))
-            return httpx.Response(200, json={"metas": {"default": {"title": "Sites RTE", "license": "Licence Ouverte v2.0",
-                                                                    "records_count": 5}}, "fields": RTE_FIELDS})
+        if "/api/explore/v2.1/catalog/datasets/" in path:
+            ds = path.split("/datasets/")[1].split("/")[0]
+            exports = {"postes-electriques-rte": lambda: RTE_CSV.encode("utf-8"), "trace-du-reseau-grt-250": natran_parquet,
+                       "prod-elec-gaz-naturel-fr": plants_csv, "cartographie-du-reseau-grdf-en-service": grdf_parquet}
+            if "/exports/" in path:
+                return httpx.Response(200, content=exports[ds]())
+            return httpx.Response(200, json={"metas": {"default": {"title": ds, "license": "Licence Ouverte v2.0",
+                                                                    "records_count": 5}}, "fields": ODS_FIELDS[ds]})
         return self._wfs(q)
 
     def _datafair(self, request: httpx.Request, path: str, q: dict[str, str]) -> httpx.Response:
@@ -276,3 +351,5 @@ TERRITORY_SOURCES = ("ign.admin_express.departement", "ign.admin_express.commune
 ELECTRICITY_SOURCES = ("rte.postes", "enedis.poste_electrique", "enedis.reseau_hta", "enedis.reseau_souterrain_hta",
                        "osm.geofabrik.paca", "osm.geofabrik.languedoc_roussillon")
 TELECOM_SOURCES = ("arcep.sites", "osm.geofabrik.paca", "osm.geofabrik.languedoc_roussillon")
+GAS_SOURCES = ("natran.trace250", "grdf.network", "odre.gas_power_plants", "osm.geofabrik.paca",
+               "osm.geofabrik.languedoc_roussillon")
