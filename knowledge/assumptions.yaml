@@ -93,3 +93,10 @@ assumptions:
     grade: B
     sensitivity: false
     evidence_ids: []
+  - id: A-GAS-01
+    title: Gas stations from OpenStreetMap
+    statement: Gas stations mapped in OpenStreetMap (pipeline=substation with substance gas, or a gas operator) stand for NaTran's delivery, interconnection and compression stations, which NaTran does not publish. In Bouches-du-Rhône, 87 stations, 1 compression and 1 transmission station are mapped (2026-11-26); completeness is unknown.
+    rationale: The only open, located source of gas stations. Their count is reported in every staged table (QA) and can be checked against operator data when available (OPX).
+    grade: C
+    sensitivity: true
+    evidence_ids: []

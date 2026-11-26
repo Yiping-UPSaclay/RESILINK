@@ -46,13 +46,16 @@ sources:
     connector: opendatasoft
     base_url: https://odre.opendatasoft.com
     dataset: trace-du-reseau-grt-250
-    format: geojson
+    format: parquet               # ODS Parquet exports carry WKB geometry (checked 2026-11-26)
+    territory_mode: none          # national file (11,615 segments); the adapter clips to the territory
+    vintage: "MAJ 2024 (processed 2025-03-20)"
     role: Gas transmission network (~250 m accuracy; never for works)
     licence: Licence Ouverte 2.0
     sensitivity: internal
     refresh: annual
     id_strategy: fingerprint_line_250m
     priority: P0
+    docs_url: https://odre.opendatasoft.com/explore/dataset/trace-du-reseau-grt-250/
   - id: odre.registre_prod
     provider: ODRÉ
     connector: opendatasoft
@@ -216,3 +219,38 @@ sources:
     priority: P0
     notes: The raw snapshot is the national file byte for byte; the adapter selects the territory's sites.
     docs_url: https://data.arcep.fr/mobile/sites/documentation_sites.md
+
+  # --- D4 gas (verified 2026-11-26) -----------------------------------------------------------------------
+  # GRDF distribution network in service (opendata.grdf.fr, same Opendatasoft API; Licence Ouverte): pipe segments
+  # with their commune, no pressure or diameter. 224,298 segments in the territory window.
+  - id: grdf.network
+    provider: GRDF
+    connector: opendatasoft
+    base_url: https://opendata.grdf.fr
+    dataset: cartographie-du-reseau-grdf-en-service
+    format: parquet
+    territory_mode: extent_bbox
+    geo_point_field: geo_point_2d
+    role: Gas distribution pipes (where the public gas network reaches)
+    licence: Licence Ouverte 2.0
+    sensitivity: internal
+    refresh: annual
+    id_strategy: fingerprint_line_1m
+    priority: P0
+    docs_url: https://opendata.grdf.fr/explore/dataset/cartographie-du-reseau-grdf-en-service/
+  # Gas-fired power stations (ODRÉ, published by NaTran; Licence Ouverte): one row per site and reference year
+  # (2019-2025), with coordinates. They couple the gas and electricity networks.
+  - id: odre.gas_power_plants
+    provider: NaTran (via ODRÉ)
+    connector: opendatasoft
+    base_url: https://odre.opendatasoft.com
+    dataset: prod-elec-gaz-naturel-fr
+    format: csv
+    territory_mode: none
+    role: Gas-fired power stations (gas -> electricity coupling)
+    licence: Licence Ouverte 2.0
+    sensitivity: public
+    refresh: annual
+    id_strategy: native:site
+    priority: P0
+    docs_url: https://odre.opendatasoft.com/explore/dataset/prod-elec-gaz-naturel-fr/

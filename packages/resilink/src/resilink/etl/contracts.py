@@ -29,6 +29,7 @@ class SourceSpec(BaseModel):
     territory_layer: str | None = Field(None, description="WFS feature type holding the territory's départements")
     members: list[str] = Field(default_factory=list, description="http_file archives: members to inspect and use")
     delimiter: str = Field(",", description="CSV field separator (static CSV files and CSV members of archives)")
+    geo_point_field: str = Field("geo_point_2d", description="Opendatasoft: point field used by extent_bbox (in_bbox)")
     checksum: Literal["none", "md5_sidecar"] = Field(
         "none", description="http_file: md5_sidecar checks the download against '<final url>.md5' (Geofabrik)")
     vintage: str | None = Field(None, description="Publisher edition pinned by this entry (e.g. COG 2026)")

@@ -1,0 +1,359 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - odre.opendatasoft.com
+      user-agent:
+      - resilink-lab/0.1 (research; open-data client)
+    method: GET
+    uri: https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/trace-du-reseau-grt-250
+  response:
+    body:
+      string: !!binary |
+        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
+    headers:
+      access-control-allow-headers:
+      - Authorization, X-Requested-With, Origin, ODS-API-Analytics-App, ODS-API-Analytics-Embed-Type,
+        ODS-API-Analytics-Embed-Referrer, ODS-Widgets-Version, Accept
+      access-control-allow-methods:
+      - POST, GET, OPTIONS
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - ODS-Explore-API-Deprecation, Link, X-RateLimit-Remaining, X-RateLimit-Limit,
+        X-RateLimit-Reset, X-RateLimit-dataset-Remaining, X-RateLimit-dataset-Limit,
+        X-RateLimit-dataset-Reset
+      access-control-max-age:
+      - '1000'
+      cache-control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-language:
+      - en-us
+      content-security-policy:
+      - upgrade-insecure-requests;
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Thu, 26 Nov 2026 13:54:48 GMT
+      permissions-policy:
+      - midi=(),microphone=(),camera=(),magnetometer=(),gyroscope=(),fullscreen=(self),payment=()
+      referrer-policy:
+      - strict-origin-when-cross-origin
+      server:
+      - openresty
+      strict-transport-security:
+      - max-age=31536000;includeSubdomains
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Language, Cookie, Host
+      x-content-type-options:
+      - nosniff
+      x-ratelimit-limit:
+      - '10000000'
+      x-ratelimit-remaining:
+      - '9999965'
+      x-ratelimit-reset:
+      - '2026-11-27 00:00:00+00:00'
+      x-ua-compatible:
+      - IE=edge
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - opendata.grdf.fr
+      user-agent:
+      - resilink-lab/0.1 (research; open-data client)
+    method: GET
+    uri: https://opendata.grdf.fr/api/explore/v2.1/catalog/datasets/cartographie-du-reseau-grdf-en-service
+  response:
+    body:
+      string: !!binary |
+        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
+        8OnT/wCfWSOJ4hwAAA==
+    headers:
+      access-control-allow-headers:
+      - Authorization, X-Requested-With, Origin, ODS-API-Analytics-App, ODS-API-Analytics-Embed-Type,
+        ODS-API-Analytics-Embed-Referrer, ODS-Widgets-Version, Accept
+      access-control-allow-methods:
+      - POST, GET, OPTIONS
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - ODS-Explore-API-Deprecation, Link, X-RateLimit-Remaining, X-RateLimit-Limit,
+        X-RateLimit-Reset, X-RateLimit-dataset-Remaining, X-RateLimit-dataset-Limit,
+        X-RateLimit-dataset-Reset
+      access-control-max-age:
+      - '1000'
+      cache-control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-language:
+      - fr-fr
+      content-security-policy:
+      - upgrade-insecure-requests;
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Thu, 26 Nov 2026 13:54:49 GMT
+      permissions-policy:
+      - midi=(),microphone=(),camera=(),magnetometer=(),gyroscope=(),fullscreen=(self),payment=()
+      referrer-policy:
+      - strict-origin-when-cross-origin
+      server:
+      - openresty
+      strict-transport-security:
+      - max-age=31536000;includeSubdomains
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Language, Cookie, Host
+      x-content-type-options:
+      - nosniff
+      x-ratelimit-limit:
+      - '5000'
+      x-ratelimit-remaining:
+      - '4988'
+      x-ratelimit-reset:
+      - '2026-11-27 00:00:00+00:00'
+      x-ua-compatible:
+      - IE=edge
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - odre.opendatasoft.com
+      user-agent:
+      - resilink-lab/0.1 (research; open-data client)
+    method: GET
+    uri: https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/prod-elec-gaz-naturel-fr
+  response:
+    body:
+      string: !!binary |
+        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
+        Qo0vAAA=
+    headers:
+      access-control-allow-headers:
+      - Authorization, X-Requested-With, Origin, ODS-API-Analytics-App, ODS-API-Analytics-Embed-Type,
+        ODS-API-Analytics-Embed-Referrer, ODS-Widgets-Version, Accept
+      access-control-allow-methods:
+      - POST, GET, OPTIONS
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - ODS-Explore-API-Deprecation, Link, X-RateLimit-Remaining, X-RateLimit-Limit,
+        X-RateLimit-Reset, X-RateLimit-dataset-Remaining, X-RateLimit-dataset-Limit,
+        X-RateLimit-dataset-Reset
+      access-control-max-age:
+      - '1000'
+      cache-control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-language:
+      - en-us
+      content-security-policy:
+      - upgrade-insecure-requests;
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Thu, 26 Nov 2026 13:54:49 GMT
+      permissions-policy:
+      - midi=(),microphone=(),camera=(),magnetometer=(),gyroscope=(),fullscreen=(self),payment=()
+      referrer-policy:
+      - strict-origin-when-cross-origin
+      server:
+      - openresty
+      strict-transport-security:
+      - max-age=31536000;includeSubdomains
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Language, Cookie, Host
+      x-content-type-options:
+      - nosniff
+      x-ratelimit-limit:
+      - '10000000'
+      x-ratelimit-remaining:
+      - '9999964'
+      x-ratelimit-reset:
+      - '2026-11-27 00:00:00+00:00'
+      x-ua-compatible:
+      - IE=edge
+    status:
+      code: 200
+      message: OK
+version: 1

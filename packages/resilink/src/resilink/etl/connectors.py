@@ -3,7 +3,8 @@
 Verified 2026-11-16:
 
 * Opendatasoft Explore API v2.1 — ODRÉ (RTE, NaTran, Teréga, registre): ``/api/explore/v2.1/catalog/datasets/{id}``
-  and ``.../exports/{format}`` (no record cap on exports).
+  and ``.../exports/{format}`` (no record cap on exports). Parquet exports carry geometry as WKB (checked
+  2026-11-26 on GRDF's portal, which runs the same API); ``in_bbox`` windows an export on the territory.
 * Data Fair — Enedis open data portal (migrated from Opendatasoft; the old v2.1 paths now return 410):
   ``/data-fair/api/v1/datasets/{id}`` (schema, count, licence) and ``.../lines`` (paginated, ``qs`` filter).
 
@@ -71,7 +72,10 @@ class OpendatasoftConnector:
         if spec.territory_mode == "field" and deps and spec.territory_field:
             params["where"] = " OR ".join(f'{spec.territory_field}="{d}"' for d in deps)
         elif spec.territory_mode == "extent_bbox":
-            raise ValueError(f"{spec.id}: extent_bbox is not implemented for Opendatasoft exports")
+            if window is None:
+                raise ValueError(f"{spec.id}: extent_bbox needs the territory window")
+            lon0, lat0, lon1, lat1 = window  # ODSQL in_bbox takes the south-west then north-east corner, lat first
+            params["where"] = f"in_bbox({spec.geo_point_field}, {lat0:.5f}, {lon0:.5f}, {lat1:.5f}, {lon1:.5f})"
         if limit:
             params["limit"] = limit
         url = f"{spec.base_url.rstrip('/')}/api/explore/v2.1/catalog/datasets/{spec.dataset}/exports/{spec.format}"

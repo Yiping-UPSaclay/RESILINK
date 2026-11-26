@@ -39,7 +39,7 @@ phases:
       - { id: D1, name: "Territory and population: IGN ADMIN EXPRESS COG 2026 (WFS; département + 30 km buffer), INSEE Filosofi 2021 200 m grid; staging adapters", status: done, done_on: 2026-11-26, refs: ["#6"] }
       - { id: D2, name: "Electricity: Enedis HTA/BT substations and HTA lines, RTE sites (attributes), OSM high-voltage lines and substations (Geofabrik + DuckDB ST_ReadOSM); staged", status: done, done_on: 2026-11-26, refs: ["#7"] }
       - { id: D3, name: "Telecom: ARCEP mobile sites with ANFR identifiers (file defects repaired); OSM exchanges and data centres; staged", status: done, done_on: 2026-11-26, refs: ["#45"] }
-      - { id: D4, name: "Gas: NaTran transmission network and delivery stations", status: not_started }
+      - { id: D4, name: "Gas: NaTran transmission trace, GRDF distribution pipes, gas-fired power stations; OSM pipelines, stations and LNG terminals; staged", status: done, done_on: 2026-11-26 }
       - { id: D5, name: "Flood hazard: Géorisques flood-risk zones (TRI / AZI)", status: not_started }
       - { id: D6, name: "Adapters, entity matching, topology build, QA gates; publish release bdr-2027.01.0", status: not_started, criteria: [POC/AC1] }
       - { id: D7, name: "First flood risk campaign on Bouches-du-Rhône", status: not_started, target: 2027-01-15, criteria: [POC/AC2] }
