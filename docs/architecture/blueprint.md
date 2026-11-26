@@ -63,77 +63,85 @@
 | Operations | Cron jobs | **Event-driven agents** react to new snapshots, drift and weather alerts, producing briefings and proposals [D]. |
 | Quality | Unit tests | Unit and property tests, plus **agent evals** (golden tasks with numeric ground truth), **grounding checks** and an adversarial (prompt-injection) suite. |
 
-### 1.2 Architecture map (v2.2: planes, small fixed core, registered extensions)
+### 1.2 Architecture map (status 2026-11-25: Sprint 0 + ADR-0008 E1–E3 built)
 
-Colours show status: **green**, built and verified in Sprint 0; **amber**, accepted in ADR-0008 (revision 2) but not yet built; **grey dashed**, deferred or anticipated.
+Colours show status:
+- **Green:** built and verified (Sprint 0, plus E1–E3 of ADR-0008).
+- **Amber:** next in the re-ordered plan (P1 real-data track, P2 analytics and engine).
+- **Grey dashed:** deferred until the first thesis needs it, or to P3–P4.
 
 ```mermaid
 flowchart TB
   classDef built fill:#e3f1e8,stroke:#2e7d4f,color:#10261a
-  classDef proposed fill:#fdf1d6,stroke:#b7791f,color:#2b1d05
+  classDef next fill:#fdf1d6,stroke:#b7791f,color:#2b1d05
   classDef deferred fill:#eef0f4,stroke:#7a8194,color:#2a2f3a,stroke-dasharray:5 3
 
   subgraph EXP["Experience plane"]
     direction LR
     UI["Streamlit: Copilot · Risk · Review · Ops console"]:::built
     EXTC["External MCP clients<br/>(Claude Code / Desktop)"]:::built
-    WEB["React agentic canvas [D]"]:::deferred
+    WEB["React agentic canvas [P4]"]:::deferred
   end
 
   subgraph AG["Agent plane — packages/resilink-ai"]
     direction LR
-    COP["Copilot · Reviewer"]:::built
-    SPC["Steward · Curator · Experimenter · Analyst [P1–P2]"]:::deferred
-    BLD["Integration assistant:<br/>drafts plugins as PRs [P2]"]:::deferred
+    COP["Copilot · Reviewer<br/>(live use needs an API key)"]:::built
     GW["AI Gateway: tier routing · budgets · grounding · provenance"]:::built
+    SPC["Steward [P1] · Curator · Experimenter · Analyst [P2]"]:::next
+    BLD["Integration assistant [P2]"]:::deferred
   end
 
   subgraph CAP["Capability plane — resilink.ops"]
     direction LR
-    REG["Operation Registry<br/>read · compute · propose · admin"]:::built
-    MOPS["systems.list · slots.list<br/>models.list · models.describe"]:::proposed
-    PROJ["Projections: CLI · MCP · UI forms · agent tools · REST [D]"]:::built
+    REG["Operation Registry (18 ops)<br/>read · compute · propose · admin"]:::built
+    PROJ["Projections: CLI · MCP · UI forms · agent tools"]:::built
+    MOPS["Discovery ops: systems · slots · models [E9]"]:::deferred
   end
 
   subgraph KN["Knowledge plane — resilink.knowledge"]
     direction LR
     CUR["Curated YAML in git<br/>ontology · rules · assumptions · fragility"]:::built
     KS["DuckDB store: op calls · proposals<br/>findings · AI provenance · BM25"]:::built
-    MCARD["Packs, slots, model cards<br/>and citations"]:::proposed
+    MCARD["Model cards in the knowledge graph [E9]"]:::deferred
   end
 
   subgraph ENG["Engine — the small fixed core (ADR-0008)"]
     direction LR
-    MREG["Registries<br/>systems · slots · models"]:::proposed
-    CMP["Composer<br/>data needs · defaults report<br/>ensembles · pinning"]:::proposed
-    KER["Event kernel + shared board<br/>clock · RNG streams · actors"]:::proposed
-    RED["Weighted reducers<br/>bands · VaR/CVaR · EAL<br/>model uncertainty"]:::built
+    MREG["Registries + system catalog<br/>entry points · policy · pinning"]:::built
+    CMP["Composer<br/>config schema 2 · version pinning"]:::built
+    ORC["episode 0.1 orchestrator<br/>+ nested_mc sampler"]:::built
+    KER["Event kernel, episode 0.2 [E4, P2]<br/>decision epochs · per-slot RNG"]:::next
+    CHK["Data-need check · defaults report<br/>ensembles [E5b, P2]"]:::next
+    RED["Reducers<br/>bands · VaR/CVaR · EAL"]:::built
   end
 
   subgraph EXTN["Registered extensions — versioned, 0.x draft until proven"]
     direction LR
-    SYS["System packs<br/>elec · gas · telecom · facility<br/>later: water · roads · heat"]:::proposed
-    SLT["Slot definitions<br/>hazard · fragility · dependency · service<br/>propagation · restoration · consequence"]:::proposed
-    ANT["Anticipated slots<br/>degradation · resources · policy<br/>lifecycle orchestrator"]:::deferred
-    MOD["Models<br/>built-ins · thesis plugins · function plugs"]:::proposed
+    SYS["System packs<br/>elec · facility · gas · telecom"]:::built
+    SLT["Slot definitions v0.1<br/>7 model slots + orchestrator + sampler"]:::built
+    MOD["Built-in models as plugins (10)<br/>import only plugin_api"]:::built
+    ANT["Anticipated slots: degradation<br/>resources · policy · lifecycle"]:::deferred
+    THS["Thesis plugins · new systems<br/>(packages in plugins/)"]:::deferred
   end
 
   subgraph RUN["Execution and quality"]
     direction LR
-    EXM["Execution modes<br/>in-process · persistent worker · batch [D]"]:::proposed
-    KIT["Conformance kit<br/>+ impact report"]:::proposed
-    BEN["Proving ground:<br/>observed events [P1–P2]"]:::deferred
+    EXM["In-process execution"]:::built
+    WRK["Persistent worker · batch<br/>FMI/BMI [E7]"]:::deferred
+    KIT["Conformance kit · sandbox<br/>function plugs [E8]"]:::deferred
+    BEN["Proving ground:<br/>observed events [P1e]"]:::next
   end
 
   subgraph SUB["Data substrate"]
     direction LR
-    SRC["Open and operator data<br/>connectors · drift gate · raw snapshots"]:::built
-    REL["Immutable releases<br/>GeoParquet 1.1 + DuckDB"]:::built
-    OBS["observations tables<br/>ages · inspections · outages"]:::proposed
-    RES["Results store + run manifests<br/>core and plugin tables"]:::built
+    SRC["Connectors + drift gate<br/>ODRÉ · Enedis (5 sources)"]:::built
+    ADP["More sources · adapters · entity matching<br/>topology · QA [D1–D6, P1]"]:::next
+    REL["Immutable releases<br/>synthetic today · bdr-2027.01.0 next"]:::built
+    OBS["observations tables [E6, P2]"]:::next
+    RES["Results store + run manifests<br/>models pinned per run"]:::built
   end
 
-  GOV["Governance: tiers · autonomy · quotas · budgets · evals · invariants I1–I7 · extension review"]:::built
+  GOV["Governance: tiers · autonomy · quotas · budgets · evals · invariants I1–I7 · plugin import contract"]:::built
 
   UI --> COP
   UI --> PROJ
@@ -143,35 +151,32 @@ flowchart TB
   PROJ --> REG
   REG --> KS
   REG --> CMP
-  MOPS --> MREG
-  MREG --> MCARD
+  MOPS -.-> MREG
   MREG --> CMP
-  CMP --> KER
-  KER -->|events| MOD
-  SYS -.->|defines systems| KER
+  CMP --> ORC
+  ORC -->|calls| MOD
+  KER -.->|generalises| ORC
+  SYS -.->|systems| MREG
   SLT -.->|contracts| MOD
+  THS -.->|plug into| SLT
   MOD -.->|runs via| EXM
-  KIT -.->|gates| MOD
+  KIT -.->|gates| THS
   BEN -.->|scores| MOD
-  BLD -.->|drafts| MOD
-  SRC --> REL
-  REL --> KER
-  OBS --> KER
-  KER --> RES
+  SRC --> ADP
+  ADP --> REL
+  REL --> ORC
+  OBS -.-> ORC
+  ORC --> RES
   RES --> RED
   GOV -.- AG
   GOV -.- CAP
 ```
 
 **How to read the map.**
-- **The shell is unchanged.** Everything above the engine is the AI-native shell from v2.0: experience, agents, capabilities and knowledge. It only gains discovery ops and catalog entries for packs, slots and models.
-- **The engine is the small fixed core.** It holds the registries, the composer, the event kernel with the shared board, and the reducers. Nothing in it names a specific system or model.
-- **Systems, kinds of question (slots) and models are registered extensions.** They are versioned and stay drafts until real theses have used them. A study adds whatever it needs at the level it needs (§6.14, §6.17) and never touches the planes above.
-- **Governance covers plugins.** The invariants I1–I7 apply to plugins as to built-ins:
-  - plugins are deterministic code, reviewed by PR;
-  - they make no LLM or network calls;
-  - their outputs are tier-checked;
-  - new slots and systems pass an extension review.
+- **The shell is in place.** The AI-native shell from v2.0 (experience, agents, capabilities, knowledge) is built. The Copilot is tested with scripted responses only, until an API key is available (decision D-APIKEY).
+- **The core is now plugin-based.** The engine composes registered system packs, slot definitions and models chosen by the experiment configuration. Each run pins the exact code, so results stay comparable and traceable. The built-in models import only the plugin API, which an architecture rule enforces.
+- **The next work is real data** (amber, bottom row). The connectors exist, but the adapters, entity matching, topology build and QA that produce the Bouches-du-Rhône release `bdr-2027.01.0` do not yet. A first flood risk run on it is targeted for mid-January (roadmap D7, proof-of-concept criterion POC/AC2).
+- **Theses plug in at the extensions row** without touching the planes above. The tooling that makes that easy (conformance kit, examples, discovery ops) waits until the first thesis needs it.
 
 ### 1.3 Invariants
 
