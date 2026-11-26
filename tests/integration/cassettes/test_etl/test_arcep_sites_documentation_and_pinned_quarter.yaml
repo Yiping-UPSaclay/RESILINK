@@ -1,0 +1,356 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - data.arcep.fr
+      user-agent:
+      - resilink-lab/0.1 (research; open-data client)
+    method: GET
+    uri: https://data.arcep.fr/mobile/sites/documentation_sites.md
+  response:
+    body:
+      string: '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+        <html><head>
+
+        <title>302 Found</title>
+
+        </head><body>
+
+        <h1>Found</h1>
+
+        <p>The document has moved <a href="https://arcep.s3.rbx.io.cloud.ovh.net/mobile/sites/documentation_sites.md">here</a>.</p>
+
+        </body></html>
+
+        '
+    headers:
+      connection:
+      - Keep-Alive
+      content-length:
+      - '297'
+      content-type:
+      - text/html; charset=iso-8859-1
+      date:
+      - Thu, 26 Nov 2026 13:26:30 GMT
+      keep-alive:
+      - timeout=5, max=100
+      location:
+      - https://arcep.s3.rbx.io.cloud.ovh.net/mobile/sites/documentation_sites.md
+      server:
+      - Apache
+      strict-transport-security:
+      - max-age=63072000; preload
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - arcep.s3.rbx.io.cloud.ovh.net
+      user-agent:
+      - resilink-lab/0.1 (research; open-data client)
+    method: GET
+    uri: https://arcep.s3.rbx.io.cloud.ovh.net/mobile/sites/documentation_sites.md
+  response:
+    body:
+      string: "# Sites fournissant un service mobile\r\n---\r\n\r\n## :bar_chart:
+        Pr\xE9sentation des donn\xE9es\r\n\r\nLes \"**sites**\" d\xE9signent les \xE9quipements,
+        g\xE9n\xE9ralement plac\xE9s sur des points hauts, n\xE9cessaires \xE0 la
+        transmission radio des r\xE9seaux mobiles. Un site comporte d'ordinaire plusieurs
+        antennes et peut comporter plusieurs technologies (2G, 3G, 4G, 5G). Certains
+        sites sont partag\xE9s entre plusieurs op\xE9rateurs : on dit alors que le
+        site est \"mutualis\xE9\".\r\n\r\nLes donn\xE9es sont collect\xE9es tous les
+        trimestres par l'Arcep aupr\xE8s des op\xE9rateurs.\r\n\r\n## :notebook: Descriptif
+        des donn\xE9es\r\n\r\n### :tokyo_tower: Fichiers : Sites\r\n\r\nListe des
+        sites 2G/3G/4G/5G ouverts commercialement en France, dont la puissance isotrope
+        rayonn\xE9e \xE9quivalente (PIRE) est sup\xE9rieure \xE0 5W.\r\n\r\nLe reporting
+        mensuel 5G n'est plus publi\xE9 depuis juillet 2021 : il est possible de reconstituer
+        la liste des sites 5G \xE0 date \xE0 partir des informations disponibles dans
+        ce fichier sites g\xE9n\xE9ral.\r\n\r\nLes listes de sites sont ventil\xE9es
+        par zone \xE0 partir du mill\xE9sime **2022 T3** (voir ci-dessous pour les
+        anciens mill\xE9simes) :\r\n- les sites localis\xE9s en France m\xE9tropolitaine
+        (ex : `2022_T3_sites_Metropole.csv`)\r\n- les sites localis\xE9s en France
+        d'outre-mer (ex : `2022_T3_sites_Outremer.csv`)\r\n\r\n**Caract\xE9ristiques
+        g\xE9n\xE9rales :**\r\n\r\n|||\r\n| ----------------- | --------------|\r\n|
+        Format\t \t\t| csv\t\t\t|\r\n| S\xE9parateur\t \t| ;\t\t\t\t|\r\n| D\xE9cimale\t\t
+        \t| ,\t\t\t\t|\r\n| Encodage\t \t\t| UTF-8 \t\t|\r\n| Type de g\xE9om\xE9trie\t|
+        point (x;y)\t|\r\n| Syst\xE8me de coordonn\xE9es g\xE9ographiques | projection
+        en vigueur pour chaque territoire (voir ci-dessous [cl\xE9s de lecture](#\U0001F5DD-cl\xE9s-de-lecture-des-donn\xE9es))|\r\n|
+        Source\t\t\t| op\xE9rateurs \t|\r\n\r\n*Pour afficher les fichiers csv avec
+        les bons accents dans le logiciel Microsoft Excel, il est possible d\u2019ex\xE9cuter
+        l\u2019Assistant importation de texte en rempla\xE7ant l\u2019extension de
+        nom de fichier `.csv` par `.txt` avant de l\u2019ouvrir. Vous pourrez alors
+        s\xE9lectionner l\u2019encodage UTF-8.*\r\n\r\n**Description des champs :**\r\n\r\n|
+        Nom des\t\t\t\t\t\t\t| Description des champs\t\t\t\t\t\t\t\t\t\t| Format\t\t\t\t\t|\r\n|
+        --------------------------------- | -------------------------------------------------------------
+        | --------------------------|\r\n| `code_op`\t\t\t\t\t\t\t| Code de l'op\xE9rateur\t\t\t\t\t\t\t\t\t\t\t|
+        Entier  (5 chiffres)\t\t|\r\n| `nom_op`\t\t\t\t\t\t\t| Nom commercial de l'op\xE9rateur\t\t\t\t\t\t\t\t\t|
+        Texte\t\t\t\t\t\t|\r\n| `num_site`\t\t\t\t\t\t| Identifiant du site issu du
+        SI de l'op\xE9rateur\t\t\t\t\t| Texte\t\t\t\t\t\t|\r\n| `id_site_partage`*\t\t\t\t|
+        Identifiant du site mutualis\xE9 entre op\xE9rateurs\t\t\t\t| Texte\t\t\t\t\t\t|\r\n|
+        `id_station_anfr`\t\t\t\t\t| Identifiant de station ANFR (Agence Nationale
+        des Fr\xE9quences)\t| Texte (10 caract\xE8res)\t\t|\r\n| `x`\t\t\t\t\t\t\t\t|
+        Coordonn\xE9e x dans le syst\xE8me de projection en vigueur\t\t\t| Entier\t\t\t\t\t|\r\n|
+        `y`\t\t\t\t\t\t\t\t| Coordonn\xE9e y dans le syst\xE8me de projection en vigueur\t\t\t|
+        Entier\t\t\t\t\t|\r\n| `latitude`\t\t\t\t\t\t| Latitude en projection WGS
+        1984 (EPSG:4326)\t\t\t\t\t| R\xE9el\t\t\t\t\t\t|\r\n| `longitude`\t\t\t\t\t\t|
+        Longitude en projection WGS 1984 (EPSG:4326)\t\t\t\t\t| R\xE9el\t\t\t\t\t\t|\r\n|
+        `nom_reg`\t\t\t\t\t\t\t| Nom de la r\xE9gion d'implantation du site (Code
+        Officiel G\xE9ographique de l'ann\xE9e courante)\t\t\t| Texte\t|\r\n| `nom_dep`\t\t\t\t\t\t\t|
+        Nom du d\xE9partement d'implantation du site (Code Officiel G\xE9ographique
+        de l'ann\xE9e courante)\t\t| Texte\t|\r\n| `insee_dep`\t\t\t\t\t\t| Code du
+        d\xE9partement d'implantation du site (Code Officiel G\xE9ographique de l'ann\xE9e
+        courante)\t\t| Texte\t|\r\n| `nom_com`\t\t\t\t\t\t\t| Nom de la commune d'implantation
+        du site (Code Officiel G\xE9ographique de l'ann\xE9e courante)\t\t\t| Texte\t|\r\n|
+        `insee_com`\t\t\t\t\t\t| Code Insee de la commune d'implantation du site (Code
+        Officiel G\xE9ographique de l'ann\xE9e courante)\t| Texte\t|\r\n| `site_2g`\t\t\t\t\t\t\t|
+        Equipement du site en technologie 2G\t\t\t\t\t\t\t| Bool\xE9en (0 = FAUX 1=VRAI)
+        |\r\n| `site_3g`\t\t\t\t\t\t\t| Equipement du site en technologie 3G\t\t\t\t
+        \t\t\t| Bool\xE9en (0 = FAUX 1=VRAI) |\r\n| `site_4g`\t\t\t\t\t\t\t| Equipement
+        du site en technologie 4G\t\t\t\t \t\t\t| Bool\xE9en (0 = FAUX 1=VRAI) |\r\n|
+        `site_5g`\t\t\t\t\t\t\t| Equipement du site en technologie 5G\t\t\t\t \t\t\t|
+        Bool\xE9en (0 = FAUX 1=VRAI) |\r\n| `mes_4g_trim`*\t\t\t\t\t| Equipement du
+        site en technologie 4g au cours du dernier trimestre (du 30/06/2022 au 30/09/2022)
+        \t| Bool\xE9en (0 = FAUX 1=VRAI) |\r\n| `site_zb`*\t\t\t\t\t\t| Site issu
+        du programme \"zones blanches \u2013 centres-bourgs\"\t\t| Bool\xE9en (0 =
+        FAUX 1=VRAI) |\r\n| `site_dcc`*\t\t\t\t\t\t| Site issu du \"Dispositif de
+        Couverture Cibl\xE9e\"\t\t\t\t| Bool\xE9en (0 = FAUX 1=VRAI) |\r\n| `site_strategique`*\t\t\t\t|
+        Site issu du programme \"France Mobile\"\t\t\t\t\t\t| Bool\xE9en (0 = FAUX
+        1=VRAI) |\r\n| `site_capa_240mbps`*\t\t\t\t| Site dont la capacit\xE9 maximum
+        th\xE9orique est sup\xE9rieure ou \xE9gale \xE0 240 Mbs\t\t\t\t\t\t\t| Bool\xE9en
+        (0 = FAUX 1=VRAI)\t|\r\n| `date_ouverturecommerciale_5g`\t| Date de la premi\xE8re
+        ouverture commerciale de la 5G sur le site\t\t \t\t\t\t\t\t\t| Date (\"aaaa-mm-jj\")\t\t|\r\n|
+        `site_5g_700_m_hz`\t\t\t\t| Site 5G sur la bande de fr\xE9quences 700 Mhz\t\t\t\t\t|
+        Bool\xE9en (0 = FAUX 1=VRAI) |\r\n| `site_5g_800_m_hz`\t\t\t\t| Site 5G sur
+        la bande de fr\xE9quences 800 Mhz\t\t\t\t\t| Bool\xE9en (0 = FAUX 1=VRAI)
+        |\r\n| `site_5g_1800_m_hz`\t\t\t\t| Site 5G sur la bande de fr\xE9quences
+        1800 Mhz\t\t\t\t\t| Bool\xE9en (0 = FAUX 1=VRAI) |\r\n| `site_5g_2100_m_hz`\t\t\t\t|
+        Site 5G sur la bande de fr\xE9quences 2100 Mhz\t\t\t\t\t| Bool\xE9en (0 =
+        FAUX 1=VRAI) |\r\n| `site_5g_3500_m_hz`\t\t\t\t| Site 5G sur la bande de fr\xE9quences
+        3500 Mhz\t\t\t\t\t| Bool\xE9en (0 = FAUX 1=VRAI) |\r\n\r\n&ast; Ces 6 champs
+        ne sont pr\xE9sents que dans le fichier des sites de France m\xE9tropolitaine
+        et non dans le fichier des sites d'outre-mer.\r\n\r\n**Emprise :**\r\n\r\nFrance
+        m\xE9tropolitaine et d'outre-mer.\r\n\r\n**Anciens fichiers sites :**\r\n\r\nCes
+        fichiers de sites datant des mill\xE9simes **2022 T2** et ant\xE9rieurs \xE9taient
+        divis\xE9s en deux sous-ensembles :\r\n- les sites en France m\xE9tropolitaine
+        : un fichier par trimestre pour l'ensemble du territoire m\xE9tropolitain\r\n-
+        les sites pour les d\xE9partements et collectivit\xE9s d'outre-mer : un fichier
+        par trimestre et par territoire - Guadeloupe (971), Martinique (972), Guyane
+        (973), R\xE9union (974), Mayotte (976), Saint-Barth\xE9l\xE9my (977) et Saint-Martin
+        (978)\r\n\r\nEn fonction du mill\xE9sime et de la zone donn\xE9e, il est possible
+        que tous les champs ci-dessus ne soient pas syst\xE9matiquement renseign\xE9s.\r\n\r\nLes
+        sites situ\xE9s dans les Outre-mers ont commenc\xE9 a \xEAtre r\xE9f\xE9renc\xE9s
+        \xE0 partir du 4\xE8me trimestre (T4) 2018 \xE0 l'exception de Saint-Martin
+        et Saint-Barth\xE9lemy r\xE9f\xE9renc\xE9s \xE0 partir du 1er trimestre (T1)
+        2019.\r\n\r\n\r\n### :five: Fichier : Historique du comptage de sites 5G\r\n\r\nTableau
+        de comptage du nombre de sites 5G ouverts commercialement par op\xE9rateur
+        :\r\n- au dernier jour de chaque mois entre le 30/11/2020 et le 30/06/2021\r\n-
+        puis au dernier jour de chaque trimestre \xE0 partir du 30/09/2021\r\n\r\nSites
+        localis\xE9s en France m\xE9tropolitaine et France d'outre-mer dont la puissance
+        isotrope rayonn\xE9e \xE9quivalente (PIRE) est sup\xE9rieure \xE0 5W.\r\n\r\nLes
+        donn\xE9es de comptage de sites 5G sont distribu\xE9es dans un fichier g\xE9n\xE9ral
+        par trimestre (ex : `2022_T3_sites_5G_historique_comptage.csv`).\r\n\r\n\r\n**Caract\xE9ristiques
+        g\xE9n\xE9rales :**\r\n\r\n|||\r\n| ----------------- | -----------------------------------------------------------------
+        |\r\n| Format\t \t\t| csv \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n| S\xE9parateur\t
+        \t| ,\t\t\t\t\t\t\t \t\t\t\t\t\t\t\t\t\t|\r\n| D\xE9cimale\t\t \t| .\t\t\t\t\t\t\t
+        \t\t\t\t\t\t\t\t\t\t|\r\n| Encodage\t \t\t| UTF-8 \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n|
+        Source\t\t\t| op\xE9rateurs \t\t\t\t\t\t\t\t\t\t\t\t        |\r\n\r\n\r\n**Description
+        des champs :**\r\n\r\n\r\n| Nom des champs\t\t\t\t\t| Description des champs\t\t\t|
+        Format\t\t\t\t|\r\n| --------------------------------- | ----------------------------------|----------------------
+        |\r\n| `NIVGEO`\t\t\t\t\t\t\t| Niveau g\xE9ographique \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t|
+        Texte\t\t\t\t\t|\r\n| `CODGEO`\t\t\t\t\t\t\t| Code de l'entit\xE9 g\xE9ographique
+        (Code Officiel G\xE9ographique de l'ann\xE9e courante)\t| Texte\t\t\t\t\t|\r\n|
+        `LIBGEO`\t\t\t\t\t\t\t| Libell\xE9 de l'entit\xE9 g\xE9ographique (Code Officiel
+        G\xE9ographique de l'ann\xE9e courante)\t| Texte\t\t\t\t\t|\r\n| `nom_operateur`\t\t\t\t\t|
+        Nom commercial de l'op\xE9rateur\t\t\t\t\t\t\t\t\t\t\t\t\t\t| Texte\t\t\t\t\t|\r\n|
+        `date`\t\t\t\t\t\t\t| Date du comptage\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t|
+        Date (\"aaaa-mm-jj\")\t|\r\n| `nb_sites5G_freq_700_MHz`\t\t    | Nombre de
+        sites 5G \xE9quip\xE9s sur les bandes de fr\xE9quences 700 MhZ\t\t        \t|
+        Entier\t\t\t\t|\r\n| `nb_sites5G_freq_1800_MHz`        | Nombre de sites 5G
+        \xE9quip\xE9s sur les bandes de fr\xE9quences 1800 MhZ\t        \t\t| Entier\t\t\t\t|\r\n|
+        `nb_sites5G_freq_3500_MHz`\t\t| Nombre de sites 5G \xE9quip\xE9s sur les bandes
+        de fr\xE9quences 3500 MhZ\t\t\t\t\t| Entier\t\t\t\t|\r\n| `nb_sites5G_total`\t\t\t\t|
+        Nombre de sites 5G total *\t\t\t\t\t\t\t\t\t\t\t\t\t\t| Entier\t\t\t\t|\r\n\r\n&ast;
+        Un m\xEAme site pouvant \xEAtre \xE9quip\xE9 sur plusieurs bandes de fr\xE9quences
+        diff\xE9rentes, le nombre de sites total peut \xEAtre inf\xE9rieur \xE0 la
+        somme du nombre de sites sur les trois bandes de fr\xE9quences.\r\n\r\n**Jusqu'au
+        2025 T4**, les colonnes nb_sites5G_* \xE9taient les suivantes - en l'absence
+        de d\xE9ploiement de la technologie dans les bandes 1800 et 800 par les op\xE9rateurs,
+        leur mention a \xE9t\xE9 supprim\xE9e :\r\n\r\n| `nb_sites5G_freq_700_800_MHz`\t\t|
+        Nombre de sites 5G \xE9quip\xE9s sur les bandes de fr\xE9quences 700 ou 800
+        MhZ\t\t\t| Entier\t\t\t\t|\r\n| `nb_sites5G_freq_1800_2100_MHz`\t| Nombre
+        de sites 5G \xE9quip\xE9s sur les bandes de fr\xE9quences 1800 ou 2100 MhZ\t\t\t|
+        Entier\t\t\t\t|\r\n| `nb_sites5G_freq_3500_MHz`\t\t| Nombre de sites 5G \xE9quip\xE9s
+        sur les bandes de fr\xE9quences 3500 MhZ\t\t\t\t\t| Entier\t\t\t\t|\r\n| `nb_sites5G_total`\t\t\t\t|
+        Nombre de sites 5G total *\t\t\t\t\t\t\t\t\t\t\t\t\t\t| Entier\t\t\t\t|\r\n\r\n\r\n###
+        :old_key: Cl\xE9s de lecture des donn\xE9es\r\n\r\nModalit\xE9s du champ `NIVGEO`
+        :\r\n\r\n| Modalit\xE9\t| Description \t\t\t\t\t\t\t\t\t\t\t\t|\r\n| ---------
+        | --------------------------------------------------------- |\r\n| `FRNAT`\t|
+        pour l'ensemble\t\t\t\t\t\t\t\t\t\t\t|\r\n| `ZONE`\t| pour la France m\xE9tropolitaine
+        vs la France d'Outre-mer\t|\r\n| `REG`\t \t| pour les r\xE9gions\t\t\t\t\t\t\t\t\t\t\t|\r\n|
+        `DEP`\t \t| pour les d\xE9partements\t\t\t\t\t\t\t\t\t\t|\r\n\r\nModalit\xE9s
+        du champ `CODGEO` :\r\n\r\n| Modalit\xE9\t\t\t\t\t| Description \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n|
+        ------------------------- | ---------------------------------------------------------------------
+        |\r\n| pour `NIVGEO`  = 'FRNAT'\t| FRNAT pour l'ensemble\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n|
+        pour `NIVGEO`  = 'ZONE'\t| FRMET pour la France m\xE9tropolitaine et FROM
+        pour la France d'Outre-mer|\r\n| pour `NIVGEO`  = 'REG'\t| codes Insee des
+        r\xE9gions\t\t\t\t\t\t\t\t\t\t\t\t|\r\n| pour `NIVGEO`  = 'DEP'\t| codes Insee
+        des d\xE9partements\t\t\t\t\t\t\t\t\t\t\t|\r\n\r\n\r\nLes coordonn\xE9es sont
+        indiqu\xE9es dans les syst\xE8mes de projection suivants :\r\n\r\n| Territoire\t\t\t|
+        code Insee du d\xE9partement/de la collectivit\xE9 | syst\xE8me de projection\t|
+        SRID\t|\r\n| --------------------- | --------- | --------------------- | -----
+        |\r\n| France m\xE9tropolitaine\t| 01 -> 95\t| RGF93 / Lambert-93 \t| 2154
+        \t|\r\n| Guadeloupe\t\t\t| 971\t\t| RGAF09 / UTM zone 20N | 5490 \t|\r\n|
+        Martinique\t\t\t| 972\t\t| RGAF09 / UTM zone 20N | 5490 \t|\r\n| Guyane\t\t\t\t|
+        973\t\t| RGFG95 / UTM zone 22N | 2972 \t|\r\n| La R\xE9union\t\t\t| 974\t\t|
+        RGR92 / UTM zone 40S \t| 2975 \t|\r\n| Mayotte\t\t\t\t| 976\t\t| RGM04 / UTM
+        zone 38S \t| 4471 \t|\r\n| Saint-Barth\xE9lemy\t\t| 977   \t| WGS84 / UTM
+        zone 20N \t| 32620 |\r\n| Saint-Martin\t\t\t| 978\t\t| WGS84 / UTM zone 20N
+        \t| 32620 |\r\n\r\n\r\n\r\n## :card_file_box: Organisation des publications\r\n\r\n###
+        :palm_tree: Arborescence\r\n\r\nLes fichiers de donn\xE9es sont rang\xE9s
+        par trimestre de publication (et par zone pour les donn\xE9es ant\xE9rieure
+        au 2022 T3) :\r\n```\r\n\U0001F5C3\uFE0Fsites\r\n \u2523 \U0001F4C22022_T1\r\n
+        \u2523 \U0001F4C22022_T2\r\n \u2503 \u2523 \U0001F4C2Metropole\r\n \u2503
+        \u2503 \u2517 \U0001F4DC2022_T2_sites_Metropole.csv\r\n \u2503 \u2523 \U0001F4C2Outremer\r\n
+        \u2503 \u2503 \u2523 \U0001F4DC2022_T2_sites_971_Guadeloupe.csv\r\n \u2503
+        \u2503 \u2523 \U0001F4DC2022_T2_sites_972_Martinique.csv\r\n \u2503 \u2503
+        \u2523 \U0001F4DC2022_T2_sites_973_Guyane.csv\r\n \u2503 \u2503 \u2523 \U0001F4DC2022_T2_sites_974_LaReunion.csv\r\n
+        \u2503 \u2503 \u2523 \U0001F4DC2022_T2_sites_976_Mayotte.csv\r\n \u2503 \u2503
+        \u2523 \U0001F4DC2022_T2_sites_977_SaintBarthelemy.csv\r\n \u2503 \u2503 \u2517
+        \U0001F4DC2022_T2_sites_978_SaintMartin.csv\r\n \u2503 \u2517 \U0001F4DC2022_T2_sites_5G_historique_comptage.csv\r\n
+        \u2523 \U0001F4C22022_T3\r\n \u2503 \u2523 \U0001F4DC2022_T3_sites_Metropole.csv\r\n
+        \u2503 \u2523 \U0001F4DC2022_T3_sites_Outremer.csv\r\n \u2503 \u2517 \U0001F4DC2022_T3_sites_5G_historique_comptage.csv\r\n
+        \u2523 \U0001F4C2last\r\n \u2517 \U0001F4DCdocumentation_sites.md\r\n ```\r\n\r\n###
+        :running_man: Fr\xE9quences de publication\r\n\r\n#### Mill\xE9simes  **2022_T3**
+        et post\xE9rieurs\r\n\r\n| Nom du fichier                         | Fr\xE9quence
+        de publication           |\r\n| -------------------------------------- | ----------------------------------
+        |\r\n| AAAA_TX_sites_Metropole                | Trimestrielle (T1,T2,T3,T4)
+        \       |\r\n| AAAA_TX_sites_Outremer                 | Trimestrielle (T1,T2,T3,T4)
+        \       |\r\n| AAAA_TX_historique_final_comptage_sites_5G | Trimestrielle
+        (T1,T2,T3,T4)    |\r\n\r\n#### Mill\xE9simes  **2022_T2** et ant\xE9rieurs\r\n\r\n|
+        Nom du fichier                         | Fr\xE9quence de publication           |\r\n|
+        -------------------------------------- | ----------------------------------
+        |\r\n| AAAA_TX_Metropole_sites                | Trimestrielle (T1,T2,T3,T4)
+        \       |\r\n| AAAA_TX_GUA_sites                      | Trimestrielle (T1,T2,T3,T4)
+        \       |\r\n| AAAA_TX_GUY_sites                      | Trimestrielle (T1,T2,T3,T4)
+        \       |\r\n| AAAA_TX_MAR_sites                      | Trimestrielle (T1,T2,T3,T4)
+        \       |\r\n| AAAA_TX_MAY_sites                      | Trimestrielle (T1,T2,T3,T4)
+        \       |\r\n| AAAA_TX_REU_sites                      | Trimestrielle (T1,T2,T3,T4)
+        \       |\r\n| AAAA_TX_STB_sites                      | Trimestrielle (T1,T2,T3,T4)
+        \       |\r\n| AAAA_TX_STM_sites                      | Trimestrielle (T1,T2,T3,T4)
+        \       |\r\n| AAAA_TX_historique_final_comptage_sites_5G | Trimestrielle
+        (T1,T2,T3,T4)    |\r\n"
+    headers:
+      accept-ranges:
+      - bytes
+      connection:
+      - keep-alive
+      content-length:
+      - '13363'
+      content-type:
+      - text/markdown; charset=utf-8
+      date:
+      - Thu, 26 Nov 2026 13:26:30 GMT
+      etag:
+      - '"07517edf3e58fd63b859fd463b740d23"'
+      last-modified:
+      - Thu, 18 Jun 2026 15:57:51 GMT
+      x-amz-id-2:
+      - tx239ee2c23a75487cb56b5-006b083386
+      x-amz-meta-mtime:
+      - '1781613970.6795108'
+      x-amz-request-id:
+      - tx239ee2c23a75487cb56b5-006b083386
+      x-amz-version-id:
+      - '1781798271.780589'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - data.arcep.fr
+      user-agent:
+      - resilink-lab/0.1 (research; open-data client)
+    method: GET
+    uri: https://data.arcep.fr/mobile/sites/2026_T2/index.html
+  response:
+    body:
+      string: !!binary |
+        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
+    headers:
+      accept-ranges:
+      - bytes
+      connection:
+      - Keep-Alive
+      content-encoding:
+      - gzip
+      content-length:
+      - '1465'
+      content-type:
+      - text/html
+      date:
+      - Thu, 26 Nov 2026 13:26:30 GMT
+      etag:
+      - '"efd-66087cada782b-gzip"'
+      keep-alive:
+      - timeout=5, max=100
+      last-modified:
+      - Wed, 18 Nov 2026 07:16:40 GMT
+      server:
+      - Apache
+      strict-transport-security:
+      - max-age=63072000; preload
+      vary:
+      - Accept-Encoding
+    status:
+      code: 200
+      message: OK
+version: 1

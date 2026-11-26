@@ -18,9 +18,11 @@ from resilink.etl.adapters.rte import name_key, tension_kv
 from resilink.etl.contracts import load_sources
 from resilink.etl.pbf import read_header
 from resilink.etl.snapshot import extent_window, fetch_snapshot, raw_dir
-from resilink.etl.staging import ordered, stage
+from resilink.etl.staging import stage
 from tests.etl_fixtures import ELECTRICITY_SOURCES, TERR, TERRITORY_SOURCES, fetch_all
 from tests.osm_pbf_writer import write_pbf
+
+ELECTRICITY_ADAPTERS = ("ign.admin_express", "insee.filosofi2021", "enedis.network", "osm.power", "rte.sites")
 
 
 # ------------------------------------------------------------------------------------------ pure helpers
@@ -83,7 +85,7 @@ def test_electricity_adapters_stage_the_territory_networks(portal, tmp_path: Pat
     fetch_all(tmp_path, TERRITORY_SOURCES)
     stage("ign.admin_express", TERR, root=tmp_path)
     fetch_all(tmp_path, ELECTRICITY_SOURCES)
-    first = {r.table: r for a in ordered(ADAPTERS) for r in stage(a.id, TERR, root=tmp_path)}
+    first = {r.table: r for a in ELECTRICITY_ADAPTERS for r in stage(a, TERR, root=tmp_path)}
     staging = tmp_path / "staging" / "tst"
 
     subs = gpd.read_parquet(staging / "stg_elec_mv_lv_substations.parquet").set_index("enedis_id")
@@ -115,5 +117,5 @@ def test_electricity_adapters_stage_the_territory_networks(portal, tmp_path: Pat
     assert (qa["core_substations_in_service"], qa["core_substations_matched_by_osm_ref"]) == (2, 1)
     assert qa["core_substations_unmatched"] == ["EEEEE"]
 
-    again = {r.table: r for a in ordered(ADAPTERS) for r in stage(a.id, TERR, root=tmp_path)}
+    again = {r.table: r for a in ELECTRICITY_ADAPTERS for r in stage(a, TERR, root=tmp_path)}
     assert {t: r.sha256 for t, r in again.items()} == {t: r.sha256 for t, r in first.items()}  # byte-identical

@@ -191,3 +191,28 @@ sources:
     id_strategy: native:osm_id
     priority: P0
     docs_url: https://www.openstreetmap.org/copyright
+
+  # --- D3 telecom (verified 2026-11-26) -----------------------------------------------------------------
+  # ARCEP "Mon Réseau Mobile" sites, pinned to the 2026 T2 file (published 2026-09-24; Licence Ouverte, data.gouv
+  # fr-lo). One row per operator site (a shared mast appears once per operator). The file departs from its own
+  # documentation, and the adapter repairs it explicitly: text mixes UTF-8 and cp1252 within a line; leading zeros
+  # are stripped from département, commune and ANFR codes (ANFR ids are 10 characters once zero-padded, the first
+  # three giving the département); some x/y use a decimal comma; 950 Orange num_site values were turned into
+  # scientific notation by a spreadsheet; 359 rows have no ANFR id. x/y are Lambert-93 (within 1 m of lat/lon).
+  - id: arcep.sites
+    provider: ARCEP
+    connector: http_file
+    base_url: https://data.arcep.fr
+    dataset: mobile/sites/2026_T2/2026_T2_sites_Metropole.csv
+    format: csv
+    delimiter: ";"
+    territory_mode: none
+    vintage: "2026 T2 (published 2026-09-24)"
+    role: Mobile network sites (2G-5G) with their ANFR station ids
+    licence: Licence Ouverte 2.0
+    sensitivity: internal
+    refresh: quarterly
+    id_strategy: native:id_station_anfr
+    priority: P0
+    notes: The raw snapshot is the national file byte for byte; the adapter selects the territory's sites.
+    docs_url: https://data.arcep.fr/mobile/sites/documentation_sites.md

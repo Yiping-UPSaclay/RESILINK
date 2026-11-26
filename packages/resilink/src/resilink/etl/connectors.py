@@ -261,7 +261,16 @@ class HttpFileConnector:
     def inspect(self, spec: SourceSpec, path: Path, meta: SourceMetadata) -> SourceMetadata:
         """Schema of the download: for a zip of CSV files, the header and row count of each member in
         ``spec.members`` (field names ``<member>/<column>`` when there are several, so a column dropped from one
-        file is drift); for an OSM PBF, the header's required features and replication timestamp."""
+        file is drift); for a CSV file, its header and row count; for an OSM PBF, the header's required features
+        and replication timestamp."""
+        if spec.format == "csv":
+            with path.open("rb") as fh:
+                header = fh.readline().decode("utf-8", errors="replace").lstrip("﻿").rstrip("\r\n")
+                rows = sum(1 for line in fh if line.strip())
+            return meta.model_copy(update={
+                "fields": [FieldInfo(name=n, type="text") for n in header.split(spec.delimiter)], "count": rows,
+                "raw": {**meta.raw, "inspected": True, "bytes": path.stat().st_size, "rows": rows},
+            })
         if spec.format == "pbf":
             from resilink.etl.pbf import read_header
 
@@ -272,7 +281,7 @@ class HttpFileConnector:
                 "raw": {**meta.raw, "inspected": True, "pbf_header": h, "bytes": path.stat().st_size},
             })
         if spec.format != "zip":
-            raise ValueError(f"{spec.id}: inspect supports zip archives and OSM PBF files")
+            raise ValueError(f"{spec.id}: inspect supports CSV files, zip archives and OSM PBF files")
         with zipfile.ZipFile(path) as z:
             infos = z.infolist()
             missing = [m for m in spec.members if not any(fnmatch.fnmatch(i.filename, m) for i in infos)]
@@ -286,7 +295,7 @@ class HttpFileConnector:
                     text = io.TextIOWrapper(fh, encoding="utf-8", newline="")
                     header = text.readline().rstrip("\r\n")
                     rows[info.filename] = sum(1 for line in text if line.strip())
-                for name in header.split(","):
+                for name in header.split(spec.delimiter):
                     key = f"{info.filename}/{name}" if len(chosen) > 1 else name
                     fields.setdefault(key, FieldInfo(name=key, type="text"))
             stamps = [datetime(*i.date_time).isoformat() for i in chosen]

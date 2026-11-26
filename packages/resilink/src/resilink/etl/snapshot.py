@@ -67,6 +67,20 @@ def extent_window(territory: TerritoryConfig, root: Path | None = None) -> tuple
     return round(float(lon0), 5), round(float(lat0), 5), round(float(lon1), 5), round(float(lat1), 5)
 
 
+def _rename(src: Path, dst: Path, attempts: int = 8) -> None:
+    """Rename, retrying briefly: on Windows, antivirus or indexing can hold a just-written file for a moment."""
+    import time
+
+    for i in range(attempts):
+        try:
+            src.rename(dst)
+            return
+        except PermissionError:
+            if i == attempts - 1:
+                raise
+            time.sleep(0.05 * 2**i)
+
+
 def raw_dir(source_id: str, root: Path | None = None) -> Path:
     return (root or data_root()) / "raw" / source_id
 
@@ -118,7 +132,7 @@ def fetch_snapshot(spec: SourceSpec, territory: TerritoryConfig | None = None, *
         snap = RawSnapshot(snapshot_id=snap_id, source_id=spec.id, path=str(final / data_path.name), sha256=sha,
                            url=url, retrieved_at=now, rows=rows, metadata=meta)
         (tmp / "snapshot.json").write_text(canonical_json(snap), encoding="utf-8")
-        tmp.rename(final)
+        _rename(tmp, final)
     except BaseException:
         shutil.rmtree(tmp, ignore_errors=True)
         raise
