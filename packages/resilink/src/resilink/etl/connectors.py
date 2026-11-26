@@ -20,6 +20,7 @@ Verified 2026-11-26 (real-data track, D1):
 from __future__ import annotations
 
 import fnmatch
+import hashlib
 import io
 import json
 import re
@@ -64,11 +65,13 @@ class OpendatasoftConnector:
         )
 
     def fetch(self, spec: SourceSpec, territory: TerritoryConfig | None, dest: Path,
-              limit: int | None = None) -> tuple[str, int | None]:
+              limit: int | None = None, window: tuple[float, float, float, float] | None = None) -> tuple[str, int | None]:
         params: dict[str, Any] = {}
         deps = _departements(territory, spec)
-        if deps and spec.territory_field:
+        if spec.territory_mode == "field" and deps and spec.territory_field:
             params["where"] = " OR ".join(f'{spec.territory_field}="{d}"' for d in deps)
+        elif spec.territory_mode == "extent_bbox":
+            raise ValueError(f"{spec.id}: extent_bbox is not implemented for Opendatasoft exports")
         if limit:
             params["limit"] = limit
         url = f"{spec.base_url.rstrip('/')}/api/explore/v2.1/catalog/datasets/{spec.dataset}/exports/{spec.format}"
@@ -97,27 +100,37 @@ class DataFairConnector:
         )
 
     def fetch(self, spec: SourceSpec, territory: TerritoryConfig | None, dest: Path,
-              limit: int | None = None) -> tuple[str, int | None]:
-        """Page through ``/lines`` as GeoJSON and write a single FeatureCollection (filtered by département)."""
+              limit: int | None = None, window: tuple[float, float, float, float] | None = None) -> tuple[str, int | None]:
+        """Page through ``/lines`` as GeoJSON (WGS84) and write a single FeatureCollection, filtered by département
+        (``qs``) or by the territory window (``bbox=lon_min,lat_min,lon_max,lat_max``, verified 2026-11-26)."""
         base = f"{spec.base_url.rstrip('/')}/data-fair/api/v1/datasets/{spec.dataset}/lines"
         params: dict[str, Any] = {"format": "geojson", "size": min(self.PAGE, limit or self.PAGE)}
         deps = _departements(territory, spec)
-        if deps and spec.territory_field:
+        if spec.territory_mode == "extent_bbox":
+            if window is None:
+                raise ValueError(f"{spec.id}: extent_bbox needs the territory window")
+            params["bbox"] = ",".join(f"{v:.5f}" for v in window)
+        elif spec.territory_mode == "field" and deps and spec.territory_field:
             params["qs"] = " OR ".join(f'{spec.territory_field}:"{d}"' for d in deps)
         features: list[dict[str, Any]] = []
         url: str | None = base
         first_url = ""
+        total: int | None = None
         with _client() as c:
             while url:
                 r = c.get(url, params=params if url == base else None)
                 r.raise_for_status()
                 first_url = first_url or str(r.url)
                 page = r.json()
+                total = page.get("total", total)
                 features.extend(page.get("features", []))
-                url = page.get("next")
+                # GeoJSON pages carry the next link in the HTTP Link header, JSON pages in the body
+                url = page.get("next") or r.links.get("next", {}).get("url")
                 if limit and len(features) >= limit:
                     features = features[:limit]
                     break
+        if not limit and total is not None and len(features) != total:
+            raise ValueError(f"{spec.id}: received {len(features)} features, the portal announced {total}")
         dest.write_text(json.dumps({"type": "FeatureCollection", "features": features}, ensure_ascii=False), encoding="utf-8")
         return first_url, len(features)
 
@@ -184,8 +197,11 @@ class WfsConnector:
                 return first_url, crs, features
 
     def fetch(self, spec: SourceSpec, territory: TerritoryConfig | None, dest: Path,
-              limit: int | None = None) -> tuple[str, int | None]:
+              limit: int | None = None, window: tuple[float, float, float, float] | None = None) -> tuple[str, int | None]:
         from shapely.geometry import shape  # only to size the territory window
+
+        if spec.territory_mode == "extent_bbox":
+            raise ValueError(f"{spec.id}: use buffer_bbox for WFS sources")
 
         srs = territory.crs_metric if territory else "EPSG:2154"
         deps = _departements(territory, spec)
@@ -202,9 +218,9 @@ class WfsConnector:
                     raise ValueError(f"{spec.id}: no département {deps} in {spec.territory_layer}")
                 b = [shape(f["geometry"]).bounds for f in areas]
                 pad = territory.buffer_m
-                window = (min(x[0] for x in b) - pad, min(x[1] for x in b) - pad,
-                          max(x[2] for x in b) + pad, max(x[3] for x in b) + pad)
-                filters["BBOX"] = ",".join(f"{v:.0f}" for v in window) + f",urn:ogc:def:crs:EPSG::{srs.split(':')[-1]}"
+                box = (min(x[0] for x in b) - pad, min(x[1] for x in b) - pad,
+                       max(x[2] for x in b) + pad, max(x[3] for x in b) + pad)
+                filters["BBOX"] = ",".join(f"{v:.0f}" for v in box) + f",urn:ogc:def:crs:EPSG::{srs.split(':')[-1]}"
             url, crs, features = self._get_all(c, spec.base_url, spec.dataset, srs, sort_by=_native_key(spec),
                                                limit=limit, **filters)
         dest.write_text(json.dumps({"type": "FeatureCollection", "crs": crs, "features": features},
@@ -224,20 +240,39 @@ class HttpFileConnector:
                               fields=[], has_geometry=False, raw={"url": self._url(spec), "inspected": False})
 
     def fetch(self, spec: SourceSpec, territory: TerritoryConfig | None, dest: Path,
-              limit: int | None = None) -> tuple[str, int | None]:
-        with _client() as c, c.stream("GET", self._url(spec)) as r:
-            r.raise_for_status()
-            with dest.open("wb") as fh:
-                for chunk in r.iter_bytes(1 << 20):
-                    fh.write(chunk)
-            return str(r.url), None
+              limit: int | None = None, window: tuple[float, float, float, float] | None = None) -> tuple[str, int | None]:
+        md5 = hashlib.md5(usedforsecurity=False)  # publisher checksum, not a security control
+        with _client() as c:
+            with c.stream("GET", self._url(spec)) as r:
+                r.raise_for_status()
+                final = str(r.url)  # after redirects, e.g. Geofabrik's dated file
+                with dest.open("wb") as fh:
+                    for chunk in r.iter_bytes(1 << 20):
+                        fh.write(chunk)
+                        md5.update(chunk)
+            if spec.checksum == "md5_sidecar":
+                s = c.get(f"{final}.md5")
+                s.raise_for_status()
+                expected = s.text.split()[0].strip().lower() if s.text.split() else ""
+                if expected != md5.hexdigest():
+                    raise ValueError(f"{spec.id}: md5 {md5.hexdigest()} does not match the publisher's {expected!r}")
+        return final, None
 
     def inspect(self, spec: SourceSpec, path: Path, meta: SourceMetadata) -> SourceMetadata:
-        """Schema of a zip of CSV files: the header and row count of each member in ``spec.members``.
+        """Schema of the download: for a zip of CSV files, the header and row count of each member in
+        ``spec.members`` (field names ``<member>/<column>`` when there are several, so a column dropped from one
+        file is drift); for an OSM PBF, the header's required features and replication timestamp."""
+        if spec.format == "pbf":
+            from resilink.etl.pbf import read_header
 
-        With several members, field names are ``<member>/<column>`` so a column dropped from one file is drift."""
+            h = read_header(path)
+            return meta.model_copy(update={
+                "fields": [FieldInfo(name=f, type="pbf_required_feature") for f in h["required_features"]],
+                "modified": h.get("replication_timestamp"),
+                "raw": {**meta.raw, "inspected": True, "pbf_header": h, "bytes": path.stat().st_size},
+            })
         if spec.format != "zip":
-            raise ValueError(f"{spec.id}: inspect supports zip archives only")
+            raise ValueError(f"{spec.id}: inspect supports zip archives and OSM PBF files")
         with zipfile.ZipFile(path) as z:
             infos = z.infolist()
             missing = [m for m in spec.members if not any(fnmatch.fnmatch(i.filename, m) for i in infos)]

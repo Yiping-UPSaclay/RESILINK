@@ -91,3 +91,33 @@ def test_insee_filosofi_page_still_offers_the_registered_file():
     r = httpx.get(spec.docs_url, follow_redirects=True, timeout=60,
                   headers={"User-Agent": "resilink-lab/0.1 (research; open-data client)"})
     assert r.status_code == 200 and f"/{spec.dataset}" in r.text  # link to the registered download
+
+
+UA = {"User-Agent": "resilink-lab/0.1 (research; open-data client)"}
+
+
+@pytest.mark.network
+@pytest.mark.vcr
+def test_enedis_hta_lines_contract_and_geojson_paging():
+    import httpx
+
+    spec = load_sources()["enedis.reseau_hta"]
+    meta = DataFairConnector().describe(spec)
+    assert meta.has_geometry and meta.count and meta.count > 1_000_000  # national overhead HTA segments
+    r = httpx.get(f"{spec.base_url}/data-fair/api/v1/datasets/{spec.dataset}/lines", headers=UA, timeout=60,
+                  params={"format": "geojson", "size": 1, "bbox": "5.30000,43.20000,5.50000,43.40000"})
+    assert r.json()["total"] > 1 and "next" in r.links  # GeoJSON pages link to the next one in the Link header
+
+
+@pytest.mark.network
+@pytest.mark.vcr
+def test_geofabrik_latest_redirects_to_a_dated_extract_with_md5():
+    import re
+
+    import httpx
+
+    spec = load_sources()["osm.geofabrik.paca"]
+    r = httpx.head(f"{spec.base_url}/{spec.dataset}", headers=UA, follow_redirects=True, timeout=60)
+    assert r.status_code == 200 and re.search(r"-\d{6}\.osm\.pbf$", str(r.url))
+    md5 = httpx.get(f"{r.url}.md5", headers=UA, timeout=60)
+    assert re.fullmatch(r"[0-9a-f]{32}\s+\S+\.osm\.pbf\s*", md5.text)

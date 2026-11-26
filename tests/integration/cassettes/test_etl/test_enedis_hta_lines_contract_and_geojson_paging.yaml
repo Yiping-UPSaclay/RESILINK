@@ -1,0 +1,187 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - opendata.enedis.fr
+      user-agent:
+      - resilink-lab/0.1 (research; open-data client)
+    method: GET
+    uri: https://opendata.enedis.fr/data-fair/api/v1/datasets/reseau-hta
+  response:
+    body:
+      string: !!binary |
+        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
+        yLAq4z8iB3L89e8+/A8AAP//AwAnSC51+CEAAA==
+    headers:
+      access-control-allow-origin:
+      - '*'
+      cache-control:
+      - must-revalidate, private, max-age=0
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Thu, 26 Nov 2026 12:57:31 GMT
+      etag:
+      - W/"21f8-2HjDaC7iy+EtjhoWb4mISqfSGRI"
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Encoding
+      x-cache-status:
+      - MISS
+      x-operation:
+      - '{"class":"read","id":"readDescription"}'
+      x-owner:
+      - '{"type":"organization","id":"CvVx6HqNR"}'
+      x-powered-by:
+      - Express
+      x-resource:
+      - '{"type":"datasets","id":"7p9-paqaf6cckipnjiubcncw","title":"Lignes%20%C3%A9lectriques%20a%C3%A9riennes%20moyenne%20tension%20(HTA)"}'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - opendata.enedis.fr
+      user-agent:
+      - resilink-lab/0.1 (research; open-data client)
+    method: GET
+    uri: https://opendata.enedis.fr/data-fair/api/v1/datasets/reseau-hta/lines?format=geojson&size=1&bbox=5.30000%2C43.20000%2C5.50000%2C43.40000
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAEA31UTWsbMRD9K0WXXuygj5FG8i1NSWlpICSQFkIIa1t1FtYrI69L3OD/k977D/zH
+        OrurcWkPPe7b0Xtv3mj0Irr9JoqZuIxVt8vxIjVNXHR1asVEdKmrGjFDPxHfxt9bMbt/+ecIFdZL
+        YvjycX+T7G27n3+6kxcfFm71/usl/VzFtI5d3ovZi1iklJd1W3WxZ7q3ZyYocGEC5sz4YK1WD5MB
+        1dJ5VWBtGXRoS60PIF2BDYDypVY6BQUGZSUUWDnH1eBtMMyMlgWtdUEX2HitC4nTzAwkyaC3yBSg
+        pS8wGqVPFA5Z0GtlkAUBWdAHNExCTk0hCai8K9XSwkgCUpqg7Qj74NwoCVJpya17MjVwEBrAFkWP
+        To29gNTO6KLonUOuNtbaErX3RodCAqRYjJDVwCSWouR5SQNsxIaTvyCDHbuhEaFlEhp0YEkE5Tgp
+        LeWYK0iv8IRaw9Qe8dS6Q2YOYNgdXaAxVFB969y51r7oKUnhcHqSPsYWlbIIJRDEoBjW0iiGHZy4
+        tfVYOkcfDHPrAI6dSM5DGbCOFTXqhwfapnHRPtdtvO1y3a7EYSI2OW1i7up+H/r1WMbHZdxUuYvr
+        2Ha0VcrQCj3SDm1SPQDDqgzzm9izMlQqadP6sc410YjLap7jKu2auJ1eVHXTpGY7vUm7VX18zXF6
+        Hfe5ysttOfS33Lu0WzzRueVuevN0/NXGXr0WM0UX0ExGg0VGGSWdpMipZDC+SOv1jk70pukXw3Gz
+        IAJBc6b77CX2jLlq6cmgEWKwo3dy3D86M3Gd0/fYLuL0vNn0DRx/dfHN8u35j11mxlNt6MPpO/8j
+        fRs33fF1TSf79u8q6r7lVouTq+PPjmJPzcBbP0+vqryNlBNlU8R7j/951A4Hmud8np7pEaM3TBp6
+        rdBDCM674fpp1a+PRumDpnWmQQWUii6nRu+D9ePVoBdAUgTSAdBrcfgN1f4ylIwFAAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      cache-control:
+      - must-revalidate, public, max-age=300
+      connection:
+      - keep-alive
+      content-disposition:
+      - attachment; filename="reseau-hta.geojson"
+      content-encoding:
+      - gzip
+      content-type:
+      - application/geo+json; charset=utf-8
+      date:
+      - Thu, 26 Nov 2026 12:57:31 GMT
+      etag:
+      - W/"58c-+sHfEagXMm+dSvkzYZTg70GmEgk"
+      last-modified:
+      - Tue, 07 Jul 2026 09:11:13 GMT
+      link:
+      - <https://opendata.enedis.fr/data-fair/api/v1/datasets/7p9-paqaf6cckipnjiubcncw/lines?format=geojson&size=1&bbox=5.30000%2C43.20000%2C5.50000%2C43.40000&select=code_iris%2Cnom_iris%2Ccode_commune%2Cnom_commune%2Ccode_epci%2Cnom_epci%2Ccode_departement%2Cnom_departement%2Ccode_region%2Cnom_region%2C_geoshape%2C_geopoint%2C_id%2C_i%2C_rand&after=10393%2C436795>;
+        rel=next
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Encoding
+      x-cache-status:
+      - MISS
+      x-operation:
+      - '{"class":"read","id":"readLines","track":"readDataAPI"}'
+      x-owner:
+      - '{"type":"organization","id":"CvVx6HqNR"}'
+      x-powered-by:
+      - Express
+      x-resource:
+      - '{"type":"datasets","id":"7p9-paqaf6cckipnjiubcncw","title":"Lignes%20%C3%A9lectriques%20a%C3%A9riennes%20moyenne%20tension%20(HTA)"}'
+    status:
+      code: 200
+      message: OK
+version: 1

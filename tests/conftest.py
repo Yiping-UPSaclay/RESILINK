@@ -75,3 +75,11 @@ def vcr_config():
         return response
 
     return {"filter_headers": ["authorization", "cookie"], "before_record_response": scrub}
+
+
+@pytest.fixture
+def portal(monkeypatch, tmp_path: Path):
+    """Mock of the open-data portals (WFS, insee.fr, Enedis Data Fair, ODRÉ, Geofabrik) behind the connectors."""
+    from tests.etl_fixtures import make_portal
+
+    return make_portal(monkeypatch, tmp_path)

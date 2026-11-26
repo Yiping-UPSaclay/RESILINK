@@ -7,6 +7,7 @@ sources:
     base_url: https://odre.opendatasoft.com
     dataset: postes-electriques-rte
     format: csv
+    territory_mode: none    # national file (5,042 sites); the adapter keeps the départements of the buffer by name
     territory_field: departement
     territory_value: name   # RTE uses département names, not codes
     role: Attributes and completeness denominator for HV substations (NO geometry since 2026-06-16, public safety)
@@ -32,6 +33,7 @@ sources:
     connector: datafair
     base_url: https://opendata.enedis.fr
     dataset: poste-electrique
+    territory_mode: extent_bbox
     territory_field: code_departement
     role: MV/LV (HTA/BT) substations
     licence: Licence Ouverte 2.0
@@ -75,9 +77,11 @@ sources:
     base_url: https://data.geopf.fr/wfs/ows
     dataset: ADMINEXPRESS-COG.2026:departement
     format: geojson
+    territory_mode: buffer_bbox   # the territory's départements and their neighbours in the buffer window
+    territory_layer: ADMINEXPRESS-COG.2026:departement
     territory_field: code_insee
     vintage: "COG 2026"
-    role: Boundary of the territory's départements (core of the territory; the buffer is derived from it)
+    role: Départements meeting the buffer window; the territory's own ones form the core, the buffer is derived from it
     licence: Licence Ouverte 2.0
     sensitivity: public
     refresh: annual
@@ -123,3 +127,67 @@ sources:
     priority: P0
     notes: The raw snapshot is the national file byte for byte; the adapter selects the territory's cells.
     docs_url: https://www.insee.fr/fr/statistiques/8735162
+
+  # --- D2 electricity (verified 2026-11-26) -------------------------------------------------------------
+  # Enedis medium-voltage (HTA) lines on the Data Fair portal (Licence Ouverte 2.0, data of 2026-07-03): segments
+  # with geometry and admin codes only (no voltage, no switch state). Fetched in the territory window (bbox).
+  - id: enedis.reseau_hta
+    provider: Enedis
+    connector: datafair
+    base_url: https://opendata.enedis.fr
+    dataset: reseau-hta
+    territory_mode: extent_bbox
+    role: Overhead medium-voltage (HTA) line segments
+    licence: Licence Ouverte 2.0
+    sensitivity: internal
+    refresh: semiannual
+    id_strategy: fingerprint_line_1m
+    priority: P0
+    docs_url: https://opendata.enedis.fr/datasets/reseau-hta
+  - id: enedis.reseau_souterrain_hta
+    provider: Enedis
+    connector: datafair
+    base_url: https://opendata.enedis.fr
+    dataset: reseau-souterrain-hta
+    territory_mode: extent_bbox
+    role: Underground medium-voltage (HTA) cable segments
+    licence: Licence Ouverte 2.0
+    sensitivity: internal
+    refresh: semiannual
+    id_strategy: fingerprint_line_1m
+    priority: P0
+    docs_url: https://opendata.enedis.fr/datasets/reseau-souterrain-hta
+  # OpenStreetMap extracts from Geofabrik (regions as of the former French regions; the buffer of the pilot
+  # reaches Gard and Hérault, hence two extracts). The URL redirects to a dated file, recorded in the snapshot,
+  # and checked against Geofabrik's .md5. Read with DuckDB spatial ST_ReadOSM (no extra dependency).
+  # Licence: ODbL 1.0 - derived tables are share-alike and must credit "© OpenStreetMap contributors".
+  - id: osm.geofabrik.paca
+    provider: OpenStreetMap contributors (Geofabrik extract)
+    connector: http_file
+    base_url: https://download.geofabrik.de
+    dataset: europe/france/provence-alpes-cote-d-azur/provence-alpes-cote-d-azur-latest.osm.pbf
+    format: pbf
+    territory_mode: none
+    checksum: md5_sidecar
+    role: High-voltage lines and substations (geometry; RTE publishes none since 2026-06-16)
+    licence: ODbL 1.0
+    sensitivity: internal
+    refresh: monthly
+    id_strategy: native:osm_id
+    priority: P0
+    docs_url: https://www.openstreetmap.org/copyright
+  - id: osm.geofabrik.languedoc_roussillon
+    provider: OpenStreetMap contributors (Geofabrik extract)
+    connector: http_file
+    base_url: https://download.geofabrik.de
+    dataset: europe/france/languedoc-roussillon/languedoc-roussillon-latest.osm.pbf
+    format: pbf
+    territory_mode: none
+    checksum: md5_sidecar
+    role: High-voltage lines and substations west of the Rhône (Gard, Hérault part of the buffer)
+    licence: ODbL 1.0
+    sensitivity: internal
+    refresh: monthly
+    id_strategy: native:osm_id
+    priority: P0
+    docs_url: https://www.openstreetmap.org/copyright

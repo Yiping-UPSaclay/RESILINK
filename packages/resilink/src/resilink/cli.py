@@ -6,6 +6,7 @@ from __future__ import annotations
 import getpass
 import json
 import shutil
+import sys
 import tempfile
 from pathlib import Path
 
@@ -24,6 +25,15 @@ ops_app = typer.Typer(no_args_is_help=True, help="Operation Registry (same ops a
 kn_app = typer.Typer(no_args_is_help=True, help="Knowledge plane")
 etl_app = typer.Typer(no_args_is_help=True, help="Open-data connectors, raw snapshots, drift detection")
 plugins_app = typer.Typer(no_args_is_help=True, help="Registered system packs, slots and models (ADR-0008)")
+@app.callback()
+def _utf8_output() -> None:
+    """Write UTF-8 even when piped on Windows (the console code page would garble names like "Bouches-du-Rhône")."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None and (getattr(stream, "encoding", "") or "").lower().replace("-", "") != "utf8":
+            reconfigure(encoding="utf-8")
+
+
 app.add_typer(ops_app, name="ops")
 app.add_typer(kn_app, name="knowledge")
 app.add_typer(etl_app, name="etl")

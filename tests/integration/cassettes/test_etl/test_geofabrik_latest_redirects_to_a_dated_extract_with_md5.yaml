@@ -1,0 +1,134 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - download.geofabrik.de
+      user-agent:
+      - resilink-lab/0.1 (research; open-data client)
+    method: HEAD
+    uri: https://download.geofabrik.de/europe/france/provence-alpes-cote-d-azur/provence-alpes-cote-d-azur-latest.osm.pbf
+  response:
+    body:
+      string: ''
+    headers:
+      cache-control:
+      - max-age=600, public
+      cache-status:
+      - download-proxy12;fwd=stale;detail=match
+      connection:
+      - keep-alive
+      content-type:
+      - text/html; charset=iso-8859-1
+      date:
+      - Thu, 26 Nov 2026 12:57:31 GMT
+      location:
+      - https://download.geofabrik.de/europe/france/provence-alpes-cote-d-azur/provence-alpes-cote-d-azur-261124.osm.pbf
+      server:
+      - Apache
+      via:
+      - 1.1 download-proxy12 (squid/6.14)
+    status:
+      code: 307
+      message: Temporary Redirect
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - download.geofabrik.de
+      user-agent:
+      - resilink-lab/0.1 (research; open-data client)
+    method: HEAD
+    uri: https://download.geofabrik.de/europe/france/provence-alpes-cote-d-azur/provence-alpes-cote-d-azur-261124.osm.pbf
+  response:
+    body:
+      string: ''
+    headers:
+      accept-ranges:
+      - bytes
+      age:
+      - '84181'
+      cache-control:
+      - max-age=63072000, public
+      cache-status:
+      - download-proxy12;hit;detail=match
+      connection:
+      - keep-alive
+      content-length:
+      - '392338240'
+      content-type:
+      - application/octet-stream
+      date:
+      - Wed, 25 Nov 2026 00:34:42 GMT
+      etag:
+      - '"17629b40-6610ed1dfd095"'
+      last-modified:
+      - Wed, 25 Nov 2026 00:22:18 GMT
+      server:
+      - Apache
+      via:
+      - 1.1 download-proxy12 (squid/6.14)
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - download.geofabrik.de
+      user-agent:
+      - resilink-lab/0.1 (research; open-data client)
+    method: GET
+    uri: https://download.geofabrik.de/europe/france/provence-alpes-cote-d-azur/provence-alpes-cote-d-azur-261124.osm.pbf.md5
+  response:
+    body:
+      string: 'a768271d9f4626d187275dcb97e8424f  provence-alpes-cote-d-azur-261124.osm.pbf
+
+        '
+    headers:
+      accept-ranges:
+      - bytes
+      age:
+      - '44455'
+      cache-control:
+      - max-age=63072000, public
+      cache-status:
+      - download-proxy12;hit;detail=match
+      connection:
+      - keep-alive
+      content-length:
+      - '76'
+      content-type:
+      - application/octet-stream
+      date:
+      - Thu, 26 Nov 2026 00:36:37 GMT
+      etag:
+      - '"4c-6610ed1e66c01"'
+      last-modified:
+      - Wed, 25 Nov 2026 00:22:19 GMT
+      server:
+      - Apache
+      via:
+      - 1.1 download-proxy12 (squid/6.14)
+    status:
+      code: 200
+      message: OK
+version: 1
