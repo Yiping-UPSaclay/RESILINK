@@ -121,3 +121,17 @@ def test_geofabrik_latest_redirects_to_a_dated_extract_with_md5():
     assert r.status_code == 200 and re.search(r"-\d{6}\.osm\.pbf$", str(r.url))
     md5 = httpx.get(f"{r.url}.md5", headers=UA, timeout=60)
     assert re.fullmatch(r"[0-9a-f]{32}\s+\S+\.osm\.pbf\s*", md5.text)
+
+
+@pytest.mark.network
+@pytest.mark.vcr
+def test_arcep_sites_documentation_and_pinned_quarter():
+    import httpx
+
+    spec = load_sources()["arcep.sites"]
+    doc = httpx.get(spec.docs_url, headers=UA, follow_redirects=True, timeout=60).text
+    for field in ("code_op", "id_station_anfr", "insee_com", "site_4g", "site_5g", "id_site_partage"):
+        assert f"`{field}`" in doc
+    quarter = spec.dataset.rsplit("/", 1)[0]
+    index = httpx.get(f"{spec.base_url}/{quarter}/index.html", headers=UA, follow_redirects=True, timeout=60).text
+    assert spec.dataset.rsplit("/", 1)[1] in index  # the pinned file is still published

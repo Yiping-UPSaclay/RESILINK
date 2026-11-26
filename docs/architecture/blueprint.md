@@ -2,7 +2,7 @@
 
 > **Date:** v2.0 approved 2026-11-16 · **v2.2 2026-11-23** · **Pilot:** Bouches-du-Rhône (13) + buffer · **Horizon:** 12+ months · **Repository:** https://github.com/Yiping-UPSaclay/RESILINK (public; Sprint 0 implemented and verified, not yet committed)
 > **Tags:** **[E]** essential now · **[D]** deferred (planned for a later phase) · **[O]** optional (adopted only if a named trigger fires)
-> Claims marked ✔ were checked against official documentation or the publisher's own pages on 2026-11-16, on 2026-11-23 for F12 and the §6 additions, or on 2026-11-26 for the D1 and D2 sources (§16). **TBC** means the claim must be confirmed during implementation.
+> Claims marked ✔ were checked against official documentation or the publisher's own pages on 2026-11-16, on 2026-11-23 for F12 and the §6 additions, or on 2026-11-26 for the D1–D3 sources (§16). **TBC** means the claim must be confirmed during implementation.
 > **v2.2 changes (accepted 2026-11-23: [ADR-0008](../adr/0008-extension-architecture.md) revision 2).**
 > - The core stays small: kernel, shared board, RNG, composition, reducers, provenance.
 > - **System packs, slot definitions and models** are registered, versioned plugins. A new system (e.g. water), a new kind of question (e.g. crew road access) or a new operation model (e.g. DC-OPF, AC-OPF) can be added later without core edits.
@@ -620,7 +620,7 @@ Grammar: `rid := <layer>.<class>:<ns>:<key>`.
 | RTE substation | `elec.sub_tx:rte:<code_poste>` | Native code ✔ |
 | HTA/BT substation | `elec.sub_mv_lv:fp:p895123_6245678` | 1 m coordinate fingerprint |
 | Contracted HTA edge | `elec.line_mv:fp:<sha1[:12]>` | Class + sorted endpoints + length rounded to 10 m |
-| Mobile station | `telecom.site:anfr:<10-char id>:<op>` | ANFR ID in the ARCEP file ✔ |
+| Mobile station | `telecom.mobile_site:anfr:<10-char id>-<operator code>` (a 1 m fingerprint when the ANFR ID is missing) | ANFR ID in the ARCEP file ✔, zero-padded to 10 characters |
 | Grid cell | `grid.cell200:insee:CRS3035RES200mN…E…` | INSEE |
 | Commune | `admin.commune:cog2025:13055` | COG code with vintage |
 | OSM feature | `…:osm:w123` | OSM ID + crosswalk |
@@ -761,7 +761,7 @@ P0 = needed for the first release.
 | `ore.postes_source` | Agence ORE `postes-source` (TBC) | ORE export | Primary substations | TBC | TBC · internal | P0 |
 | `odre.registre_prod` | Production register ✔ | ODRÉ | Generators | TBC | LO · public | P0 |
 | `natran.trace250` | `trace-du-reseau-grt-250` ✔ (≈250 m) | ODRÉ | Gas transmission | Fingerprint, 250 m | LO · internal | P0 |
-| `arcep.sites` | Quarterly sites CSV ✔ (`;`, WGS84, ANFR ID) | data.arcep.fr | Mobile stations | ANFR + operator | LO · internal | P0 |
+| `arcep.sites` | Quarterly sites CSV ✔, pinned to 2026 T2 (`;`; Lambert-93 x/y and WGS84; ANFR ID). The file departs from its documentation: UTF-8 and cp1252 mixed within lines, leading zeros stripped from codes, some decimal commas, spreadsheet-damaged site numbers; the adapter repairs each | data.arcep.fr | Mobile stations | ANFR + operator | LO · internal | P0 ✔ D3 |
 | `georisques.*` | API v1 (`gaspar/catnat` ✔; TRI/AZI endpoints TBC) + WFS | REST/WFS | Flood scenarios | Scenario ID | LO · public | P1 |
 | `arcep.sites_indisponibles` | Daily GeoJSON since 2020-10 ✔ (last update 2026-07-28) | data.gouv | Validation of electricity → telecom | ANFR ID | LO · internal | P1 |
 | `hubeau.hydro_tr` | Hub'Eau **v2** `observations_tr` ✔ | REST | Nowcast | Station | LO · public | P1 |
@@ -802,7 +802,7 @@ provenance: { proposed_by: "prov_…", approved_by: "…" }   # filled when draf
 
 1. **Deterministic passes:**
    - OSM ↔ RTE: `ref:FR:RTE` tag ✔ (2026-11-26: on 115 of 135 OSM high-voltage substations in département 13; it alone matches 92 of the 94 RTE substations in service there), then normalised name + voltage + département.
-   - ARCEP ↔ ANFR: by ANFR ID ✔.
+   - ARCEP ↔ ANFR: by ANFR ID ✔. Shared masts are barely recorded in open data (ARCEP's `id_site_partage` is set on 74 of 3,066 sites in département 13), so physical supports (common-cause failures) need ANFR's support data (`anfr.stations`, P2).
 2. **Ambiguous residue** (multiple candidates, or a score inside the uncertainty band) goes to `er.propose_match`. The Steward returns a structured decision with reasons, a human approves, and accepted matches are stored as `xref/manual_matches.yaml`, a versioned input to later builds.
 
 **Precedence:** attribute values come from the highest-precedence source; every contributor is kept in `entity_xref`.
@@ -1973,7 +1973,8 @@ uv run streamlit run apps/streamlit/Home.py        # Copilot answers with ValueR
 - Enedis HTA/BT substations (Data Fair): https://opendata.enedis.fr/data-fair/api/v1/datasets/poste-electrique
 - Enedis HTA overhead lines (Data Fair): https://opendata.enedis.fr/data-fair/api/v1/datasets/reseau-hta
 - Enedis HTA underground lines (Data Fair): https://opendata.enedis.fr/data-fair/api/v1/datasets/reseau-souterrain-hta
-- ARCEP mobile sites: https://data.arcep.fr/mobile/sites/
+- ARCEP mobile sites: https://data.arcep.fr/mobile/sites/ (documentation: https://data.arcep.fr/mobile/sites/documentation_sites.md)
+- ARCEP "Mon Réseau Mobile" on data.gouv.fr (licence fr-lo): https://www.data.gouv.fr/datasets/mon-reseau-mobile
 - ARCEP unavailable sites: https://www.data.gouv.fr/datasets/sites-indisponibles
 - Hub'Eau hydrometry: https://hubeau.eaufrance.fr/page/api-hydrometrie
 - Géorisques API: https://www.data.gouv.fr/dataservices/api-georisques

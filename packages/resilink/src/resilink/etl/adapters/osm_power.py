@@ -12,14 +12,14 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-import duckdb
 import geopandas as gpd
 import numpy as np
 import pandas as pd
 import shapely
 
+from resilink.etl.osm import read_features
+from resilink.etl.osm import way_geometry as _way_geometry
 from resilink.etl.staging import AdapterContext, Output, adapter
-from resilink.io.duck import load_extension
 
 SOURCES = ("osm.geofabrik.paca", "osm.geofabrik.languedoc_roussillon")
 TAGS = ("power", "voltage", "circuits", "cables", "operator", "name", "ref", "ref:FR:RTE", "location", "substation")
@@ -45,36 +45,9 @@ def voltage_class(kv: float) -> str:
 
 def read_power(path: Path) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, int]]:
     """Power ways (with node coordinates in order) and power=substation nodes of one PBF file."""
-    con = duckdb.connect()
-    load_extension(con, "spatial")
-    cols = ", ".join(f"tags['{t}'] AS \"{t}\"" for t in TAGS)
-    con.execute(f"""CREATE TEMP TABLE w AS SELECT id, refs, {cols} FROM ST_ReadOSM(?)
-                    WHERE kind = 'way' AND tags['power'] IN ('line', 'cable', 'minor_line', 'substation')""", [str(path)])
-    con.execute("CREATE TEMP TABLE r AS SELECT id AS way, unnest(refs) AS ref, generate_subscripts(refs, 1) AS i FROM w")
-    con.execute(f"""CREATE TEMP TABLE n AS SELECT kind, id, lat, lon, {cols} FROM ST_ReadOSM(?)
-                    WHERE (kind = 'node' AND (id IN (SELECT ref FROM r) OR tags['power'] = 'substation'))
-                       OR (kind = 'relation' AND tags['power'] = 'substation')""", [str(path)])
-    coords = con.execute("""SELECT r.way AS id, list(n.lon ORDER BY r.i) FILTER (WHERE n.id IS NOT NULL) AS lon,
-                                   list(n.lat ORDER BY r.i) FILTER (WHERE n.id IS NOT NULL) AS lat,
-                                   count(*) FILTER (WHERE n.id IS NULL) AS missing
-                            FROM r LEFT JOIN (SELECT id, lon, lat FROM n WHERE kind = 'node') n ON n.id = r.ref
-                            GROUP BY r.way""").df()
-    ways = con.execute("SELECT * EXCLUDE (refs) FROM w").df().merge(coords, on="id", how="left")
-    nodes = con.execute("SELECT * EXCLUDE (kind) FROM n WHERE kind = 'node' AND power = 'substation'").df()
-    counts = {"power_ways": len(ways), "substation_nodes": len(nodes),
-              "substation_relations_skipped": int(con.execute("SELECT count(*) FROM n WHERE kind = 'relation'").fetchone()[0]),
-              "missing_node_refs": int(coords["missing"].sum()) if len(coords) else 0}
-    con.close()
-    return ways, nodes, counts
-
-
-def _way_geometry(lon: object, lat: object, closed_polygon: bool) -> shapely.Geometry | None:
-    if lon is None or lat is None or len(lon) < 2:  # type: ignore[arg-type]
-        return None
-    xy = np.column_stack([np.asarray(lon, float), np.asarray(lat, float)])
-    if closed_polygon and len(xy) >= 4 and np.array_equal(xy[0], xy[-1]):
-        return shapely.Polygon(xy)
-    return shapely.LineString(xy)
+    ways, nodes, c = read_features(path, "power", ("line", "cable", "minor_line", "substation"), ("substation",), TAGS)
+    return ways, nodes, {"power_ways": c["ways"], "substation_nodes": c["nodes"],
+                         "substation_relations_skipped": c["relations_skipped"], "missing_node_refs": c["missing_node_refs"]}
 
 
 def _tags(df: pd.DataFrame) -> dict[str, object]:

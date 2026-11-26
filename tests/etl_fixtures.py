@@ -126,6 +126,35 @@ RTE_CSV = ("﻿code_poste;nom_poste;fonction;etat;tension;departement\n"
            "EEEEE;ECHO;Poste de transformation;EN EXPLOITATION;63kV;Bouches-du-Rhône\n")
 RTE_FIELDS = [{"name": n, "type": "text"} for n in ("code_poste", "nom_poste", "fonction", "etat", "tension", "departement")]
 
+ARCEP_HEADER = ("code_op;nom_op;num_site;id_site_partage;id_station_anfr;x;y;latitude;longitude;nom_reg;nom_dep;"
+                "insee_dep;nom_com;insee_com;site_2g;site_3g;site_4g;site_5g;mes_4g_trim;site_ZB;site_DCC;"
+                "site_strategique;site_capa_240mbps;date_ouverturecommerciale_5g;site_5g_700_m_hz;site_5g_800_m_hz;"
+                "site_5g_1800_m_hz;site_5g_2100_m_hz;site_5g_3500_m_hz")
+
+
+def arcep_csv() -> bytes:
+    """The 2026 T2 file's defects in miniature: cp1252 commune names in UTF-8 lines, codes stripped of their leading
+    zeros, a decimal-comma x, a spreadsheet-damaged site number, a missing ANFR id."""
+    def row(op: str, name: str, num: str, shared: str, anfr: str, x: float, y: float, dep: str, com: str,
+            g5: str = "1", x_text: str | None = None) -> bytes:
+        lon, lat = lonlat(x, y)
+        head = (f"{op};{name};{num};{shared};{anfr};{x_text or int(x)};{int(y)};{str(lat).replace('.', ',')};"
+                f"{str(lon).replace('.', ',')};Provence-Alpes-Côte d'Azur;Dép;{dep};").encode()
+        tail = f";{com};0;1;1;{g5};0;0;0;0;1;2024-01-02T00:00:00Z;1;0;0;0;1".encode()
+        return head + "Rémens".encode("cp1252") + tail  # the commune name is cp1252 inside a UTF-8 line
+
+    rows = [
+        row("20801", "Orange", "00000064H3", "", "132290004", X0 + 2_000, Y0 + 3_000, "13", "13001",
+            x_text=f"{int(X0 + 2_000)},4"),
+        row("20810", "SFR", "S1", "MUT1", "132290005", X0 + 2_000, Y0 + 3_000, "13", "13001"),  # same mast
+        row("20815", "Free Mobile", "F1", "", "842290001", X0 + 11_000, Y0 + 4_000, "84", "84001", g5="0"),
+        row("20820", "Bouygues Telecom", "B1", "", "42290001", X0 + 11_500, Y0 + 4_000, "4", "4112"),
+        row("20801", "Orange", "1,03E+05", "", "132290009", X0 + 6_000, Y0 + 6_000, "13", "13002"),
+        row("20815", "Free Mobile", "F2", "", "", X0 + 7_000, Y0 + 2_000, "13", "13002"),  # no ANFR id
+        row("20801", "Orange", "O9", "", "132290010", X0 + 40_000, Y0 + 5_000, "84", "84002"),  # outside
+    ]
+    return ARCEP_HEADER.encode() + b"\n" + b"\n".join(rows) + b"\n"
+
 
 def osm_pbfs(tmp: Path) -> dict[str, bytes]:
     """Two overlapping extracts: the 225 kV line (way 10) is in both and must be kept once."""
@@ -144,11 +173,17 @@ def osm_pbfs(tmp: Path) -> dict[str, bytes]:
                                          "substation": "minor_distribution"}),  # dropped
         node(20, X0 + 11_000, Y0 + 2_000), node(21, X0 + 11_100, Y0 + 2_000), node(22, X0 + 11_100, Y0 + 2_100),
         node(23, X0 + 11_000, Y0 + 2_100),  # 63 kV substation polygon in the buffer
+        node(40, X0 + 3_000, Y0 + 7_000, {"telecom": "exchange", "operator": "Orange", "name": "Central A"}),
+        node(46, X0 + 3_500, Y0 + 7_000, {"telecom": "connection_point"}),  # not an exchange: ignored
+        node(42, X0 + 10_500, Y0 + 8_000), node(43, X0 + 10_560, Y0 + 8_000), node(44, X0 + 10_560, Y0 + 8_050),
+        node(45, X0 + 10_500, Y0 + 8_050),  # data centre polygon in the buffer
+        node(47, X0 + 50_000, Y0 + 5_000, {"telecom": "exchange", "operator": "Orange"}),  # outside the buffer
     ]
     paca_ways = [(10, [1, 2], {"power": "line", "voltage": "225000", "circuits": "2"}),
                  (11, [3, 4], {"power": "minor_line", "voltage": "20000"}),
                  (12, [5, 6], {"power": "line"}),
-                 (13, [20, 21, 22, 23, 20], {"power": "substation", "voltage": "63000", "ref:FR:RTE": "BBBBB"})]
+                 (13, [20, 21, 22, 23, 20], {"power": "substation", "voltage": "63000", "ref:FR:RTE": "BBBBB"}),
+                 (41, [42, 43, 44, 45, 42], {"telecom": "data_center", "operator": "DC Co"})]
     lr_nodes = [*shared, node(30, X0 + 40000, Y0 + 5000), node(31, X0 + 45000, Y0 + 5000)]
     lr_ways = [(10, [1, 2], {"power": "line", "voltage": "225000", "circuits": "2"}),
                (14, [30, 31], {"power": "line", "voltage": "400000"})]  # outside the buffer
@@ -171,6 +206,8 @@ class Portal:
         self.seen.append({"path": path, **q})
         if path.endswith(".zip"):
             return httpx.Response(200, content=self.zip)
+        if path.endswith("_sites_Metropole.csv"):
+            return httpx.Response(200, content=arcep_csv())
         if ".osm.pbf" in path:
             region = "paca" if "provence" in path else "languedoc-roussillon"
             data = self.pbf[region]
@@ -238,3 +275,4 @@ def fetch_all(root: Path, source_ids: tuple[str, ...]) -> None:
 TERRITORY_SOURCES = ("ign.admin_express.departement", "ign.admin_express.commune", "insee.filosofi2021_200m")
 ELECTRICITY_SOURCES = ("rte.postes", "enedis.poste_electrique", "enedis.reseau_hta", "enedis.reseau_souterrain_hta",
                        "osm.geofabrik.paca", "osm.geofabrik.languedoc_roussillon")
+TELECOM_SOURCES = ("arcep.sites", "osm.geofabrik.paca", "osm.geofabrik.languedoc_roussillon")
