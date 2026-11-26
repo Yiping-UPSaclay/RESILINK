@@ -8,7 +8,8 @@
 # what the P1-P2 models need (E3), then the data track starts; the other extension features follow when the
 # analytics or the first thesis need them.
 
-updated: 2026-11-25
+updated: 2026-11-26
+# Items may carry `target` (a date): the dashboard shows it as a milestone on the timeline.
 repository: Yiping-UPSaclay/RESILINK   # GitHub (public); tools/progress.py reads its CI status
 
 phases:
@@ -40,7 +41,7 @@ phases:
       - { id: D4, name: "Gas: NaTran transmission network and delivery stations", status: not_started }
       - { id: D5, name: "Flood hazard: Géorisques flood-risk zones (TRI / AZI)", status: not_started }
       - { id: D6, name: "Adapters, entity matching, topology build, QA gates; publish release bdr-2027.01.0", status: not_started, criteria: [POC/AC1] }
-      - { id: D7, name: "First flood risk campaign on Bouches-du-Rhône (target 2027-01-15)", status: not_started, criteria: [POC/AC2] }
+      - { id: D7, name: "First flood risk campaign on Bouches-du-Rhône", status: not_started, target: 2027-01-15, criteria: [POC/AC2] }
       - { id: OPX, name: "Operator-data readiness: switch-state field in the elec pack; generic mapping importer", status: not_started }
       - { id: P1b, name: "Steward agent (drift, mappings, entity resolution) + Review page", status: not_started }
       - { id: P1c, name: "PMTiles map layers, canonical views 1-2", status: not_started, blocked_by: [D-DOCKER] }

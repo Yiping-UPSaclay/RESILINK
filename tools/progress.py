@@ -196,7 +196,8 @@ def dashboard_files(report: dict) -> Path:
               "planned_start": str(ph.get("planned", {}).get("start") or ""),
               "planned_end": str(ph.get("planned", {}).get("end") or ""),
               "item": it["id"], "name": it["name"], "status": it["status"], "done_on": str(it.get("done_on") or ""),
-              "blocked_by": ", ".join(it.get("blocked_by", [])), "criteria": ", ".join(it.get("criteria", []))}
+              "blocked_by": ", ".join(it.get("blocked_by", [])), "criteria": ", ".join(it.get("criteria", [])),
+              "target": str(it.get("target") or "")}
              for ph in report["phases"] for it in ph.get("items", [])]
     criteria = [{**{k: c.get(k, "") for k in ("id", "kind", "text", "status", "test")},
                  "group": c["id"].split("/")[0]} for c in report["acceptance"]]
