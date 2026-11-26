@@ -29,7 +29,7 @@ phases:
       - { id: E2, name: "System packs elec/facility/gas/telecom; vocabulary out of the core", status: done, done_on: 2026-11-24, criteria: [ADR-0008/AC1], refs: ["#2"] }
       - { id: PLAN, name: "Plan re-ordered: proof of concept on real data first; proof-of-concept criteria tracked", status: done, done_on: 2026-11-25, refs: ["#3"] }
       - { id: E3, name: "Slots and built-in models as plugins, chosen by the experiment config; current loop as episode 0.1 and nested_mc; version pinning; plugin import contract", status: done, done_on: 2026-11-25, criteria: [ADR-0008/AC1, ADR-0008/AC9], refs: ["#4"] }
-      - { id: C3, name: "GitHub board: milestones per phase, an issue per item, linked pull requests (tools/github_board.py)", status: done, done_on: 2026-11-26 }
+      - { id: C3, name: "GitHub board: milestones per phase, an issue per item, linked pull requests (tools/github_board.py)", status: done, done_on: 2026-11-26, refs: ["#44"] }
 
   - id: P1
     name: Real data for Bouches-du-Rhône
