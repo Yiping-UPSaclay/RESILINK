@@ -40,7 +40,7 @@ phases:
       - { id: D2, name: "Electricity: Enedis HTA/BT substations and HTA lines, RTE sites (attributes), OSM high-voltage lines and substations (Geofabrik + DuckDB ST_ReadOSM); staged", status: done, done_on: 2026-11-26, refs: ["#7"] }
       - { id: D3, name: "Telecom: ARCEP mobile sites with ANFR identifiers (file defects repaired); OSM exchanges and data centres; staged", status: done, done_on: 2026-11-26, refs: ["#45"] }
       - { id: D4, name: "Gas: NaTran transmission trace, GRDF distribution pipes, gas-fired power stations; OSM pipelines, stations and LNG terminals; staged", status: done, done_on: 2026-11-26, refs: ["#46"] }
-      - { id: D5, name: "Flood hazard: Géorisques TRI 2020 mapping (extents and water-depth classes, 8 scenarios); staged as hazard_scenarios and hazard_footprints", status: done, done_on: 2026-11-27 }
+      - { id: D5, name: "Flood hazard: Géorisques TRI 2020 mapping (extents and water-depth classes, 8 scenarios); staged as hazard_scenarios and hazard_footprints", status: done, done_on: 2026-11-27, refs: ["#47"] }
       - { id: D6, name: "Adapters, entity matching, topology build, QA gates; publish release bdr-2027.01.0", status: not_started, criteria: [POC/AC1] }
       # D7 note: flood footprints of one scenario overlap (several rivers); exposure must sum line lengths over
       # their union, not per polygon (hazard_footprints doc in configs/layers.yaml).
