@@ -288,10 +288,18 @@ class HttpFileConnector:
             raise ValueError(f"{spec.id}: inspect supports CSV files, zip archives and OSM PBF files")
         with zipfile.ZipFile(path) as z:
             infos = z.infolist()
+            chosen = [i for i in infos if not spec.members or any(fnmatch.fnmatch(i.filename, m) for m in spec.members)]
+            if chosen and not all(i.filename.lower().endswith(".csv") for i in chosen):
+                # an archive of GIS layers: its schema is the list of layer files (a layer that disappears is drift)
+                stamps = [datetime(*i.date_time).isoformat() for i in chosen]
+                return meta.model_copy(update={
+                    "fields": [FieldInfo(name=i.filename, type="member") for i in sorted(chosen, key=lambda i: i.filename)],
+                    "count": len(chosen), "modified": max(stamps, default=None),
+                    "raw": {**meta.raw, "inspected": True, "members": len(infos), "bytes": path.stat().st_size},
+                })
             missing = [m for m in spec.members if not any(fnmatch.fnmatch(i.filename, m) for i in infos)]
             if missing:
                 raise ValueError(f"{spec.id}: archive lacks members {missing} (has {[i.filename for i in infos]})")
-            chosen = [i for i in infos if not spec.members or any(fnmatch.fnmatch(i.filename, m) for m in spec.members)]
             fields: dict[str, FieldInfo] = {}
             rows: dict[str, int] = {}
             for info in chosen:

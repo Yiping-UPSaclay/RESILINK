@@ -100,3 +100,31 @@ assumptions:
     grade: C
     sensitivity: true
     evidence_ids: []
+  - id: A-HAZ-01
+    title: Depth of the open "over 2 m" class
+    statement: In the TRI water-depth classes, the open class "over 2 m" (ht_max coded 9999) is given a depth of 3.0 m.
+    rationale: The flood model needs a finite intensity; most fragility curves are near saturation above 2 m, so the choice matters little for assets but should be tested in sensitivity runs. 17 % of depth polygons in the Bouches-du-Rhône buffer are in this class (2026-11-27).
+    grade: C
+    sensitivity: true
+    evidence_ids: []
+  - id: A-HAZ-02
+    title: Return periods of the Floods Directive scenarios
+    statement: The TRI scenarios are given the return periods named in Géorisques' layer titles - frequent 10 years, medium 100 years, rare 1000 years; the medium scenario with climate change is a separate set at 100 years.
+    rationale: The Floods Directive defines ranges (frequent 10-30 y, medium 100-300 y, rare about 1000 y); the titles' single values are the convention. Expected annual loss depends on this choice.
+    grade: B
+    sensitivity: true
+    evidence_ids: []
+  - id: A-HAZ-03
+    title: No flooding outside TRI perimeters
+    statement: Flooding is modelled only inside the mapped TRI extents; elsewhere the flood intensity is zero.
+    rationale: TRIs are the territories with mapped flood scenarios and depths; they cover 53 % of Bouches-du-Rhône and 30 % of its 30 km buffer (2026-11-27). Flood risk outside them (AZI atlases, PPRI) is underestimated until those layers are added.
+    grade: C
+    sensitivity: false
+    evidence_ids: []
+  - id: A-HAZ-04
+    title: Flooded areas without a depth class
+    statement: Where a scenario's flood extent has no water-depth class (depth classes covering less than 95 % of the extent), the uncovered part gets the lowest class bound, 0.5 m, flagged depth_known = false.
+    rationale: A lower bound that keeps the extent consistent across scenarios. In the Bouches-du-Rhône buffer this concerns the Avignon TRI, medium scenario (234 km2, 2026-11-27).
+    grade: C
+    sensitivity: true
+    evidence_ids: []

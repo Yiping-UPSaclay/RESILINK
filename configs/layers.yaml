@@ -60,12 +60,30 @@ tables:
       buffer_m: Buffer distance in metres (0 for the core).
   hazard_scenarios:
     tier: public
-    description: Hazard scenarios with return periods.
+    description: >-
+      Hazard scenarios with return periods. Real territories use the Floods Directive TRI mapping (2020 reporting):
+      river and marine flooding at 10, 100 and 1000 years, plus a 100-year scenario with climate change
+      (assumption A-HAZ-02).
     columns:
-      scenario_id: Scenario id.
+      scenario_id: Scenario id, e.g. tri2020_river_rp100.
+      set_id: Scenarios integrated together over return periods (e.g. tri2020_river; climate change is its own set).
       return_period_y: Return period (years).
       annual_rate: 1 / return period.
       im_type: Intensity measure type (e.g. depth_m).
+      tris: TRIs contributing footprints to the scenario.
+  hazard_footprints:
+    tier: public
+    description: >-
+      Polygons of one intensity band per scenario. For floods, the TRI water-depth classes; flooding outside TRI
+      perimeters is not mapped (A-HAZ-03). Polygons of one scenario can overlap: take the maximum depth at a point
+      and the union when summing lengths.
+    columns:
+      scenario_id: Scenario of the polygon.
+      band: Depth class, e.g. 0.5-1, 2+ (over 2 m), or unknown.
+      im_min: Lower bound of the class (m).
+      im_max: Upper bound of the class (m), the intensity used for exposure; 3.0 for "2+" (A-HAZ-01), 0.5 for unknown (A-HAZ-04).
+      depth_known: False where the extent had no depth class (A-HAZ-04).
+      tri: TRI the polygon belongs to.
   exposure:
     tier: internal
     description: Asset x scenario intensity (the exposure contract).

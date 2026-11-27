@@ -150,3 +150,18 @@ def test_gas_sources_contracts():
     plants = ods.describe(sources["odre.gas_power_plants"])
     assert {"site", "annee_de_reference", "puissance_installee_mw", "latitude_site", "longitude_site"} <= {
         f.name for f in plants.fields}
+
+
+@pytest.mark.network
+@pytest.mark.vcr
+def test_georisques_tri_archives_are_still_offered():
+    import httpx
+
+    listing = httpx.get("https://www.georisques.gouv.fr/webappReport/ws/telechargement/tri_2020", headers=UA,
+                        params={"anneemin": 2003}, timeout=60).json()["departemental"]
+    links = {k[:2]: (v or {}).get("lien") for k, v in listing.items()}
+    sources = load_sources()
+    for dep in ("13", "30", "34", "83", "84"):
+        spec = sources[f"georisques.tri2020_{dep}"]
+        assert links[dep] == f"{spec.base_url}/{spec.dataset}"  # the registered archive is the one Géorisques offers
+    assert links["04"] is None  # Alpes-de-Haute-Provence has no TRI
