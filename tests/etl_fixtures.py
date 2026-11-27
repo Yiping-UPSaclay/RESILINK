@@ -263,6 +263,53 @@ ODS_FIELDS = {
 }
 
 
+def _tri_layers() -> dict[str, list[tuple[str, str, list[dict], list]]]:
+    """TRI shapefile layers per département archive: (TRI, layer suffix, records, geometries). FRD_TRI_SHARED is copied
+    whole into the 13 and 30 archives, as Géorisques does for TRIs spanning départements."""
+    def depth(lo: float, hi: float, i: int) -> dict:
+        return {"id": str(i), "ht_min": lo, "ht_max": hi, "scenario": "x", "typ_inond": "01"}
+
+    bowtie = shapely.Polygon([(X0 + 1_200, Y0 + 1_200), (X0 + 1_400, Y0 + 1_400), (X0 + 1_400, Y0 + 1_200),
+                              (X0 + 1_200, Y0 + 1_400)])  # self-crossing: invalid
+    test = [
+        ("FRD_TRI_TEST", "inondable_01_01for", [{"id": "e1"}], [box(X0 + 1_000, Y0 + 1_000, X0 + 2_000, Y0 + 2_000)]),
+        ("FRD_TRI_TEST", "iso_ht_01_01for", [depth(0.5, 1.0, 1), depth(0.5, 1.0, 2)],
+         [box(X0 + 1_000, Y0 + 1_000, X0 + 2_000, Y0 + 2_000), bowtie]),
+        ("FRD_TRI_TEST", "inondable_01_02moy", [{"id": "e2"}], [box(X0 + 1_000, Y0 + 1_000, X0 + 4_000, Y0 + 3_000)]),
+        ("FRD_TRI_TEST", "iso_ht_01_02moy", [depth(0.0, 0.5, 3), depth(2.0, 9999.0, 4)],
+         [box(X0 + 1_000, Y0 + 1_000, X0 + 2_500, Y0 + 3_000), box(X0 + 2_500, Y0 + 1_000, X0 + 4_000, Y0 + 3_000)]),
+        ("FRD_TRI_TEST", "inondable_01_04fai", [{"id": "e3"}], [box(X0 + 1_000, Y0 + 1_000, X0 + 6_000, Y0 + 4_000)]),
+        ("FRD_TRI_TEST", "iso_ht_01_04fai", [depth(1.0, 2.0, 5)], [box(X0 + 1_000, Y0 + 1_000, X0 + 3_500, Y0 + 4_000)]),
+        ("FRD_TRI_TEST", "tri", [{"id": "t1", "nom": "Test", "hab_perm": 1000}], [box(X0, Y0, X0 + 7_000, Y0 + 5_000)]),
+    ]
+    shared = [
+        ("FRD_TRI_SHARED", "inondable_03_02moy", [{"id": "e9"}], [box(X0 + 11_000, Y0 + 1_000, X0 + 11_500, Y0 + 1_500)]),
+        ("FRD_TRI_SHARED", "iso_ht_03_02moy", [depth(0.0, 0.5, 9)], [box(X0 + 11_000, Y0 + 1_000, X0 + 11_500, Y0 + 1_500)]),
+        ("FRD_TRI_SHARED", "tri", [{"id": "t2", "nom": "Shared", "hab_perm": 50}],
+         [box(X0 + 10_500, Y0 + 500, X0 + 12_000, Y0 + 2_000)]),
+    ]
+    far = [("FRD_TRI_FAR", "iso_ht_01_02moy", [depth(0.0, 0.5, 20)], [box(X0 + 60_000, Y0, X0 + 61_000, Y0 + 1_000)]),
+           ("FRD_TRI_FAR", "tri", [{"id": "t3", "nom": "Far", "hab_perm": 10}], [box(X0 + 59_000, Y0, X0 + 62_000, Y0 + 2_000)])]
+    return {"13": test + shared, "30": shared, "34": far, "83": far, "84": far}
+
+
+def tri_zip(tmp: Path, dep: str) -> bytes:
+    """A département archive laid out like Géorisques' (tri_2020_sig_di_<dep>/<TRI>/n_tri_<x>_<layer>_s_0<dep>.shp)."""
+    import geopandas as gpd
+
+    root = tmp / f"tri_{dep}"
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        for tri, suffix, records, geoms in _tri_layers()[dep]:
+            stem = f"n_tri_{tri.removeprefix('FRD_TRI_').lower()}_{suffix}_s_0{dep}"
+            folder = root / tri
+            folder.mkdir(parents=True, exist_ok=True)
+            gpd.GeoDataFrame(records, geometry=geoms, crs="EPSG:2154").to_file(folder / f"{stem}.shp")
+            for f in sorted(folder.glob(f"{stem}.*")):
+                z.write(f, f"tri_2020_sig_di_{dep}/{tri}/{f.name}")
+    return buf.getvalue()
+
+
 class Portal:
     """Answers the connectors' requests; ``seen`` records query parameters, ``files`` the static downloads."""
 
@@ -272,10 +319,14 @@ class Portal:
         self.pbf = osm_pbfs(tmp)
         self.md5_override: str | None = None
         self.deps, self.communes = wfs_features()
+        self.tmp = tmp
 
     def handler(self, request: httpx.Request) -> httpx.Response:
         path, q = request.url.path, dict(request.url.params)
         self.seen.append({"path": path, **q})
+        m = re.search(r"tri_2020_sig_di_(\d\d)\.zip$", path)
+        if m:
+            return httpx.Response(200, content=tri_zip(self.tmp, m.group(1)))
         if path.endswith(".zip"):
             return httpx.Response(200, content=self.zip)
         if path.endswith("_sites_Metropole.csv"):
@@ -353,3 +404,4 @@ ELECTRICITY_SOURCES = ("rte.postes", "enedis.poste_electrique", "enedis.reseau_h
 TELECOM_SOURCES = ("arcep.sites", "osm.geofabrik.paca", "osm.geofabrik.languedoc_roussillon")
 GAS_SOURCES = ("natran.trace250", "grdf.network", "odre.gas_power_plants", "osm.geofabrik.paca",
                "osm.geofabrik.languedoc_roussillon")
+FLOOD_SOURCES = tuple(f"georisques.tri2020_{d}" for d in ("13", "30", "34", "83", "84"))

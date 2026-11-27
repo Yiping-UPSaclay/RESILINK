@@ -254,3 +254,32 @@ sources:
     id_strategy: native:site
     priority: P0
     docs_url: https://odre.opendatasoft.com/explore/dataset/prod-elec-gaz-naturel-fr/
+
+  # --- D5 flood hazard (verified 2026-11-27) ----------------------------------------------------------------
+  # Floods Directive mapping of the TRI (Territoires à Risque important d'Inondation), 2020 reporting, COVADIS DI v2
+  # standard (Géorisques, licence etalab-2.0; files static since 2022-01-17). One shapefile archive per département,
+  # per TRI: flood extents (inondable_<type>_<scenario>) and water-depth classes (iso_ht_<type>_<scenario>) for
+  # types 01 river overflow, 02 runoff, 03 marine submersion and scenarios 01for (frequent, ~10 y), 02moy (medium,
+  # ~100 y), 03mcc (medium with climate change), 04fai (rare, ~1000 y). Département 04 has no TRI.
+  # Géorisques' WFS serves only national extents without depths, and ignores startIndex (pages repeat; 500 max).
+  - &tri2020
+    id: georisques.tri2020_13
+    provider: Géorisques (DREAL, Floods Directive)
+    connector: http_file
+    base_url: https://files.georisques.fr
+    dataset: di_2020/tri_2020_sig_di_13.zip
+    format: zip
+    territory_mode: none
+    members: ["*_inondable_*_s_*.*", "*_iso_ht_*_s_*.*", "*_tri_s_*.*"]
+    vintage: "TRI 2020 reporting (files of 2022-01-17)"
+    role: Flood extents and water-depth classes per scenario (frequent, medium, rare)
+    licence: Licence Ouverte 2.0
+    sensitivity: public
+    refresh: manual
+    id_strategy: native:id
+    priority: P0
+    docs_url: https://www.georisques.gouv.fr/donnees/bases-de-donnees/zonages-inondation-rapportage-2020
+  - {<<: *tri2020, id: georisques.tri2020_30, dataset: di_2020/tri_2020_sig_di_30.zip}
+  - {<<: *tri2020, id: georisques.tri2020_34, dataset: di_2020/tri_2020_sig_di_34.zip}
+  - {<<: *tri2020, id: georisques.tri2020_83, dataset: di_2020/tri_2020_sig_di_83.zip}
+  - {<<: *tri2020, id: georisques.tri2020_84, dataset: di_2020/tri_2020_sig_di_84.zip}

@@ -1,0 +1,85 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - www.georisques.gouv.fr
+      user-agent:
+      - resilink-lab/0.1 (research; open-data client)
+    method: GET
+    uri: https://www.georisques.gouv.fr/webappReport/ws/telechargement/tri_2020?anneemin=2003
+  response:
+    body:
+      string: !!binary |
+        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
+    headers:
+      access-control-allow-origin:
+      - '*'
+      connection:
+      - Keep-Alive
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - frame-ancestors 'self' 'virteem.com';
+      content-type:
+      - application/json
+      date:
+      - Fri, 27 Nov 2026 08:55:17 GMT
+      keep-alive:
+      - timeout=5, max=100
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Encoding,Origin
+    status:
+      code: 200
+      message: ''
+version: 1

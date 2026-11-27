@@ -2,7 +2,7 @@
 
 > **Date:** v2.0 approved 2026-11-16 · **v2.2 2026-11-23** · **Pilot:** Bouches-du-Rhône (13) + buffer · **Horizon:** 12+ months · **Repository:** https://github.com/Yiping-UPSaclay/RESILINK (public; Sprint 0 implemented and verified, not yet committed)
 > **Tags:** **[E]** essential now · **[D]** deferred (planned for a later phase) · **[O]** optional (adopted only if a named trigger fires)
-> Claims marked ✔ were checked against official documentation or the publisher's own pages on 2026-11-16, on 2026-11-23 for F12 and the §6 additions, or on 2026-11-26 for the D1–D4 sources (§16). **TBC** means the claim must be confirmed during implementation.
+> Claims marked ✔ were checked against official documentation or the publisher's own pages on 2026-11-16, on 2026-11-23 for F12 and the §6 additions, or on 2026-11-26/27 for the D1–D5 sources (§16). **TBC** means the claim must be confirmed during implementation.
 > **v2.2 changes (accepted 2026-11-23: [ADR-0008](../adr/0008-extension-architecture.md) revision 2).**
 > - The core stays small: kernel, shared board, RNG, composition, reducers, provenance.
 > - **System packs, slot definitions and models** are registered, versioned plugins. A new system (e.g. water), a new kind of question (e.g. crew road access) or a new operation model (e.g. DC-OPF, AC-OPF) can be added later without core edits.
@@ -765,7 +765,7 @@ P0 = needed for the first release.
 | `odre.gas_power_plants` | `prod-elec-gaz-naturel-fr` ✔ (site × reference year 2019–2025, coordinates) | ODRÉ | Gas → electricity coupling | Site name | LO · public | P0 ✔ D4 |
 | OSM gas (same Geofabrik extracts) | `man_made=pipeline` + `substance=gas`; `pipeline=substation` (stations; assumption A-GAS-01); LNG terminals as named industrial areas | — | Pipeline geometry, stations, LNG terminals | OSM id | ODbL · internal | P0 ✔ D4 |
 | `arcep.sites` | Quarterly sites CSV ✔, pinned to 2026 T2 (`;`; Lambert-93 x/y and WGS84; ANFR ID). The file departs from its documentation: UTF-8 and cp1252 mixed within lines, leading zeros stripped from codes, some decimal commas, spreadsheet-damaged site numbers; the adapter repairs each | data.arcep.fr | Mobile stations | ANFR + operator | LO · internal | P0 ✔ D3 |
-| `georisques.*` | API v1 (`gaspar/catnat` ✔; TRI/AZI endpoints TBC) + WFS | REST/WFS | Flood scenarios | Scenario ID | LO · public | P1 |
+| `georisques.tri2020_{13,30,34,83,84}` | TRI mapping, 2020 reporting ✔: one shapefile archive per département (COVADIS DI v2; static since 2022-01-17) with flood extents and **water-depth classes** per flood type (river, runoff, sea) and scenario (10 / 100 / 1000 y, 100 y with climate change). A TRI spanning départements is copied whole into each archive. API v1 (`gaspar/tri`, `gaspar/azi`) ✔ gives TRI/AZI per commune, without geometry. The WFS (`www.georisques.gouv.fr/services`) has national extents without depths and **ignores `startIndex` (pages repeat; 500 features at most)** ✔ | HTTP (files.georisques.fr) | Flood scenarios and depth footprints (A-HAZ-01…04) | TRI zone id | etalab-2.0 · public | P0 ✔ D5 |
 | `arcep.sites_indisponibles` | Daily GeoJSON since 2020-10 ✔ (last update 2026-07-28) | data.gouv | Validation of electricity → telecom | ANFR ID | LO · internal | P1 |
 | `hubeau.hydro_tr` | Hub'Eau **v2** `observations_tr` ✔ | REST | Nowcast | Station | LO · public | P1 |
 | `meteofrance.arome` | Météo-France API portal (key) · Open-Meteo fallback | REST | FWI (in-house), wind | — | TBC | P1 |
@@ -1983,6 +1983,8 @@ uv run streamlit run apps/streamlit/Home.py        # Copilot answers with ValueR
 - ARCEP unavailable sites: https://www.data.gouv.fr/datasets/sites-indisponibles
 - Hub'Eau hydrometry: https://hubeau.eaufrance.fr/page/api-hydrometrie
 - Géorisques API: https://www.data.gouv.fr/dataservices/api-georisques
+- Géorisques "Zonages inondation - Rapportage 2020" (archives per département, COVADIS DI v2): https://www.georisques.gouv.fr/donnees/bases-de-donnees/zonages-inondation-rapportage-2020
+- COVADIS Directive Inondation standard v2.1: https://files.georisques.fr/di_2020/COVADIS_standard_DI_v2.1.pdf
 - IGN Géoplateforme download API: https://geoservices.ign.fr/documentation/services/services-geoplateforme/telechargement
 - INSEE Filosofi 2021, 200 m grid: https://www.insee.fr/fr/statistiques/8735162
 - INSEE licence (Licence Ouverte 2.0, "Source : Insee"): https://www.insee.fr/fr/information/2008466

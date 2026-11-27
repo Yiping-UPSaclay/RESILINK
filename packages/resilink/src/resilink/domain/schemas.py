@@ -79,5 +79,30 @@ EXTENT_SCHEMA = _GeoSchema(  # the territory itself (core) and the core grown by
     strict=False,
 )
 
+HAZARD_SCENARIO_SCHEMA = pa.DataFrameSchema(
+    {
+        "scenario_id": pa.Column(str, unique=True),
+        "hazard": pa.Column(str),
+        "set_id": pa.Column(str),
+        "return_period_y": pa.Column(float, pa.Check.gt(0)),
+        "annual_rate": pa.Column(float, pa.Check.in_range(0.0, 1.0)),
+        "im_type": pa.Column(str),
+    },
+    strict=False,
+)
+
+HAZARD_FOOTPRINT_SCHEMA = _GeoSchema(  # one polygon per intensity band; im_max is the intensity used for exposure
+    {
+        "scenario_id": pa.Column(str),
+        "band": pa.Column(str),
+        "im_min": pa.Column(float, pa.Check.ge(0)),
+        "im_max": pa.Column(float, pa.Check.ge(0)),
+        "geometry": pa.Column(Geometry(crs=CANONICAL_CRS)),
+    },
+    checks=[pa.Check(lambda df: (df["im_max"] >= df["im_min"]).all(), error="im_max below im_min")],
+    strict=False,
+)
+
 TABLE_SCHEMAS = {"nodes": NODE_SCHEMA, "edges": EDGE_SCHEMA, "grid_cells": GRID_SCHEMA, "admin_areas": ADMIN_SCHEMA,
-                 "territory_extent": EXTENT_SCHEMA}
+                 "territory_extent": EXTENT_SCHEMA, "hazard_scenarios": HAZARD_SCENARIO_SCHEMA,
+                 "hazard_footprints": HAZARD_FOOTPRINT_SCHEMA}
