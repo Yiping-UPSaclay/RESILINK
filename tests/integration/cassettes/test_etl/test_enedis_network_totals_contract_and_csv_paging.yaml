@@ -1,0 +1,232 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - opendata.enedis.fr
+      user-agent:
+      - resilink-lab/0.1 (research; open-data client)
+    method: GET
+    uri: https://opendata.enedis.fr/data-fair/api/v1/datasets/donnees-relatives-aux-lignes-et-aux-postes
+  response:
+    body:
+      string: !!binary |
+        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
+    headers:
+      access-control-allow-origin:
+      - '*'
+      cache-control:
+      - must-revalidate, private, max-age=0
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Sat, 28 Nov 2026 16:20:01 GMT
+      etag:
+      - W/"1c88-0n7sHBf+tz7+g0VMjMYddfXpzXo"
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Encoding
+      x-cache-status:
+      - MISS
+      x-operation:
+      - '{"class":"read","id":"readDescription"}'
+      x-owner:
+      - '{"type":"organization","id":"CvVx6HqNR"}'
+      x-powered-by:
+      - Express
+      x-resource:
+      - '{"type":"datasets","id":"66h2nkqf-q8d4d0szxmfb9xw","title":"Donn%C3%A9es%20relatives%20aux%20lignes%20et%20aux%20postes%20%C3%A9lectriques"}'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - opendata.enedis.fr
+      user-agent:
+      - resilink-lab/0.1 (research; open-data client)
+    method: GET
+    uri: https://opendata.enedis.fr/data-fair/api/v1/datasets/donnees-relatives-aux-lignes-et-aux-postes/lines?format=json&size=0&qs=code_departement%3A%2213%22
+  response:
+    body:
+      string: '{"total":15,"results":[]}'
+    headers:
+      access-control-allow-origin:
+      - '*'
+      cache-control:
+      - must-revalidate, public, max-age=300
+      connection:
+      - keep-alive
+      content-length:
+      - '25'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Sat, 28 Nov 2026 16:20:01 GMT
+      etag:
+      - W/"19-R/hFL5jR1HYvdsjyhoQBEF4d7Io"
+      last-modified:
+      - Mon, 29 Jun 2026 09:29:17 GMT
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains
+      x-cache-status:
+      - MISS
+      x-operation:
+      - '{"class":"read","id":"readLines","track":"readDataAPI"}'
+      x-owner:
+      - '{"type":"organization","id":"CvVx6HqNR"}'
+      x-powered-by:
+      - Express
+      x-resource:
+      - '{"type":"datasets","id":"66h2nkqf-q8d4d0szxmfb9xw","title":"Donn%C3%A9es%20relatives%20aux%20lignes%20et%20aux%20postes%20%C3%A9lectriques"}'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - opendata.enedis.fr
+      user-agent:
+      - resilink-lab/0.1 (research; open-data client)
+    method: GET
+    uri: https://opendata.enedis.fr/data-fair/api/v1/datasets/donnees-relatives-aux-lignes-et-aux-postes/lines?format=csv&size=10000&qs=code_departement%3A%2213%22
+  response:
+    body:
+      string: !!binary |
+        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
+    headers:
+      access-control-allow-origin:
+      - '*'
+      cache-control:
+      - must-revalidate, public, max-age=300
+      connection:
+      - keep-alive
+      content-disposition:
+      - attachment; filename="donnees-relatives-aux-lignes-et-aux-postes.csv"
+      content-encoding:
+      - gzip
+      content-type:
+      - text/csv; charset=utf-8
+      date:
+      - Sat, 28 Nov 2026 16:20:01 GMT
+      etag:
+      - W/"cb1-x/oVEllfvRDmmnGy6G4G0wLABRM"
+      last-modified:
+      - Mon, 29 Jun 2026 09:29:17 GMT
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept-Encoding
+      x-cache-status:
+      - MISS
+      x-operation:
+      - '{"class":"read","id":"readLines","track":"readDataAPI"}'
+      x-owner:
+      - '{"type":"organization","id":"CvVx6HqNR"}'
+      x-powered-by:
+      - Express
+      x-resource:
+      - '{"type":"datasets","id":"66h2nkqf-q8d4d0szxmfb9xw","title":"Donn%C3%A9es%20relatives%20aux%20lignes%20et%20aux%20postes%20%C3%A9lectriques"}'
+    status:
+      code: 200
+      message: OK
+version: 1

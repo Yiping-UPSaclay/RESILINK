@@ -20,6 +20,7 @@ Verified 2026-11-26 (real-data track, D1):
 
 from __future__ import annotations
 
+import csv
 import fnmatch
 import hashlib
 import io
@@ -106,9 +107,11 @@ class DataFairConnector:
     def fetch(self, spec: SourceSpec, territory: TerritoryConfig | None, dest: Path,
               limit: int | None = None, window: tuple[float, float, float, float] | None = None) -> tuple[str, int | None]:
         """Page through ``/lines`` as GeoJSON (WGS84) and write a single FeatureCollection, filtered by département
-        (``qs``) or by the territory window (``bbox=lon_min,lat_min,lon_max,lat_max``, verified 2026-11-26)."""
+        (``qs``) or by the territory window (``bbox=lon_min,lat_min,lon_max,lat_max``, verified 2026-11-26).
+        Datasets without geometry are exported as CSV (``format: csv``; Data Fair refuses GeoJSON for them)."""
         base = f"{spec.base_url.rstrip('/')}/data-fair/api/v1/datasets/{spec.dataset}/lines"
-        params: dict[str, Any] = {"format": "geojson", "size": min(self.PAGE, limit or self.PAGE)}
+        params: dict[str, Any] = {"format": spec.format if spec.format == "csv" else "geojson",
+                                  "size": min(self.PAGE, limit or self.PAGE)}
         deps = _departements(territory, spec)
         if spec.territory_mode == "extent_bbox":
             if window is None:
@@ -116,6 +119,8 @@ class DataFairConnector:
             params["bbox"] = ",".join(f"{v:.5f}" for v in window)
         elif spec.territory_mode == "field" and deps and spec.territory_field:
             params["qs"] = " OR ".join(f'{spec.territory_field}:"{d}"' for d in deps)
+        if spec.format == "csv":
+            return self._fetch_csv(spec, base, params, dest, limit)
         features: list[dict[str, Any]] = []
         url: str | None = base
         first_url = ""
@@ -137,6 +142,36 @@ class DataFairConnector:
             raise ValueError(f"{spec.id}: received {len(features)} features, the portal announced {total}")
         dest.write_text(json.dumps({"type": "FeatureCollection", "features": features}, ensure_ascii=False), encoding="utf-8")
         return first_url, len(features)
+
+    def _fetch_csv(self, spec: SourceSpec, base: str, params: dict[str, Any], dest: Path,
+                   limit: int | None) -> tuple[str, int | None]:
+        """CSV pages follow the HTTP Link header (verified 2026-11-28); the header row is kept from the first page
+        only. The row count is checked against the total of a JSON query with the same filter."""
+        rows: list[list[str]] = []
+        header: list[str] = []
+        url: str | None = base
+        first_url = ""
+        with _client() as c:
+            r = c.get(base, params={**params, "format": "json", "size": 0})
+            r.raise_for_status()
+            total = r.json().get("total")
+            while url:
+                r = c.get(url, params=params if url == base else None)
+                r.raise_for_status()
+                first_url = first_url or str(r.url)
+                head, *body = csv.reader(io.StringIO(r.content.decode("utf-8-sig")))
+                header = header or head
+                rows.extend(row for row in body if row)
+                url = r.links.get("next", {}).get("url")
+                if limit and len(rows) >= limit:
+                    rows = rows[:limit]
+                    break
+        if not limit and total is not None and len(rows) != total:
+            raise ValueError(f"{spec.id}: received {len(rows)} rows, the portal announced {total}")
+        out = io.StringIO()
+        csv.writer(out, lineterminator="\n").writerows([header, *rows])
+        dest.write_bytes(out.getvalue().encode("utf-8"))
+        return first_url, len(rows)
 
 
 XSD = "{http://www.w3.org/2001/XMLSchema}"

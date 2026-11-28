@@ -30,6 +30,8 @@ SPRINT0_REPAIR_H = {
     "cable_mv": 24.0, "pipeline_tx": 72.0, "backhaul_logical": 12.0,
     "health": 24.0, "emergency": 24.0,  # Sprint 0's fallback for classes without a value, now explicit
 }
+# Classes added since, each with its reason: (system, class) -> repair median (h).
+ADDED_NODES = {("elec", "junction_hv"): 24.0, ("elec", "junction_mv"): 8.0}  # D6, elec 0.2.0: real networks
 
 
 def _water_pack() -> SystemPack:
@@ -48,16 +50,18 @@ def test_builtin_packs_are_registered_through_entry_points():
     assert set(reg.system("elec").subsystems) == {"elec_transmission", "elec_distribution"}
 
 
-def test_packs_carry_exactly_the_sprint0_vocabulary():
+def test_packs_carry_exactly_the_sprint0_vocabulary_plus_declared_additions():
     cat = system_catalog()
     for system, classes in SPRINT0_NODES.items():
-        assert set(cat.pack(system).node_classes) == classes, system
+        added = {c for s, c in ADDED_NODES if s == system}
+        assert set(cat.pack(system).node_classes) == classes | added, system
         assert set(cat.pack(system).link_classes) == SPRINT0_EDGES[system], system
     assert cat.population_suppliers() == SPRINT0_SUPPLIERS
     for system in SPRINT0_NODES:
         pack = cat.pack(system)
         for cls in (*pack.node_classes, *pack.link_classes):
-            assert cat.repair_median_h(system, cls) == SPRINT0_REPAIR_H[cls], (system, cls)
+            expected = ADDED_NODES.get((system, cls), SPRINT0_REPAIR_H.get(cls))
+            assert cat.repair_median_h(system, cls) == expected, (system, cls)
 
 
 def test_catalog_reports_unknown_systems_classes_and_missing_repair_times():

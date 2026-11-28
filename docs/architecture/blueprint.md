@@ -2,7 +2,7 @@
 
 > **Date:** v2.0 approved 2026-11-16 · **v2.2 2026-11-23** · **Pilot:** Bouches-du-Rhône (13) + buffer · **Horizon:** 12+ months · **Repository:** https://github.com/Yiping-UPSaclay/RESILINK (public; Sprint 0 implemented and verified, not yet committed)
 > **Tags:** **[E]** essential now · **[D]** deferred (planned for a later phase) · **[O]** optional (adopted only if a named trigger fires)
-> Claims marked ✔ were checked against official documentation or the publisher's own pages on 2026-11-16, on 2026-11-23 for F12 and the §6 additions, or on 2026-11-26/27 for the D1–D5 sources (§16). **TBC** means the claim must be confirmed during implementation.
+> Claims marked ✔ were checked against official documentation or the publisher's own pages on 2026-11-16, on 2026-11-23 for F12 and the §6 additions, on 2026-11-26/27 for the D1–D5 sources, or on 2026-11-28 for D6 (§16). **TBC** means the claim must be confirmed during implementation.
 > **v2.2 changes (accepted 2026-11-23: [ADR-0008](../adr/0008-extension-architecture.md) revision 2).**
 > - The core stays small: kernel, shared board, RNG, composition, reducers, provenance.
 > - **System packs, slot definitions and models** are registered, versioned plugins. A new system (e.g. water), a new kind of question (e.g. crew road access) or a new operation model (e.g. DC-OPF, AC-OPF) can be added later without core edits.
@@ -630,11 +630,17 @@ Grammar: `rid := <layer>.<class>:<ns>:<key>`.
 ### 4.3 Release layout and writer conventions [E]
 
 ```
-data/releases/bdr/2027.01.0/
-  release.json · admin_areas*.parquet · grid_cells.parquet
-  nodes/layer={elec,gas,telecom,facility}/ · edges/layer=…/ · dependencies/model=…/version=…/ · service_links/
-  hazards/{scenarios.parquet, footprints/, cells/} · exposure/ · xref/{entity_xref,lineage}.parquet · qa/
+data/releases/bdr/2027.01.0/                      # as built in D6 (one file per table)
+  release.json                                    # manifest: tables + sha256, snapshots, licences, QA gates and report
+  nodes.parquet · edges.parquet · service_links.parquet · entity_xref.parquet        (internal)
+  grid_cells.parquet · admin_areas.parquet · territory_extent.parquet                 (public)
+  hazard_scenarios.parquet · hazard_footprints.parquet                                (public)
 ```
+
+Dependencies are not stored: the dependency model of an experiment infers them from node classes and positions
+(ADR-0008). Planned additions: `exposure`, `lineage` (from the second release on), partitioning by layer if a
+territory outgrows single files. `resilink etl release --version <v>` builds, gates and publishes; the QA report is
+also written to `data/qa/<release id>.json`.
 
 **Writer** (`io.geoparquet.write_canonical`):
 - GeoParquet **1.1**, WKB geometry, `write_covering_bbox=True` ✔.
@@ -758,12 +764,13 @@ P0 = needed for the first release.
 | `rte.postes` / `rte.lignes_*` | `postes-electriques-rte` ✔ (no geometry; national file, 5,042 sites) / `lignes-aeriennes-rte-nv` ✔ | ODRÉ Explore v2.1 ✔ | Attributes, completeness | `code_poste` / `code_ligne` | LO · public | P0 ✔ D2 (sites) |
 | `enedis.poste_electrique` | HTA/BT substations ✔ (976,678; data of 2026-07-03) | Enedis Data Fair, `bbox` of the territory ✔ | MV/LV substations | Fingerprint | LO 2.0 · internal | P0 ✔ D2 |
 | `enedis.reseau_hta` / `reseau_souterrain_hta` | HTA overhead ✔ (1,036,732 segments) / underground ✔ (1,863,552); geometry only, no voltage or switch state | Enedis Data Fair, `bbox` of the territory; GeoJSON pages linked by the HTTP `Link` header ✔ | MV topology | Fingerprint | LO 2.0 · internal | P0 ✔ D2 |
-| `ore.postes_source` | Agence ORE `postes-source` (TBC) | ORE export | Primary substations | TBC | TBC · internal | P0 |
+| `enedis.network_totals` | Enedis' yearly totals per département ✔ (km of HTA lines by type, number of HTA/BT substations operated; 2011–2025). No geometry, so Data Fair exports CSV only, pages linked by the `Link` header ✔ | Enedis Data Fair, `qs` on the département | Completeness reference for the MV network (release QA) | Département + year | LO 2.0 · public | P0 ✔ D6 |
+| *(primary substations)* | **No open source** ✔ (2026-11-28): Enedis publishes no list of its postes sources; Agence ORE's `postes-sources` (EDF networks) is empty since the 2026 public-safety update. Derived from the MV network instead (A-ELEC-04) | — | Primary substations | — | — | — |
 | `odre.registre_prod` | Production register ✔ | ODRÉ | Generators | TBC | LO · public | P0 |
 | `natran.trace250` | `trace-du-reseau-grt-250` ✔ (≈250 m; "MAJ 2024", processed 2025-03-20; national Parquet export). NaTran publishes no delivery stations | ODRÉ | Gas transmission | Fingerprint, 250 m | LO · internal | P0 ✔ D4 |
 | `grdf.network` | `cartographie-du-reseau-grdf-en-service` ✔ (3.7 M distribution pipe segments; no pressure or diameter) | opendata.grdf.fr (Opendatasoft), `in_bbox` window, Parquet | Where gas distribution reaches | Fingerprint | LO · internal | P0 ✔ D4 |
 | `odre.gas_power_plants` | `prod-elec-gaz-naturel-fr` ✔ (site × reference year 2019–2025, coordinates) | ODRÉ | Gas → electricity coupling | Site name | LO · public | P0 ✔ D4 |
-| OSM gas (same Geofabrik extracts) | `man_made=pipeline` + `substance=gas`; `pipeline=substation` (stations; assumption A-GAS-01); LNG terminals as named industrial areas | — | Pipeline geometry, stations, LNG terminals | OSM id | ODbL · internal | P0 ✔ D4 |
+| OSM gas (same Geofabrik extracts) | `man_made=pipeline` + `substance=gas`; `pipeline=substation` (stations; assumption A-GAS-03); LNG terminals as named industrial areas | — | Pipeline geometry, stations, LNG terminals | OSM id | ODbL · internal | P0 ✔ D4 |
 | `arcep.sites` | Quarterly sites CSV ✔, pinned to 2026 T2 (`;`; Lambert-93 x/y and WGS84; ANFR ID). The file departs from its documentation: UTF-8 and cp1252 mixed within lines, leading zeros stripped from codes, some decimal commas, spreadsheet-damaged site numbers; the adapter repairs each | data.arcep.fr | Mobile stations | ANFR + operator | LO · internal | P0 ✔ D3 |
 | `georisques.tri2020_{13,30,34,83,84}` | TRI mapping, 2020 reporting ✔: one shapefile archive per département (COVADIS DI v2; static since 2022-01-17) with flood extents and **water-depth classes** per flood type (river, runoff, sea) and scenario (10 / 100 / 1000 y, 100 y with climate change). A TRI spanning départements is copied whole into each archive. API v1 (`gaspar/tri`, `gaspar/azi`) ✔ gives TRI/AZI per commune, without geometry. The WFS (`www.georisques.gouv.fr/services`) has national extents without depths and **ignores `startIndex` (pages repeat; 500 features at most)** ✔ | HTTP (files.georisques.fr) | Flood scenarios and depth footprints (A-HAZ-01…04) | TRI zone id | etalab-2.0 · public | P0 ✔ D5 |
 | `arcep.sites_indisponibles` | Daily GeoJSON since 2020-10 ✔ (last update 2026-07-28) | data.gouv | Validation of electricity → telecom | ANFR ID | LO · internal | P1 |
@@ -804,37 +811,58 @@ provenance: { proposed_by: "prov_…", approved_by: "…" }   # filled when draf
 ### 5.4 Entity resolution (deterministic first, AI for the long tail)
 
 1. **Deterministic passes:**
-   - OSM ↔ RTE: `ref:FR:RTE` tag ✔ (2026-11-26: on 115 of 135 OSM high-voltage substations in département 13; it alone matches 92 of the 94 RTE substations in service there), then normalised name + voltage + département.
+   - OSM ↔ RTE: `ref:FR:RTE` tag ✔ (2026-11-26: on 115 of 135 OSM high-voltage substations in département 13; it alone matches 92 of the 94 RTE substations in service there). The two others (Annibal, Cavaou) are not mapped in OSM at all; a normalised-name pass finds no further candidate anywhere in the buffer (2026-11-28), so the build reports name hits as residue for review instead of matching on them. OSM footprints sharing one RTE code are one substation.
+   - NaTran ↔ OSM pipelines: coverage, not matching (the network is NaTran's trace): 99.7 % of NaTran's length in département 13 lies within 250 m of an OSM gas pipeline, and 98.0 % of OSM's within 250 m of NaTran's (2026-11-28).
    - ARCEP ↔ ANFR: by ANFR ID ✔. Shared masts are barely recorded in open data (ARCEP's `id_site_partage` is set on 74 of 3,066 sites in département 13), so physical supports (common-cause failures) need ANFR's support data (`anfr.stations`, P2).
 2. **Ambiguous residue** (multiple candidates, or a score inside the uncertainty band) goes to `er.propose_match`. The Steward returns a structured decision with reasons, a human approves, and accepted matches are stored as `xref/manual_matches.yaml`, a versioned input to later builds.
 
 **Precedence:** attribute values come from the highest-precedence source; every contributor is kept in `entity_xref`.
 
-### 5.5 Topology building (unchanged)
+### 5.5 Topology building (as built in D6: `etl/topology.py`, `etl/release/`)
 
-**Enedis HTA:**
-1. `set_precision(1 m)`.
-2. Node at shared endpoints and split T-junctions (`STRtree dwithin 2 m`).
-3. **Contract degree-2 chains**, carrying `length_m` and `aerial_share`.
-4. Attach primary substations (≤ 150 m) and HTA/BT substations (≤ 50 m).
-5. `topology_mode ∈ {meshed_optimistic, radial_nearest_source}` is a sensitivity assumption, since open data has no switch states.
+One generic builder serves every line network: clip to the buffer (cut points flagged), split a segment where another
+segment's end (or a point asset with no end nearby) lies on its interior, attach ends to the nearest point asset whose
+radius covers them, snap the other ends, contract degree-2 chains of one kind, drop self-loops. The same segments
+always give the same network.
 
-**NaTran:** 250 m tolerance; sources are the LNG terminals, interconnections and storage within the buffer.
+| Network | Snap / split | Attachment | Contraction | Sources |
+|---|---|---|---|---|
+| Enedis HTA | 2 m / 1 m | MV/LV substations: ends within 5 m (Enedis places them ~1.5 m from their cable ends; 99 % within 3.5 m ✔). Primary substations: ends within 150 m of the footprint | by kind (overhead, underground); `aerial_share` length-weighted | via primary substations |
+| OSM high voltage | 1 m / 0.5 m (OSM ways share nodes) | substations: ends within the footprint's reach + 50 m (several footprints, one RTE code: one node) | by voltage | buffer cut points (A-ELEC-02), gas-fired plants |
+| NaTran | 25 m / 25 m (trace generalised to ~250 m) | delivery and interconnection stations hang off the trace by a derived connector (within footprint reach + 250 m), so a failed station never cuts the main; compression stations inline | — | buffer cut points (A-GAS-04), LNG terminals |
+| Telecom | — | each site to its nearest exchange, a logical link (A-TEL-04) | — | exchanges |
+
+Primary substations are the HV substations where at least 3 MV line ends attach (A-ELEC-04). After the build, only
+what is connected to a source with no damage is kept: an orphan fragment would be out of service in every simulated
+world. `topology_mode = meshed_optimistic` (A-TOPO-01); `radial_nearest_source` stays the planned pessimistic bound.
+
+**Bouches-du-Rhône, release `bdr-2027.01.0` (2026-11-28):** 73,504 nodes and 85,965 edges. Electricity: 131 primary
+substations (median 17 feeders), 93 transmission substations, 43,226 MV/LV substations, 10,015 km of MV line in the
+core (95.4 % of Enedis' 10,502 km), 3,528 km of HV line in the buffer, 37 grid boundary sources. Gas: 616 km of
+NaTran trace in the core, 178 delivery stations, both Fos LNG terminals, 8 boundary sources. Telecom: 6,101 site ×
+operator nodes, 213 exchanges. Dropped as cut off: 162 MV/LV substations (63 in the core), 6 gas delivery stations (all in the buffer) and 28 OSM
+substations without lines (railway and industrial ones, and RTE's Terminal de la Crau, whose connection OSM does not map).
 
 ### 5.6 DVC, QA gates, drift
 
 - **DVC:** `dvc.yaml` stages `normalize` → `build` → `tiles`. The remote is a local disk or NAS, then Scaleway Object Storage.
 - **QA gates** (initial targets):
 
-  | Gate | Threshold |
-  |---|---|
-  | Schema validity | 100 % |
-  | RTE (dept 13, transformer function) matched to OSM | ≥ 90 % |
-  | HTA/BT substations attached to a feeder | ≥ 95 % |
-  | Feeders reachable from a primary substation | ≥ 90 % |
-  | ARCEP stations with a supplier candidate within 1.5 km | ≥ 99 % |
-  | Population in the core vs INSEE's own total (cells by largest-share commune) | ± 1 % (bdr 2026-11-26: −0.14 %) |
-  | Clean-clone `dvc repro` | Hash-identical |
+  | Gate | Threshold | `bdr-2027.01.0` (2026-11-28) |
+  |---|---|---|
+  | Schema validity, references between tables, system packs | 100 % (the build stops otherwise) | ✔ |
+  | RTE (dept 13, transformer function, in service) found in OSM | ≥ 90 % | 97.9 % (92 / 94) |
+  | HTA/BT substations attached to an MV line (core) | ≥ 95 % | 99.75 % |
+  | HTA/BT substations connected to a primary substation (core) | ≥ 90 % | 99.68 % |
+  | ARCEP stations with an MV/LV substation within 1.5 km (core) | ≥ 99 % | 99.84 % |
+  | Population in the core vs INSEE's own total (cells by largest-share commune) | ± 1 % | −0.14 % |
+  | Linked suppliers connected to a source with no damage | 100 % | 100 % |
+  | Electricity, gas and telecom each have a source and serve the grid | all three | ✔ |
+  | Rebuild from the same staged tables | Hash-identical | ✔ (two builds, content hash `ffc009e0…`) |
+
+  The QA report (manifest `qa.report`) also gives the MV network against Enedis' own totals, NaTran ↔ OSM
+  coverage, per dependency rule the share of dependents with a candidate supporter, service-link distances, and
+  every key asset dropped.
 
 - **Drift:** a removed field or geometry change fails the stage. The Steward then writes the triage report. F1 is the reference case: RTE removed geometry for public-safety reasons.
 
@@ -1985,6 +2013,8 @@ uv run streamlit run apps/streamlit/Home.py        # Copilot answers with ValueR
 - Géorisques API: https://www.data.gouv.fr/dataservices/api-georisques
 - Géorisques "Zonages inondation - Rapportage 2020" (archives per département, COVADIS DI v2): https://www.georisques.gouv.fr/donnees/bases-de-donnees/zonages-inondation-rapportage-2020
 - COVADIS Directive Inondation standard v2.1: https://files.georisques.fr/di_2020/COVADIS_standard_DI_v2.1.pdf
+- Enedis, lines and substations per département (Data Fair): https://opendata.enedis.fr/datasets/donnees-relatives-aux-lignes-et-aux-postes
+- Agence ORE, postes sources (EDF networks; empty since the 2026 update): https://opendata.agenceore.fr/data-fair/api/v1/datasets/postes-sources
 - IGN Géoplateforme download API: https://geoservices.ign.fr/documentation/services/services-geoplateforme/telechargement
 - INSEE Filosofi 2021, 200 m grid: https://www.insee.fr/fr/statistiques/8735162
 - INSEE licence (Licence Ouverte 2.0, "Source : Insee"): https://www.insee.fr/fr/information/2008466

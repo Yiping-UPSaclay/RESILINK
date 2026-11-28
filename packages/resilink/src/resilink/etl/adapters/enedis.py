@@ -87,3 +87,32 @@ def enedis_network(ctx: AdapterContext) -> dict[str, Output]:
     }
     return {"stg_elec_mv_lv_substations": Output(stations, "internal", qa_subs),
             "stg_elec_mv_lines": Output(lines, "internal", qa_lines)}
+
+
+TOTALS = "enedis.network_totals"
+TOTAL_COLUMNS = {  # CSV labels of the Data Fair export -> staged columns
+    "Code Département": "departement", "Année": "year", "HTA souterrain (km)": "km_underground",
+    "HTA aérien nu (km)": "km_aerial_bare", "HTA aérien Tors (km)": "km_aerial_twisted", "HTA total (km)": "km_total",
+    "Nb Postes HTA / BT": "mv_lv_substations",
+}
+
+
+@adapter("enedis.totals", version="1.0.0", sources=(TOTALS,), produces=("stg_elec_enedis_totals",))
+def enedis_totals(ctx: AdapterContext) -> dict[str, Output]:
+    """Enedis' yearly totals for the territory's départements: km of MV (HTA) lines and HTA/BT substations operated."""
+    raw = pd.read_csv(ctx.path(TOTALS), dtype=str, encoding="utf-8")
+    missing = sorted(set(TOTAL_COLUMNS) - set(raw.columns))
+    if missing:
+        raise ValueError(f"{TOTALS}: columns missing from the export: {missing}")
+    raw = raw[raw["Maille géographique"] == "Département"]
+    codes = {str(c) for c in ctx.territory.selector.get("departement", [])}
+    df = raw[raw["Code Département"].isin(codes)][list(TOTAL_COLUMNS)].rename(columns=TOTAL_COLUMNS)
+    for c in ("km_underground", "km_aerial_bare", "km_aerial_twisted", "km_total"):
+        df[c] = df[c].astype(float)
+    df["year"] = df["year"].astype(int)
+    df["mv_lv_substations"] = df["mv_lv_substations"].astype(int)
+    df = df.sort_values(["departement", "year"]).reset_index(drop=True)
+    latest = df.groupby("departement").tail(1)
+    qa = {"rows": len(df), "latest_year": {r.departement: int(r.year) for r in latest.itertuples()},
+          "departements_missing": sorted(codes - set(df["departement"]))}
+    return {"stg_elec_enedis_totals": Output(df, "public", qa)}

@@ -165,3 +165,19 @@ def test_georisques_tri_archives_are_still_offered():
         spec = sources[f"georisques.tri2020_{dep}"]
         assert links[dep] == f"{spec.base_url}/{spec.dataset}"  # the registered archive is the one Géorisques offers
     assert links["04"] is None  # Alpes-de-Haute-Provence has no TRI
+
+
+@pytest.mark.network
+@pytest.mark.vcr
+def test_enedis_network_totals_contract_and_csv_paging(tmp_path: Path):
+    """No geometry, so Data Fair serves CSV (pages linked in the Link header) with the labels as column names."""
+    from resilink.domain.config import TerritoryConfig
+
+    spec = load_sources()["enedis.network_totals"]
+    meta = DataFairConnector().describe(spec)
+    assert not meta.has_geometry
+    assert {"code_departement", "annee", "hta_total_km", "nb_postes_hta_bt"} <= {f.name for f in meta.fields}
+    terr = TerritoryConfig(id="bdr", name="Bouches-du-Rhône", selector={"departement": ["13"]})
+    _, rows = DataFairConnector().fetch(spec, terr, tmp_path / "data.csv")
+    head = (tmp_path / "data.csv").read_text(encoding="utf-8").splitlines()[0]
+    assert rows and rows >= 15 and "HTA total (km)" in head and "Nb Postes HTA / BT" in head  # 2011-2025, 2026-11-28

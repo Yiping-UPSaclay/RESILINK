@@ -109,7 +109,8 @@ def fetch_snapshot(spec: SourceSpec, territory: TerritoryConfig | None = None, *
     tmp = Path(tempfile.mkdtemp(prefix=".fetch-", dir=base))
     try:
         ext = "parquet" if spec.format == "parquet" and spec.connector == "opendatasoft" else (
-            "geojson" if spec.format == "geojson" or spec.connector == "datafair" else spec.format)
+            "geojson" if spec.format == "geojson" or (spec.connector == "datafair" and spec.format != "csv")
+            else spec.format)
         data_path = tmp / f"data.{ext}"
         extra = {}
         if spec.territory_mode == "extent_bbox":

@@ -55,7 +55,7 @@ def _tags(df: pd.DataFrame) -> dict[str, object]:
             "ref": df["ref"].fillna("").to_numpy()}
 
 
-@adapter("osm.power", version="1.0.0", sources=SOURCES, needs=("territory_extent",),
+@adapter("osm.power", version="1.1.0", sources=SOURCES, needs=("territory_extent",),
          produces=("stg_elec_hv_lines_osm", "stg_elec_substations_osm"))
 def osm_power(ctx: AdapterContext) -> dict[str, Output]:
     """High-voltage lines meeting the territory buffer and high-voltage substations inside it, from OSM."""
@@ -111,13 +111,15 @@ def osm_power(ctx: AdapterContext) -> dict[str, Output]:
     pts = subs.geometry.representative_point()
     inside = shapely.contains_xy(grown, pts.x.to_numpy(), pts.y.to_numpy())
     subs, pts, footprint = subs[inside], pts[inside], footprint[inside]
+    reach = shapely.hausdorff_distance(pts.to_numpy(), subs.geometry.to_numpy())  # farthest footprint point
     substations = gpd.GeoDataFrame({
         "osm_id": subs["osm_id"].to_numpy(), "osm_type": subs["osm_type"].to_numpy(),
         "substation": subs["substation"].fillna("").to_numpy(),
         "voltage_kv": subs["voltage_kv"].to_numpy(float), "voltages": subs["voltage"].fillna("").to_numpy(),
         "voltage_class": subs["voltage_kv"].map(voltage_class).to_numpy(),
         **_tags(subs), "ref_fr_rte": subs["ref:FR:RTE"].fillna("").to_numpy(),
-        "footprint_m2": footprint, "in_core": shapely.contains_xy(core, pts.x.to_numpy(), pts.y.to_numpy()),
+        "footprint_m2": footprint, "reach_m": reach,
+        "in_core": shapely.contains_xy(core, pts.x.to_numpy(), pts.y.to_numpy()),
         "source": subs["source"].to_numpy(), "geometry": pts.to_numpy(),
     }, geometry="geometry", crs=t.crs_metric).sort_values("osm_id").reset_index(drop=True)
 
