@@ -26,6 +26,8 @@ telecom). The full design is in `docs/architecture/blueprint.md`; decisions are 
 - `uv run lint-imports` · `uv run ruff check .` — architecture contracts and lint
 - `uv run resilink demo` — synthetic end-to-end run · `uv run resilink ops list|call|schema`
 - `uv run resilink etl describe|fetch <source_id>` — open-data connectors with drift gate
+- `uv run resilink etl stage [adapter_id]` — staged tables · `uv run resilink etl release --version <v> [--dry-run]` —
+  build a release from staging, run its QA gates, publish only if all pass (report in `data/qa/<release>.json`)
 - `uv run streamlit run apps/streamlit/Home.py` — UI · `uv run resilink-mcp` — MCP server (stdio)
 - `uv run python -m evals.runner --suite golden [--dry-run]` — agent evals (live run costs money)
 

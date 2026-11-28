@@ -9,5 +9,6 @@ stages:
       - data/releases/synthetic
   # P1 (Bouches-du-Rhône):
   # normalize:  `resilink etl stage` -> data/staging/<territory>/<table>.parquet (+ .json: snapshots, QA)
-  # build:      data/staging -> data/releases/bdr/<version>
+  # build:      `resilink etl release --version <v>` -> data/releases/bdr/<version> (QA gates; refuses to overwrite,
+  #             since releases are immutable: no DVC stage, which would delete its outputs before rebuilding)
   # tiles:      release -> data/tiles/bdr-<version>__*.pmtiles

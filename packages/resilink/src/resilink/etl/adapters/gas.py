@@ -3,7 +3,7 @@ pipelines, stations and LNG terminals.
 
 * NaTran publishes a simplified trace of its transmission network, accurate to about 250 m ("never for works"),
   and no delivery stations; OpenStreetMap maps the pipelines more precisely and the stations
-  (``pipeline=substation``) that open data otherwise lacks (assumption A-GAS-01). Both are staged; D6 reconciles them.
+  (``pipeline=substation``) that open data otherwise lacks (assumption A-GAS-03). Both are staged; D6 reconciles them.
 * GRDF's map of its distribution pipes shows where the public gas network reaches, without pressure or diameter.
 * Gas-fired power stations couple gas and electricity (one row per site and year in the source; the latest is kept).
 * LNG terminals are OpenStreetMap industrial areas named as such ("Terminal méthanier", LNG, GNL); the QA lists them.
@@ -138,7 +138,7 @@ def gas_power_plants(ctx: AdapterContext) -> dict[str, Output]:
     return {"stg_gas_power_plants": Output(out, "public", qa)}
 
 
-@adapter("osm.gas", version="1.0.0", sources=OSM_SOURCES, needs=("territory_extent", "stg_gas_transmission_natran"),
+@adapter("osm.gas", version="1.1.0", sources=OSM_SOURCES, needs=("territory_extent", "stg_gas_transmission_natran"),
          produces=("stg_gas_pipelines_osm", "stg_gas_facilities_osm"))
 def osm_gas(ctx: AdapterContext) -> dict[str, Output]:
     """Gas pipelines meeting the territory buffer, and gas stations and LNG terminals inside it, from OSM."""
@@ -184,12 +184,13 @@ def osm_gas(ctx: AdapterContext) -> dict[str, Output]:
     pts = fac.geometry.representative_point()
     inside = shapely.contains_xy(grown, pts.x.to_numpy(), pts.y.to_numpy())
     fac, lng, pts, footprint = fac[inside], lng[inside], pts[inside], footprint[inside]
+    reach = shapely.hausdorff_distance(pts.to_numpy(), fac.geometry.to_numpy())  # farthest footprint point
     sub = fac["substation"].fillna("").astype(str)
     kind = np.where(lng, "lng_terminal", np.where(sub.isin(("", "yes")), "station", sub).astype(str))
     facilities = gpd.GeoDataFrame({
         "osm_id": fac["osm_id"].to_numpy(), "osm_type": fac["osm_type"].to_numpy(), "kind": kind,
         "operator": text("operator", fac), "name": text("name", fac), "ref": text("ref", fac),
-        "substance": text("substance", fac), "footprint_m2": footprint,
+        "substance": text("substance", fac), "footprint_m2": footprint, "reach_m": reach,
         "in_core": shapely.contains_xy(core, pts.x.to_numpy(), pts.y.to_numpy()),
         "source": fac["source"].to_numpy(), "geometry": pts.to_numpy(),
     }, geometry="geometry", crs=t.crs_metric).sort_values("osm_id").reset_index(drop=True)

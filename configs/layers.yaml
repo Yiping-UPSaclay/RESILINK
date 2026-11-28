@@ -3,27 +3,58 @@
 tables:
   nodes:
     tier: internal
-    description: Infrastructure nodes of all layers (canonical, EPSG:2154).
+    description: >-
+      Infrastructure nodes of all layers (canonical, EPSG:2154). Real territories cover the core and its buffer and
+      keep only what is connected to a source with no damage (the QA report lists what was dropped).
     columns:
-      rid: Stable entity id <layer>.<class>:<ns>:<key>.
+      rid: Stable entity id <layer>.<class>:<ns>:<key> (ns = rte, osm, anfr, odre for native keys; fp for fingerprints).
       k: Dense integer index within the release (used to join result arrays).
       layer: elec | gas | telecom | facility.
-      class: Controlled vocabulary class (see knowledge/ontology.yaml).
-      name: Human-readable name.
-      is_source: True if the node is a supply source of its layer.
+      class: Class declared by the layer's system pack (e.g. sub_primary, junction_mv, delivery_station).
+      name: Human-readable name (RTE site name, OSM name, ARCEP site number).
+      operator: Operator named by the source (empty when unknown).
+      status: in_service | planned (RTE sites with an administrative agreement only).
+      is_source: True if the node is a supply source of its layer (for real territories also the points where a
+        network leaves the buffer, assumptions A-ELEC-02 and A-GAS-04).
       voltage_kv: Nominal voltage (kV), electricity only.
       pos_uncertainty_m: Positional uncertainty (m).
       confidence: Existence/attribute confidence in [0, 1].
+      primary_source: Source of the position (osm, enedis.poste_electrique, arcep.sites, rte.postes+osm, derived...).
       sensitivity: public | internal | restricted.
+      in_core: True if the node lies in the territory's départements (false in the buffer).
   edges:
     tier: internal
-    description: Intra-layer links (lines, cables, pipelines, logical backhaul).
+    description: >-
+      Intra-layer links (lines, cables, pipelines, logical backhaul). Real lines are open-data segments noded and
+      contracted (etl/topology.py): one edge runs between two nodes that are substations, stations, junctions or
+      buffer cut points; its geometry is the merged line.
     columns:
-      rid: Stable id.
+      rid: Stable id (fingerprint of class, end points and length; logical links take their site's key).
       src_rid: Endpoint node rid.
       dst_rid: Endpoint node rid.
       length_m: Length in metres.
       aerial_share: Share of the length that is overhead (0-1).
+      voltage_kv: Nominal voltage (kV) of HV lines (empty when OSM gives none).
+      primary_source: osm, enedis, natran.trace250, or derived (plant connections, station connectors, backhaul).
+      in_core: True if the edge meets the territory's départements.
+  service_links:
+    tier: internal
+    description: >-
+      Which supplier serves each grid cell, per system (supplier class from the system pack). Real territories:
+      nearest MV/LV substation (A-SVC-01); per operator the nearest mobile site, equal shares (A-SVC-02); cells
+      crossed by a GRDF natural-gas pipe from the nearest delivery station (A-SVC-03).
+    columns:
+      cell_id: Grid cell.
+      supplier_rid: Node serving the cell.
+      sector: System of the supplier (elec | gas | telecom).
+      share: Share of the cell's population served through this link.
+  entity_xref:
+    tier: internal
+    description: Source identifiers behind each node (several sources may describe one asset, e.g. RTE and OSM).
+    columns:
+      rid: Node rid.
+      source_id: Source register id (or osm).
+      source_key: The asset's id in that source (RTE code, OSM id, Enedis id, ANFR id, plant name).
   grid_cells:
     tier: public
     description: >-

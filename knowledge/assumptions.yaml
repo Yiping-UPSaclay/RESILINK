@@ -93,7 +93,7 @@ assumptions:
     grade: B
     sensitivity: false
     evidence_ids: []
-  - id: A-GAS-01
+  - id: A-GAS-03
     title: Gas stations from OpenStreetMap
     statement: Gas stations mapped in OpenStreetMap (pipeline=substation with substance gas, or a gas operator) stand for NaTran's delivery, interconnection and compression stations, which NaTran does not publish. In Bouches-du-Rhône, 87 stations, 1 compression and 1 transmission station are mapped (2026-11-26); completeness is unknown.
     rationale: The only open, located source of gas stations. Their count is reported in every staged table (QA) and can be checked against operator data when available (OPX).
@@ -125,6 +125,62 @@ assumptions:
     title: Flooded areas without a depth class
     statement: Where a scenario's flood extent has no water-depth class (depth classes covering less than 95 % of the extent), the uncovered part gets the lowest class bound, 0.5 m, flagged depth_known = false.
     rationale: A lower bound that keeps the extent consistent across scenarios. In the Bouches-du-Rhône buffer this concerns the Avignon TRI, medium scenario (234 km2, 2026-11-27).
+    grade: C
+    sensitivity: true
+    evidence_ids: []
+  - id: A-ELEC-02
+    title: The grid beyond the territory buffer
+    statement: Where a high-voltage line leaves the 30 km territory buffer, the cut point is a source of unlimited capacity (the national grid continues there). Gas-fired plants inside the buffer are sources too; other generation is not modelled.
+    rationale: The meshed transmission grid is fed from far outside any territory. With the buffer, losing a substation of the territory never cuts the grid at the buffer's edge; 37 cut points in Bouches-du-Rhône (2026-11-28).
+    grade: C
+    sensitivity: true
+    evidence_ids: []
+  - id: A-ELEC-03
+    title: Enedis substation positions outnumber the substations Enedis operates
+    statement: Enedis' position file holds 19,585 HTA/BT substations in Bouches-du-Rhône, while its own yearly totals report 15,589 operated in 2025 (x1.26). The extra points cannot be told apart (presumably customer-owned HTA substations); all are MV/LV substations that may supply the grid.
+    rationale: Measured 2026-11-28 against the enedis.network_totals source. The MV network itself agrees with Enedis' total (10,015 of 10,502 km, 95.4 %). Service links to a customer substation misplace a cell's supplier by a few hundred metres at most.
+    grade: C
+    sensitivity: false
+    evidence_ids: []
+  - id: A-ELEC-04
+    title: Primary substations from the medium-voltage network
+    statement: A high-voltage substation (OpenStreetMap, not a railway, industrial or plant substation) is a primary substation (poste source) when at least 3 medium-voltage line ends lie within 150 m of its footprint.
+    rationale: Neither Enedis nor RTE publishes the list of primary substations with positions. In Bouches-du-Rhône and its buffer, 131 substations qualify, with a median of 17 feeders each (2026-11-28).
+    grade: B
+    sensitivity: false
+    evidence_ids: []
+  - id: A-GAS-04
+    title: The gas network beyond the territory buffer
+    statement: Where NaTran's transmission trace leaves the 30 km territory buffer, the cut point is a source of unlimited capacity; the two Fos LNG terminals are sources too.
+    rationale: The national transmission network is supplied by many entry points and storage outside the territory; 8 cut points in Bouches-du-Rhône (2026-11-28).
+    grade: C
+    sensitivity: true
+    evidence_ids: []
+  - id: A-TEL-04
+    title: Backhaul to the nearest exchange
+    statement: Each mobile site depends on its nearest telecom exchange (OpenStreetMap, any operator) through a logical backhaul link; exchanges are the sources of the mobile system.
+    rationale: Open data describes no backhaul (fibre or microwave). Nearest-exchange is the usual proxy in open-data studies; in Bouches-du-Rhône the median site is 1.5 km from an exchange, 99 % within 12 km (2026-11-28).
+    grade: C
+    sensitivity: true
+    evidence_ids: []
+  - id: A-SVC-01
+    title: Electricity supply of a grid cell
+    statement: Each inhabited 200 m cell is supplied by the MV/LV substation nearest to its centre (share 1).
+    rationale: Low-voltage feeders are not in open data. Median distance 161 m, 99 % within 642 m in Bouches-du-Rhône (2026-11-28).
+    grade: C
+    sensitivity: true
+    evidence_ids: []
+  - id: A-SVC-02
+    title: Mobile service of a grid cell
+    statement: For each operator, a cell is served by that operator's nearest mobile site within 15 km; each operator carries an equal share of the cell's population.
+    rationale: Radio coverage and subscriber shares are not modelled yet; the four operators have national shares of the same order. Median distance about 1 km (2026-11-28).
+    grade: C
+    sensitivity: true
+    evidence_ids: []
+  - id: A-SVC-03
+    title: Gas supply of a grid cell
+    statement: A cell has gas service when a GRDF natural-gas distribution pipe crosses it (propane networks excluded); it is supplied from the nearest delivery station of the transmission network.
+    rationale: Which delivery station feeds which distribution network is not published. 10,521 cells holding 80 % of the core population qualify (2026-11-28); not every household of those cells uses gas, so gas losses are an upper bound.
     grade: C
     sensitivity: true
     evidence_ids: []

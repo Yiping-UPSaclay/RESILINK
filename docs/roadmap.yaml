@@ -8,7 +8,7 @@
 # what the P1-P2 models need (E3), then the data track starts; the other extension features follow when the
 # analytics or the first thesis need them.
 
-updated: 2026-11-27
+updated: 2026-11-28
 # Items may carry `target` (a date): the dashboard shows it as a milestone on the timeline.
 # Items may carry `refs` (pull requests "#n" or commits): tools/github_board.py links them from the item's issue.
 repository: Yiping-UPSaclay/RESILINK   # GitHub (public); tools/progress.py reads its CI status
@@ -41,9 +41,11 @@ phases:
       - { id: D3, name: "Telecom: ARCEP mobile sites with ANFR identifiers (file defects repaired); OSM exchanges and data centres; staged", status: done, done_on: 2026-11-26, refs: ["#45"] }
       - { id: D4, name: "Gas: NaTran transmission trace, GRDF distribution pipes, gas-fired power stations; OSM pipelines, stations and LNG terminals; staged", status: done, done_on: 2026-11-26, refs: ["#46"] }
       - { id: D5, name: "Flood hazard: Géorisques TRI 2020 mapping (extents and water-depth classes, 8 scenarios); staged as hazard_scenarios and hazard_footprints", status: done, done_on: 2026-11-27, refs: ["#47"] }
-      - { id: D6, name: "Adapters, entity matching, topology build, QA gates; publish release bdr-2027.01.0", status: not_started, criteria: [POC/AC1] }
-      # D7 note: flood footprints of one scenario overlap (several rivers); exposure must sum line lengths over
-      # their union, not per polygon (hazard_footprints doc in configs/layers.yaml).
+      - { id: D6, name: "Release bdr-2027.01.0: RTE-OSM matching, noding and contraction of the HV, MV and gas networks, boundary sources, service links, QA gates (all pass), byte-identical rebuild", status: done, done_on: 2026-11-28, criteria: [POC/AC1] }
+      # D7 notes: flood footprints of one scenario overlap (several rivers); exposure must sum line lengths over
+      # their union, not per polygon (hazard_footprints doc in configs/layers.yaml). The release has 86k edges and
+      # 570k footprint polygons: skip logical links (no fragility; 8,210 km of telecom backhaul in the core) and
+      # check the exposure time. Gas losses are an upper bound (A-SVC-03).
       - { id: D7, name: "First flood risk campaign on Bouches-du-Rhône", status: not_started, target: 2027-01-15, criteria: [POC/AC2] }
       - { id: OPX, name: "Operator-data readiness: switch-state field in the elec pack; generic mapping importer", status: not_started }
       - { id: P1b, name: "Steward agent (drift, mappings, entity resolution) + Review page", status: not_started }

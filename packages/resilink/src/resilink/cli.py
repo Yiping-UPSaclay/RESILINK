@@ -105,6 +105,32 @@ def etl_stage(adapter_id: str = typer.Argument(None, help="Adapter id; all adapt
             typer.echo(json.dumps(rec.model_dump(mode="json", exclude={"staged_at"}), ensure_ascii=False, indent=2))
 
 
+@etl_app.command("release")
+def etl_release(version: str = typer.Option(..., help="CalVer of the release, e.g. 2027.01.0"),
+                territory: str = "configs/territories/bdr.yaml",
+                dry_run: bool = typer.Option(False, help="Build and check without publishing")) -> None:
+    """Assemble a release from the staged tables, run its QA gates and publish it if they all pass.
+    The QA report is written to data/qa/<release id>.json either way."""
+    from resilink.etl.release import build_release, publish
+    from resilink.io.hashing import canonical_json
+    from resilink.io.paths import data_root, load_territory
+
+    build = build_release(load_territory(territory), version)
+    report = data_root() / "qa" / f"{build.release_id}.json"
+    report.parent.mkdir(parents=True, exist_ok=True)
+    report.write_text(canonical_json(build.qa), encoding="utf-8")
+    for g in build.qa["gates"]:
+        bounds = f">= {g['minimum']}" if g["maximum"] is None else f"in [{g['minimum']}, {g['maximum']}]"
+        typer.echo(f"{'PASS' if g['pass'] else 'FAIL'}  {g['id']}: {g['value']} ({bounds})  {g['text']}")
+    typer.echo(f"QA report: {report}")
+    if dry_run:
+        return
+    if not build.passed:
+        raise typer.Exit(1)
+    rel = publish(build)
+    typer.echo(f"published {rel.release_id} at {rel.root} (content hash {rel.manifest.content_hash()[:16]})")
+
+
 @app.command()
 def demo(config: str = "configs/experiments/synthetic_demo.yaml") -> None:
     """Build the synthetic release (if needed), run the demo experiment and print headline metrics."""

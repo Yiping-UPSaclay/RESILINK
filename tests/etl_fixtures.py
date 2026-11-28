@@ -119,6 +119,14 @@ ENEDIS = {
 }
 ENEDIS_SCHEMA = [{"key": k, "type": "string"} for k in ("_id", "code_commune", "code_departement")] + [
     {"key": "geometry", "type": "string", "x-refersTo": "https://purl.org/geojson/vocab#geometry"}]
+TOTALS = "donnees-relatives-aux-lignes-et-aux-postes"
+TOTALS_HEADER = ('"Maille géographique","departement_region_enedis","Code Département","Code Région","Année",'
+                 '"HTA souterrain (km)","HTA aérien nu (km)","HTA aérien Tors (km)","HTA total (km)","Nb Postes HTA / BT"')
+TOTALS_ROWS = ['"Département","BOUCHES-DU-RHONE","13",,"2024",2.0,0.5,0.0,2.5,3',
+               '"Département","BOUCHES-DU-RHONE","13",,"2025",2.1,0.5,0.0,2.6,3',
+               '"Département","VAUCLUSE","84",,"2025",9.0,9.0,0.0,18.0,40',
+               '"Région","PACA",,"93","2025",99.0,99.0,0.0,198.0,400']
+TOTALS_SCHEMA = [{"key": k, "type": "string"} for k in ("maille_geographique", "code_departement", "annee")]
 RTE_CSV = ("﻿code_poste;nom_poste;fonction;etat;tension;departement\n"
            "AAAAA;ALPHA;Poste de transformation;EN EXPLOITATION;225kV;Bouches-du-Rhône\n"
            "BBBBB;BRAVO;Poste de transformation;EN EXPLOITATION;63kV;Vaucluse\n"
@@ -352,6 +360,8 @@ class Portal:
 
     def _datafair(self, request: httpx.Request, path: str, q: dict[str, str]) -> httpx.Response:
         slug = path.split("/datasets/")[1].split("/")[0]
+        if slug == TOTALS:
+            return self._totals(request, path, q)
         feats = ENEDIS[slug]
         if not path.endswith("/lines"):
             return httpx.Response(200, json={"title": slug, "count": len(feats), "schema": ENEDIS_SCHEMA,
@@ -364,6 +374,22 @@ class Portal:
             headers["Link"] = f'<{nxt}>; rel="next"'
         return httpx.Response(200, headers=headers, json={"type": "FeatureCollection", "total": len(feats),
                                                           "features": page})
+
+    def _totals(self, request: httpx.Request, path: str, q: dict[str, str]) -> httpx.Response:
+        """A dataset without geometry: CSV only, paged through the Link header; the qs filter is honoured."""
+        if not path.endswith("/lines"):
+            return httpx.Response(200, json={"title": TOTALS, "count": len(TOTALS_ROWS), "schema": TOTALS_SCHEMA,
+                                             "license": {"title": "Licence Ouverte / Open Licence version 2.0"}})
+        wanted = set(re.findall(r'code_departement:"(\w+)"', q.get("qs", "")))
+        rows = [r for r in TOTALS_ROWS if not wanted or r.split(",")[2].strip('"') in wanted]
+        if q["format"] == "json":
+            return httpx.Response(200, json={"total": len(rows), "results": []})
+        size, after = int(q["size"]), int(q.get("after", 0))
+        headers = {}
+        if after + size < len(rows):
+            headers["Link"] = f'<{request.url.copy_merge_params({"after": str(after + size)})}>; rel=next'
+        body = "﻿" + "\n".join([TOTALS_HEADER, *rows[after:after + size]]) + "\n"
+        return httpx.Response(200, headers=headers, content=body.encode("utf-8"))
 
     def _wfs(self, q: dict[str, str]) -> httpx.Response:
         if q["REQUEST"] == "DescribeFeatureType":
@@ -400,6 +426,7 @@ def fetch_all(root: Path, source_ids: tuple[str, ...]) -> None:
 
 TERRITORY_SOURCES = ("ign.admin_express.departement", "ign.admin_express.commune", "insee.filosofi2021_200m")
 ELECTRICITY_SOURCES = ("rte.postes", "enedis.poste_electrique", "enedis.reseau_hta", "enedis.reseau_souterrain_hta",
+                       "enedis.network_totals",
                        "osm.geofabrik.paca", "osm.geofabrik.languedoc_roussillon")
 TELECOM_SOURCES = ("arcep.sites", "osm.geofabrik.paca", "osm.geofabrik.languedoc_roussillon")
 GAS_SOURCES = ("natran.trace250", "grdf.network", "odre.gas_power_plants", "osm.geofabrik.paca",

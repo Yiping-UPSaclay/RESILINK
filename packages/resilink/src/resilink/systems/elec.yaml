@@ -1,15 +1,17 @@
 # Built-in system pack: electricity (ADR-0008 §2, blueprint §6.3). Values moved unchanged from Sprint 0's
 # domain/vocab.py; repair times are placeholder priors (assumption A-REP-01, grade C).
+# 0.2.0 (D6): junction classes for real networks. A junction is a point where lines meet outside a substation
+# (or where a line leaves the territory buffer); it has no fragility curve of its own, lines and substations do.
 id: elec
-version: 0.1.0
+version: 0.2.0
 title: Electricity
 subsystems:
   elec_transmission:
-    nodes: [sub_tx, generator]
+    nodes: [sub_tx, generator, junction_hv]
     links: [line_hv]
     default_service: connectivity
   elec_distribution:
-    nodes: [sub_primary, sub_mv_lv]
+    nodes: [sub_primary, sub_mv_lv, junction_mv]
     links: [line_mv_aerial, cable_mv]
     default_service: connectivity
 served:
@@ -28,9 +30,11 @@ tables:  # optional; filled by adapters when data exists (operation models such 
 repair_median_h:
   sub_tx: 48.0
   generator: 72.0
+  junction_hv: 24.0
   line_hv: 48.0
   sub_primary: 36.0
   sub_mv_lv: 12.0
+  junction_mv: 8.0
   line_mv_aerial: 10.0
   cable_mv: 24.0
 repair_assumption: A-REP-01

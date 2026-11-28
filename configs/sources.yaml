@@ -160,6 +160,24 @@ sources:
     id_strategy: fingerprint_line_1m
     priority: P0
     docs_url: https://opendata.enedis.fr/datasets/reseau-souterrain-hta
+  # Enedis' own yearly totals per département (verified 2026-11-28): km of HTA lines by type and the number of
+  # HTA/BT substations it operates. No geometry, so Data Fair exports it as CSV only. Release QA compares the
+  # staged network with them (D6).
+  - id: enedis.network_totals
+    provider: Enedis
+    connector: datafair
+    base_url: https://opendata.enedis.fr
+    dataset: donnees-relatives-aux-lignes-et-aux-postes
+    format: csv
+    territory_mode: field
+    territory_field: code_departement
+    role: Completeness reference for the MV network (km of HTA lines, number of HTA/BT substations per year)
+    licence: Licence Ouverte 2.0
+    sensitivity: public
+    refresh: annual
+    id_strategy: native:code_departement+annee
+    priority: P0
+    docs_url: https://opendata.enedis.fr/datasets/donnees-relatives-aux-lignes-et-aux-postes
   # OpenStreetMap extracts from Geofabrik (regions as of the former French regions; the buffer of the pilot
   # reaches Gard and Hérault, hence two extracts). The URL redirects to a dated file, recorded in the snapshot,
   # and checked against Geofabrik's .md5. Read with DuckDB spatial ST_ReadOSM (no extra dependency).
